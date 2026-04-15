@@ -27,7 +27,10 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
+.packages
+.plugin_symlinks/
 .pub-cache/
 .pub/
 /build/
@@ -43,3 +46,17 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android local files
+/android/local.properties
+
+# iOS/macOS dependency artifacts
+**/Pods/
+**/.symlinks/
+**/Flutter/ephemeral/
+
+# Flutter web generated service worker
+/web/flutter_service_worker.js
+
+# FVM local SDK link
+.fvm/flutter_sdk
