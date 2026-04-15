@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Liquor Discovery - OnTheBlock</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link as="style" crossorigin="" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#e7eff8",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#ffb693",
+                    "tertiary": "#825516",
+                    "inverse-on-surface": "#eaf2fa",
+                    "background": "#f6faff",
+                    "on-surface-variant": "#584238",
+                    "on-primary-fixed-variant": "#7a3000",
+                    "on-primary-container": "#642600",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-tertiary-fixed-variant": "#663e00",
+                    "on-background": "#151c23",
+                    "surface-container-low": "#edf4fd",
+                    "surface-tint": "#a04100",
+                    "surface-bright": "#f6faff",
+                    "on-surface": "#151c23",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "surface-container-high": "#e1e9f2",
+                    "inverse-surface": "#293138",
+                    "on-secondary-fixed-variant": "#474746",
+                    "on-tertiary-fixed": "#2b1700",
+                    "tertiary-fixed-dim": "#f8bb73",
+                    "surface": "#f6faff",
+                    "secondary-container": "#e2dfde",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#dbe3ec",
+                    "on-secondary-container": "#636262",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#8b7266",
+                    "on-tertiary-container": "#533200",
+                    "inverse-primary": "#ffb693",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "primary-container": "#ff7e36",
+                    "on-primary-fixed": "#351000",
+                    "surface-container-highest": "#dbe3ec",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#d3dbe4",
+                    "tertiary-container": "#d09854",
+                    "primary-fixed": "#ffdbcc",
+                    "primary": "#a04100",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#ffddb9",
+                    "secondary-fixed": "#e5e2e1",
+                    "outline-variant": "#dfc0b3",
+                    "secondary": "#5f5e5e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["'Public Sans'", "sans-serif"],
+                    "body": ["'Public Sans'", "sans-serif"],
+                    "label": ["'Public Sans'", "sans-serif"],
+                    "pretendard": ["Pretendard", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { display: none; }
+        .font-pretendard { font-family: 'Pretendard', sans-serif; }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background pb-20">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 z-50 flex justify-between items-center px-4 h-16">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#FF7E36] text-2xl" style='font-variation-settings: "FILL" 1;'>liquor</span>
+<span class="text-xl font-black text-[#FF7E36] font-headline">OnTheBlock</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-stone-500 hover:bg-stone-100 p-2 rounded-full transition-colors active:scale-95">search</button>
+<button class="relative flex items-center justify-center p-2 rounded-full text-stone-500 hover:bg-stone-100 transition-colors active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white border-2 border-white">4</span>
+</button>
+<div class="ml-1 w-8 h-8 rounded-full overflow-hidden border border-stone-200">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtKrDYAJQQvMVtRcKLtuXkB36udDIhojd2gPfMVGj2nggwVJiA7pI5J2s6TT32zfMuXpKsMpoHOhVMA1bp4CLPhpwxZ_DHLmJb6R58GaKuoyHp6fIclY6X_oBFdgoWJgoGXQW3M1j23XJ2TxZ71b8DV-V88Fv65V6l4c_FJ8yhmil1LOMtQZa62GpxUFL_kSUTGVEihMorzv5r8iUxLHNKbrUohaBHYEeIF-Ei8KIwXm1-YKaPpP_ObtXb5KzihMSt_awUdD9gR6I"/>
+</div>
+</div>
+</header>
+<main class="pt-20 px-4 space-y-8">
+<!-- Hero Card -->
+<section class="relative overflow-hidden rounded-3xl shadow-lg bg-white group">
+<div class="relative h-[240px] w-full overflow-hidden">
+<img alt="Hero Drink" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDejYsKmxqdf4WzT7yUHoWwf5zE_QEFj7fDJknfA4ulsiOIo6zur9xoWdcmpTxxAExD5CPnJqwsZcWkASC375vqKGGbHNbRzL8hGNNvnFtPqS2UfCyKXE3WpasSQ9ue8D-GcUAGtVSgra0k9UNipn4Iqemls4FXtOc8XHHM0N7Q0ifLVCmCpdoeZZ-Nwj-PvAaZ6Lih9pjucpR4yfKkg8qGsW1-Fy0a4kSLj9jEu0mlYgM5LidqlKgSVZk2-4S5R05sqU9t0w-9-VY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 text-white w-full">
+<span class="inline-block px-3 py-1 bg-primary-container text-white text-[12px] font-bold rounded-full mb-3 uppercase tracking-wider">Featured Tasting</span>
+<h1 class="text-2xl font-black font-headline mb-1">The Golden Old Fashioned</h1>
+<p class="text-stone-200 text-sm font-medium">Taste : Smoked Oak, Maple<br/>Smell : Orange Peel, Vanilla</p>
+</div>
+</div>
+</section>
+<!-- Category Chips -->
+<div class="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 no-scrollbar">
+<button class="flex-shrink-0 px-5 py-2.5 bg-primary-container text-white rounded-full font-bold text-sm shadow-md active:scale-95 transition-all">All Collections</button>
+<button class="flex-shrink-0 px-5 py-2.5 bg-surface-container text-on-surface-variant rounded-full font-semibold text-sm hover:bg-stone-200 transition-colors">Bourbon</button>
+<button class="flex-shrink-0 px-5 py-2.5 bg-surface-container text-on-surface-variant rounded-full font-semibold text-sm hover:bg-stone-200 transition-colors">Craft Gin</button>
+<button class="flex-shrink-0 px-5 py-2.5 bg-surface-container text-on-surface-variant rounded-full font-semibold text-sm hover:bg-stone-200 transition-colors">Single Malt</button>
+<button class="flex-shrink-0 px-5 py-2.5 bg-surface-container text-on-surface-variant rounded-full font-semibold text-sm hover:bg-stone-200 transition-colors">Sake</button>
+</div>
+<!-- Local Establishments -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<div>
+<h2 class="text-xl font-extrabold font-headline text-on-background">Local Establishments</h2>
+<p class="text-stone-500 text-xs font-medium">Highly rated spots in your area</p>
+</div>
+<button class="text-primary font-bold text-sm">See all</button>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<!-- Item 1 -->
+<div class="flex gap-4 bg-white p-3 rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
+<div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0">
+<img alt="Bar Interior" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFT7FroNpETPKwxMc5DI_UnfnLU-y2lcBPnoS7NXMpJRPjHeBIiOAh1gw9jmOlRBBNM9fYPtngjCxcqy1qFeLHGvJUfo9E_kl1z609ipXH5niJ08jF1GkRkmDeC_IRc-KbvJlTfpRZimIotgmNNWPjdw_8dCpHUqUzQ6d6aOZf3JNYiEcfAv2xWMgFGiJOZgYkv88s8u4M7f4olG2wNaDTB3klXBGUgNpmUTnjb2KUc16Wcq-4RzJEYmyVxsBUS_qluQUjCtg7fDs"/>
+</div>
+<div class="flex flex-col justify-between py-1 flex-grow">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-on-surface text-base">The Oak &amp; Barrel</h3>
+<div class="flex items-center text-orange-500">
+<span class="material-symbols-outlined text-sm" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="text-xs font-bold ml-1">4.9</span>
+</div>
+</div>
+<p class="text-stone-500 text-xs mt-0.5">0.8 miles away • Craft Cocktails</p>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<span class="px-2.5 py-0.5 border border-primary text-primary rounded-full text-[10px] font-bold uppercase tracking-tight">OPEN NOW</span>
+<span class="text-stone-400 text-[10px] font-medium uppercase tracking-tight">Closes 2AM</span>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex gap-4 bg-white p-3 rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
+<div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0">
+<img alt="Liquor Store" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCogrP8y_6Oqj6bLFfFjQ_MPj10pbbb4sXrJA9KrCr_opU_8NsDIIkZ3wEoGlDduX3W65ExI2xDa7XYJ3VlNnC9GTJlrnZcs44RrFOj-ydsSw4vjDh8FY5pwkrdbmvXFHVOk_UByFe8DO_nOTFWYt8mfMmHTba278trY0a37elCvVJx3nhjp3IUNPgsyGECGjxe8pxftfsUsJ2kzX-ocOFQI3XlxwSPvJKSaa8DxoEpvszpbPz561a2wZBcPaPuQH7NsQ_RTO75tkA"/>
+</div>
+<div class="flex flex-col justify-between py-1 flex-grow">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-on-surface text-base">Juniper Boutique</h3>
+<div class="flex items-center text-orange-500">
+<span class="material-symbols-outlined text-sm" style='font-variation-settings: "FILL" 1;'>star</span>
+<span class="text-xs font-bold ml-1">4.7</span>
+</div>
+</div>
+<p class="text-stone-500 text-xs mt-0.5">1.2 miles away • Rare Finds</p>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<span class="px-2.5 py-0.5 border border-primary text-primary rounded-full text-[10px] font-bold uppercase tracking-tight">OPEN NOW</span>
+<span class="text-stone-400 text-[10px] font-medium uppercase tracking-tight">Closes 10PM</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Outdoor Vaults -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<div>
+<h2 class="text-xl font-extrabold font-headline text-on-background">Outdoor Vaults</h2>
+<p class="text-stone-500 text-xs font-medium">Curated outdoor tasting experiences</p>
+</div>
+<button class="material-symbols-outlined text-stone-400">arrow_forward</button>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<!-- Vault Card 1 -->
+<div class="group bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm">
+<div class="h-32 relative">
+<img alt="Patio Vault" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmeI8H2F1msUJ3vsnhODBFWz1c2L7iOHQYSQdziGF2LGFJ3xWT7reEu5lsesFtekT5nPXr0VJA072BJAGms3tvAZmHZUqDgoCGlheQX7vhCqcLSKEfTtdVb7FleR24OxNHnxBOWlQdkerHPkh-KvLdJoFVCdjLlpX71KDhIS6-AIKHk--ASYysoC1oIz1b7UFISartn5XT-301MZs_q4pb-LRAvsFzPgqtKmFL58pufv4Iv3SgWXo6W-IbfnL-WN3OrTQQz9q1vKw"/>
+<div class="absolute top-2 right-2">
+<span class="bg-black/50 backdrop-blur-md text-white text-[10px] px-2 py-1 rounded-full font-bold">4 Spots left</span>
+</div>
+</div>
+<div class="p-4">
+<h4 class="font-bold text-sm text-on-surface">The Terrace Vault</h4>
+<div class="flex items-center gap-1 mt-1 text-stone-500">
+<span class="material-symbols-outlined text-xs">location_on</span>
+<span class="text-[10px]">Downtown Plaza</span>
+</div>
+<button class="w-full mt-3 bg-primary-container text-white py-2 rounded-full text-xs font-bold active:scale-95 transition-all">Book Now</button>
+</div>
+</div>
+<!-- Vault Card 2 -->
+<div class="group bg-white rounded-3xl overflow-hidden border border-stone-100 shadow-sm">
+<div class="h-32 relative">
+<img alt="Secret Garden Vault" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAT4SEN7qZg1|nHF6EoPfbnGNADhHeJGT0WxHE43aXc5oatkoJU-n5n2RmDP-z3lRaXhHMOgCBsMjRSV8VWAfnTAywuyNsJzWVi1Kq-POu2IolkEStYqu7yoT50sVv-8ynNtGxxJazBTtMkt_DQ4-1-jp-9iCAgw-yaSrqyq-kZzxYYA2RaHvrStsupog-WAM2VXZZSCv2R6fFIIHQuPpktD3AGQ6fu96f-lFZxqDPD1iMVjLOZn7dzNdnsrEAbYHNln8B3-AX75oMA"/>
+<div class="absolute top-2 right-2">
+<span class="bg-black/50 backdrop-blur-md text-white text-[10px] px-2 py-1 rounded-full font-bold">Limited</span>
+</div>
+</div>
+<div class="p-4">
+<h4 class="font-bold text-sm text-on-surface">Garden Hideout</h4>
+<div class="flex items-center gap-1 mt-1 text-stone-500">
+<span class="material-symbols-outlined text-xs">location_on</span>
+<span class="text-[10px]">North Hills</span>
+</div>
+<button class="w-full mt-3 bg-stone-100 text-stone-600 py-2 rounded-full text-xs font-bold active:scale-95 transition-all">Waitlist</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Neighborhood Buzz -->
+<section class="space-y-4 pb-8">
+<div>
+<h2 class="text-xl font-extrabold font-headline text-on-background">Neighborhood Buzz</h2>
+<p class="text-stone-500 text-xs font-medium">What's being poured right now</p>
+</div>
+<div class="bg-white rounded-3xl p-4 border border-stone-100 shadow-sm">
+<div class="flex items-center gap-3 mb-3">
+<img alt="Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-primary-fixed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGjRrgLl3AU-97avQJtcPUIB9xgxJl3DB51yeftvzFFnbprCdDnxosefJ5AbdjD-Czcu_twgmstNBV1z0hBaF-fyvBiiKy2NKX7oQyWxY5yyczTFUEGaDrEt0PR4UIlWdT66KF_aZ45a49vem3VT_N5z3mE6xFzlNmj3KrLKVsJ876Uj_BGf3DypT3uqcd13vPGlVD4ejTAfowTRD9A5AEY9zaxs_TNmz7omD9Y_BRlAnoikfoUEqWCQNS07UarcN4VY2ZIyaU0Sc"/>
+<div>
+<p class="text-sm font-bold">Sarah Jenkins</p>
+<p class="text-[10px] text-stone-400">24 mins ago • The Oak &amp; Barrel</p>
+</div>
+</div>
+<p class="text-sm text-stone-700 leading-relaxed italic">"Just tried the 'Golden Old Fashioned' feature! The maple notes are incredible. Highly recommend if you're in the neighborhood tonight."</p>
+<div class="mt-4 flex gap-2">
+<span class="px-3 py-1 bg-tertiary/10 text-tertiary rounded-lg text-[10px] font-bold">#LimitedRelease</span>
+<span class="px-3 py-1 bg-tertiary/10 text-tertiary rounded-lg text-[10px] font-bold">#MustTry</span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 px-2 pb-safe bg-white border-t border-stone-200 shadow-lg font-pretendard">
+<button class="flex flex-col items-center justify-center text-[#FF7E36] active:opacity-80">
+<span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1;'>home</span>
+<span class="text-[10px] font-bold mt-0.5">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#8E8E93] hover:text-[#FF7E36] transition-colors active:opacity-80">
+<span class="material-symbols-outlined">map</span>
+<span class="text-[10px] font-medium mt-0.5">Map</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#8E8E93] hover:text-[#FF7E36] transition-colors active:opacity-80">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium mt-0.5">Board</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#8E8E93] hover:text-[#FF7E36] transition-colors active:opacity-80">
+<span class="material-symbols-outlined">forum</span>
+<span class="text-[10px] font-medium mt-0.5">Chat</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#8E8E93] hover:text-[#FF7E36] transition-colors active:opacity-80">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="text-[10px] font-medium mt-0.5">Shop</span>
+</button>
+</nav>
+<!-- Floating Action Button -->
+<button class="fixed bottom-20 right-4 w-14 h-14 bg-[#FF7E36] text-white rounded-full shadow-lg flex items-center justify-center z-50 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-2xl">chat</span>
+</button>
+</body></html>

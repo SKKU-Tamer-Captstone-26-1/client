@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "secondary-fixed": "#e5e2e1",
+                "surface-container": "#e7eff8",
+                "on-error-container": "#93000a",
+                "tertiary-container": "#d09854",
+                "surface-container-highest": "#dbe3ec",
+                "secondary-fixed-dim": "#c8c6c5",
+                "primary-fixed": "#ffdbcc",
+                "outline": "#8b7266",
+                "on-secondary": "#ffffff",
+                "on-tertiary-fixed-variant": "#663e00",
+                "on-secondary-fixed": "#1c1b1b",
+                "surface-bright": "#f6faff",
+                "surface": "#f6faff",
+                "on-tertiary-container": "#533200",
+                "background": "#f6faff",
+                "error-container": "#ffdad6",
+                "outline-variant": "#dfc0b3",
+                "surface-container-lowest": "#ffffff",
+                "primary-fixed-dim": "#ffb693",
+                "on-primary": "#ffffff",
+                "on-secondary-container": "#636262",
+                "on-secondary-fixed-variant": "#474746",
+                "surface-container-low": "#edf4fd",
+                "on-tertiary-fixed": "#2b1700",
+                "surface-container-high": "#e1e9f2",
+                "on-background": "#151c23",
+                "inverse-primary": "#ffb693",
+                "on-primary-container": "#642600",
+                "on-error": "#ffffff",
+                "inverse-surface": "#293138",
+                "on-primary-fixed": "#351000",
+                "tertiary-fixed": "#ffddb9",
+                "inverse-on-surface": "#eaf2fa",
+                "on-primary-fixed-variant": "#7a3000",
+                "tertiary": "#825516",
+                "surface-dim": "#d3dbe4",
+                "primary": "#a04100",
+                "on-surface": "#151c23",
+                "tertiary-fixed-dim": "#f8bb73",
+                "on-surface-variant": "#584238",
+                "surface-variant": "#dbe3ec",
+                "secondary": "#5f5e5e",
+                "surface-tint": "#a04100",
+                "secondary-container": "#e2dfde",
+                "primary-container": "#ff7e36",
+                "on-tertiary": "#ffffff",
+                "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "fontFamily": {
+                "headline": ["Public Sans", "sans-serif"],
+                "body": ["Public Sans", "sans-serif"],
+                "label": ["Public Sans", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-stone-900 border-b border-gray-100 dark:border-stone-800 sticky top-0 z-50">
+<div class="flex items-center justify-between px-4 h-16 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#FF7E36]" data-icon="liquor">liquor</span>
+<h1 class="text-[#FF7E36] font-black text-xl tracking-tighter">ONTHEBLOCK</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-gray-400 dark:text-stone-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="text-gray-400 dark:text-stone-500 hover:opacity-80 transition-opacity active:scale-95 transition-transform relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">4</span>
+</button><button class="w-8 h-8 rounded-full overflow-hidden border border-gray-100 dark:border-stone-800 hover:opacity-80 transition-opacity active:scale-95 transition-transform">
+<img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8VVvlpJHbSdz1UnPz_P2AHoyZv5RYBSe-RgeqEb2qvmcl04V59WEWlv6tRWAO6TyxGZBflYvks5Ly9qIstiEasZgvBuI9lolMr2ZUxCBMTSwO2k3zjBBfQAAlQGMzXZ6YPpt0xIpLd-nUFkQQkm5yha7wxeBZBbhVvG3noArbrS2wg4aOWbeTjO2g9dbCwl9KZrx9pVqIIuPHBrKy_c1-18mOqUG3kXZVZ-qKyj4NK2utE048VypMTTsR49y0N5ZJovNQAaKFWA0"/>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-2xl mx-auto px-4 pt-6">
+<!-- Section Header -->
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-black tracking-tight text-on-background">Messages</h2>
+<div class="flex gap-2">
+<span class="bg-primary-container/10 text-primary-container px-3 py-1 rounded-full text-xs font-bold">4 Unread</span>
+</div>
+</div>
+<!-- Horizontal Room Discovery -->
+<div class="mb-8">
+<h3 class="text-xs font-bold uppercase tracking-widest text-secondary mb-4 opacity-70">Active Circles</h3>
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+<div class="flex flex-col items-center gap-2 flex-shrink-0 group">
+<div class="w-16 h-16 rounded-[12px] p-0.5 border-2 border-[#FF7E36] overflow-hidden">
+<img alt="" class="w-full h-full object-cover rounded-[10px]" data-alt="Close up of a cocktail glass with an orange peel garnish in a moody dimly lit speakeasy environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN8fcmv-DZ2iysYFLwdRI3kZxxE306yXQwBD589xO5n98K_0zlgOGzSvO_syRy9qc2nSMz_zngHlJps63y3HbVIQN2m7Zi4vRKMK0X36kXMkIBcI89AiLr7jKX6iMg8kluE303ShrvuiskXMZqvviyHHanhklQrZm-9cehFnp8LxEn3FY_2QQxlfw2l9Mik7ea67milicTBfq1BCD5i34cWRZ2cV--UCbbT_10ZMZnyL4ko-M8aWGAUc-Qpl26UcDqvGIX4byyoIs"/>
+</div>
+<span class="text-[11px] font-bold text-center">Speakeasy</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-shrink-0 group">
+<div class="w-16 h-16 rounded-[12px] p-0.5 border-2 border-transparent overflow-hidden">
+<img alt="" class="w-full h-full object-cover rounded-[10px]" data-alt="Interior of a vintage liquor store with wooden shelves filled with various bottles of whiskey and bourbon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1solcUKCBjp9fc5fkhu8lqKg0JvBIytYk8z5rdgk0L4nJ5CBNZa0t8wM130K8xGtl7FmXzRjzILji0nJGXOBO6AgLANcRHcgMUZGpyOM8fwxyGe6Y0COT9SozcLC0z_P-g9IPykaOmSue0O7FaEe3lF0QD3eDkB62LUHOdwGRt-Z9uL1lVxbJYxWAGGSo46ETv7kkLCJxkGlEKNoMQRkYmW6BQiDLThogLwQ3gn_hwqMn85T6ekMF74lZpigwR72trt7paGQsOwI"/>
+</div>
+<span class="text-[11px] font-medium text-secondary text-center">Collectors</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-shrink-0 group">
+<div class="w-16 h-16 rounded-[12px] p-0.5 border-2 border-[#FF7E36] overflow-hidden">
+<img alt="" class="w-full h-full object-cover rounded-[10px]" data-alt="A rustic outdoor brewery setting with wooden barrels and community tables in a sunlit beer garden" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4qzuZ2DnuqvF2xIztFIb-tsM5UgV6-dShCupahPOMP9GSArVHOZCN2zWI1DrhyUbRTfyWhihRIgrT9BbmaKK9prPpq7VrB2Bt4kLnz8w48CcM2H233xtzi1ZZ_cwO74bGWWyiTOuAW6G6_BwF44aFwOW1yIqMUxsTZW_vsW8w1lI6-CL9LIJpDNUYHV4XRhCKpUvXY6GK4BUdKLw-6fWEbZrOIFWMaPiOEp7vRp2tjNgsC0PouTFmbjsxnvNiS_HS7N0zfgLqKuI"/>
+</div>
+<span class="text-[11px] font-bold text-center">Local Brews</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-shrink-0 group">
+<div class="w-16 h-16 rounded-[12px] p-0.5 border-2 border-transparent overflow-hidden">
+<img alt="" class="w-full h-full object-cover rounded-[10px]" data-alt="Overhead view of several distinct craft beers in tasting glasses on a slate board with golden lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB79G5wF_quQQFNcmNo8JXiBRthRVAv50549n29UtYpNzYZeJqVXk1o7Nf0fx27zj1Yjgqr11zKd0yB4vzO5t9PcdW6Wr7sR8y2kNpOZeWjiX-2hOtXjk0Xsh7vvB3D5W5B1UDq41GnTS2sqa4Mir7nnd-qOlFA7elvGM-8N6Kgo2o05zouGFPp8IHtPIPtXn4EEKkNkDAltHwcY1-NFyCpXxwjCcssGhVD-sAgUp0vHgFqzzmKeZeRcvGYDQSY9OughGEdHAKXYGY"/>
+</div>
+<span class="text-[11px] font-medium text-secondary text-center">Tasting</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-shrink-0 group">
+<div class="w-16 h-16 rounded-[12px] p-0.5 border-2 border-transparent overflow-hidden">
+<img alt="" class="w-full h-full object-cover rounded-[10px]" data-alt="A minimalist white shelf displaying premium wine bottles against a soft beige textured wall" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpFM6NlzAhyFKUNuEzO22ZdMfBZ3BNmZ_DfrKTsY-uGnIzgSjjDp-SQM5beucCaBYfVnfzC5vL9k4hqslN7DeGX69W2Q6yrEFnt25bAn79QaLaw6W6cRI0CH-_As9tLTHsIhjgBitgAFcD63r8yTzruIQ24hOyikyCNjItVNfPZL40xSXVj2-5sYc-KMjStjWWwK300lhSkzsx8CcNlkWnGDzC5kF6AwQsMMQkUmTCn8xGnbn_ND68UmkjkU95FOqJbWgExa1NrTw"/>
+</div>
+<span class="text-[11px] font-medium text-secondary text-center">Wine Club</span>
+</div>
+</div>
+</div>
+<!-- Chat List -->
+<div class="space-y-1">
+<!-- Chat Item 1 (Unread) -->
+<div class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors cursor-pointer group active:scale-[0.98] transition-transform">
+<div class="w-14 h-14 rounded-[12px] bg-secondary-container flex items-center justify-center overflow-hidden">
+<div class="grid grid-cols-2 gap-0.5">
+<img alt="" class="w-7 h-7 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcPv5GXTy0va4GXhy6xdz0UiFhgvbknXRk9KXgm9wLUQjAuUDH2fIxfWzQCmtlfnTIe1x27QuhpwjSNvqoJvVlK7TeGW4RZsUnlTm8HHcMRMS-NbWZD09iWTv_fcAzub6z1KvfHOGnVkg8dN_m7kjY4DqYipEIcoAuSDeZdxkFP-l22CVw9uIBf2mhphHWHm_8p16PvXflKMRlRrQjXgkxBRHs1FDOJlCklOtkCZOiyrJMa98331femU1I3tmA0z58sXg3Lbgta3E"/>
+<img alt="" class="w-7 h-7 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8VVvlpJHbSdz1UnPz_P2AHoyZv5RYBSe-RgeqEb2qvmcl04V59WEWlv6tRWAO6TyxGZBflYvks5Ly9qIstiEasZgvBuI9lolMr2ZUxCBMTSwO2k3zjBBfQAAlQGMzXZ6YPpt0xIpLd-nUFkQQkm5yha7wxeBZBbhVvG3noArbrS2wg4aOWbeTjO2g9dbCwl9KZrx9pVqIIuPHBrKy_c1-18mOqUG3kXZVZ-qKyj4NK2utE048VypMTTsR49y0N5ZJovNQAaKFWA0"/>
+<img alt="" class="w-7 h-7 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASE0L44TCaBdiObSrBMFik8XKZUp8W4yvRmi0jx02gIGUPJwHwTQcG9l0nWorbXc4zAqo3hdjeoHFsW-8avWyt6AVAcEz0TfWGXj9wDqgFlFDCuJLt8t6ZCzy4AmdAKZ4z2EUUOzmFTRmlQ7HPFzPgDxvHIbYMLwTUFbTaXV-dSqdm9DRe5sXvXZHTY3BbJN6JqMIaheXfecoLwVFIrTuRPtwZ0t6Fb6b0A2OrUBSgIhT7O72s4yRMHzE6p-HUqNB3AVczMGjx4e0"/>
+<div class="w-7 h-7 bg-[#FF7E36]/20 flex items-center justify-center text-[8px] font-black text-[#FF7E36]">+15</div>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h4 class="font-bold text-on-background truncate">Westside Bourbon Enthusiasts</h4>
+<span class="text-[10px] font-bold text-[#FF7E36]">12:45 PM</span>
+</div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] text-secondary font-medium bg-secondary-container/30 px-1.5 py-0.5 rounded">18/25</span>
+<span class="text-[10px] text-[#FF7E36] font-bold">• Westside</span>
+</div>
+<p class="text-sm text-on-background font-bold truncate">Marcus: Found that limited batch of Old Forester!</p>
+<div class="flex gap-1 mt-1">
+<span class="text-[9px] text-secondary">#bourbon</span>
+<span class="text-[9px] text-secondary">#rare-finds</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="w-5 h-5 bg-[#FF7E36] rounded-full flex items-center justify-center">
+<span class="text-[10px] text-white font-black">2</span>
+</div>
+</div>
+</div>
+<hr class="border-gray-100 mx-4"/>
+<!-- Chat Item 2 (Group) -->
+<div class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors cursor-pointer group active:scale-[0.98] transition-transform">
+<div class="w-14 h-14 rounded-[12px] bg-secondary-container flex items-center justify-center overflow-hidden">
+<div class="grid grid-cols-2 gap-0.5">
+<img alt="" class="w-7 h-7 object-cover" data-alt="Close up portrait of a middle aged man with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8VVvlpJHbSdz1UnPz_P2AHoyZv5RYBSe-RgeqEb2qvmcl04V59WEWlv6tRWAO6TyxGZBflYvks5Ly9qIstiEasZgvBuI9lolMr2ZUxCBMTSwO2k3zjBBfQAAlQGMzXZ6YPpt0xIpLd-nUFkQQkm5yha7wxeBZBbhVvG3noArbrS2wg4aOWbeTjO2g9dbCwl9KZrx9pVqIIuPHBrKy_c1-18mOqUG3kXZVZ-qKyj4NK2utE048VypMTTsR49y0N5ZJovNQAaKFWA0"/>
+<img alt="" class="w-7 h-7 object-cover" data-alt="Close up portrait of a young woman with curly hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_DJ5mf5pZ73J2qoIRuES4AJinyh33R3qMPmSQYtQsKuSwZ0zib_yhOzS6cgzXxl9mBDXNR4NKThmL5t_xKsHtMYFw1e4xmsm0Y7ZBcgWUSg0OEdyoqIFQB37JxKQjJNdxGPTC90saFhZ1oO4Cx56rcv7POt69MzsKIdF0i7OcewwycIrPdsOzxBQlDYOasR61cy3A_-ZsrzIcrr6o0C1BOVpPHgeS2W8XzIVYclFkMYw8JXqommiaeFQJtt-QxMk3tjC0A-RRuhE"/>
+<img alt="" class="w-7 h-7 object-cover" data-alt="Close up portrait of a laughing woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAe82g2NgAbt59NbLxg9xkwJAhW74IyCiKtILDnh9z4bRFDmzOoTMaLZEYRVnUQAocfZdcxZoXXjeC0honoJMcZA4GfKq0vvsc1lVi8-uGqWmAl1O8DQOBOP0gpVORfk56h_0U2cx7ByIEiF4lFG6_uzV_fpySB-_JbBGoTzc30e9vwyol5Ry-0WRuSht9uBKpAEVw0h_Z18uuem2gsaS6TiNVu61LS7fQoEAlRBqarWtLf5eMD0Jcd1f6LRNJrFXmsuVcJyks4wJY"/>
+<div class="w-7 h-7 bg-primary-container/20 flex items-center justify-center text-[8px] font-black text-primary-container">+8</div>
+</div>
+</div>
+<div class="flex-1 min-w-0"><div class="flex justify-between items-baseline mb-0.5">
+<h4 class="font-bold text-on-background truncate">Downtown Whiskey Circle</h4>
+<span class="text-[10px] text-secondary font-medium">Yesterday</span>
+</div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] text-secondary font-medium bg-secondary-container/30 px-1.5 py-0.5 rounded">12/20</span>
+<span class="text-[10px] text-[#FF7E36] font-bold">• Downtown</span>
+</div>
+<p class="text-sm text-secondary truncate">Sarah: Are we still meeting for the blind tasting tomorrow?</p>
+<div class="flex gap-1 mt-1">
+<span class="text-[9px] text-secondary">#tasting</span>
+<span class="text-[9px] text-secondary">#educational</span>
+</div></div>
+<div class="flex flex-col items-end">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="notifications_off">notifications_off</span>
+</div>
+</div>
+<hr class="border-gray-100 mx-4"/>
+<!-- Chat Item 3 (Unread) -->
+<div class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors cursor-pointer group active:scale-[0.98] transition-transform">
+<div class="w-14 h-14 rounded-[12px] bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-3xl">inventory_2</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h4 class="font-bold text-on-background truncate">Vintage Cellar Logistics</h4>
+<span class="text-[10px] font-bold text-[#FF7E36]">Sun</span>
+</div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] text-secondary font-medium bg-secondary-container/30 px-1.5 py-0.5 rounded">8/10</span>
+<span class="text-[10px] text-[#FF7E36] font-bold">• Arts District</span>
+</div>
+<p class="text-sm text-on-background font-bold truncate">Elena: Your order of the 2018 vintage is ready.</p>
+<div class="flex gap-1 mt-1">
+<span class="text-[9px] text-secondary">#wine-pickup</span>
+<span class="text-[9px] text-secondary">#logistics</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="w-5 h-5 bg-[#FF7E36] rounded-full flex items-center justify-center">
+<span class="text-[10px] text-white font-black">1</span>
+</div>
+</div>
+</div>
+<hr class="border-gray-100 mx-4"/>
+<!-- Chat Item 4 -->
+<div class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors cursor-pointer group active:scale-[0.98] transition-transform">
+<div class="w-14 h-14 rounded-[12px] bg-secondary-container flex items-center justify-center overflow-hidden">
+<div class="grid grid-cols-2 gap-0.5">
+<img alt="" class="w-7 h-7 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGdwpa_P1e3XtZVCIWoxWVjLnIDvNte0tFCihZ45oaRCD-yNJLhbjdVGVEpU3eHizf9pN0d60mfpUWKIhg4PrYHTHMVDSVsFlqAjYoVCOjg66x2za8MwQDmsBMVNZ8pcUzNkIbB9xlYr15AOeFnK9TqcP0vbac7l0YI9cBaUMfQZF3jGLa-jGghgiBmHl6ZjOWtTWU23_r8rele-lDACEI-_yHhmp9jYVntVtdlccB0cvjMt8QFF4dIVfLZvR3EJu0Cq0CgRy9o78"/>
+<div class="w-7 h-7 bg-gray-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px]">person</span>
+</div>
+<div class="w-7 h-7 bg-gray-300 flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px]">person</span>
+</div>
+<div class="w-7 h-7 bg-[#FF7E36]/20 flex items-center justify-center text-[8px] font-black text-[#FF7E36]">+42</div>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h4 class="font-bold text-on-background truncate">Hoppy Explorers (IPA Central)</h4>
+<span class="text-[10px] text-secondary font-medium">Oct 24</span>
+</div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] text-secondary font-medium bg-secondary-container/30 px-1.5 py-0.5 rounded">45/100</span>
+<span class="text-[10px] text-[#FF7E36] font-bold">• North Block</span>
+</div>
+<p class="text-sm text-secondary truncate">David: That IPA you recommended was incredible. Cheers!</p>
+<div class="flex gap-1 mt-1">
+<span class="text-[9px] text-secondary">#ipa</span>
+<span class="text-[9px] text-secondary">#craftbeer</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="done_all" style="font-variation-settings: 'FILL' 0;">done_all</span>
+</div>
+</div>
+<hr class="border-gray-100 mx-4"/>
+<!-- Chat Item 5 -->
+<div class="flex items-center gap-4 p-4 hover:bg-surface-container-low transition-colors cursor-pointer group active:scale-[0.98] transition-transform">
+<div class="w-14 h-14 rounded-[12px] bg-secondary-container flex items-center justify-center overflow-hidden">
+<div class="grid grid-cols-2 gap-0.5">
+<img alt="" class="w-7 h-7 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASE0L44TCaBdiObSrBMFik8XKZUp8W4yvRmi0jx02gIGUPJwHwTQcG9l0nWorbXc4zAqo3hdjeoHFsW-8avWyt6AVAcEz0TfWGXj9wDqgFlFDCuJLt8t6ZCzy4AmdAKZ4z2EUUOzmFTRmlQ7HPFzPgDxvHIbYMLwTUFbTaXV-dSqdm9DRe5sXvXZHTY3BbJN6JqMIaheXfecoLwVFIrTuRPtwZ0t6Fb6b0A2OrUBSgIhT7O72s4yRMHzE6p-HUqNB3AVczMGjx4e0"/>
+<div class="w-7 h-7 bg-[#FF7E36]/20 flex items-center justify-center text-[8px] font-black text-[#FF7E36]">+22</div>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h4 class="font-bold text-on-background truncate">Weekly Tastings &amp; Photos</h4>
+<span class="text-[10px] text-secondary font-medium">Oct 22</span>
+</div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] text-secondary font-medium bg-secondary-container/30 px-1.5 py-0.5 rounded">24/30</span>
+<span class="text-[10px] text-[#FF7E36] font-bold">• Eastside</span>
+</div>
+<p class="text-sm text-secondary truncate">Jasmine: Sent a photo</p>
+<div class="flex gap-1 mt-1">
+<span class="text-[9px] text-secondary">#photography</span>
+<span class="text-[9px] text-secondary">#events</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-base" data-icon="image">image</span>
+</div>
+</div>
+</div>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary-container text-white rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform z-40">
+<span class="material-symbols-outlined text-2xl" data-icon="chat">chat</span>
+</button>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border-t border-gray-100 dark:border-stone-800 rounded-t-2xl shadow-[0_-2px_10px_rgba(0,0,0,0.05)] flex justify-around items-center px-2 py-3 pb-safe">
+<a class="flex flex-col items-center justify-center text-gray-400 dark:text-stone-500 hover:text-[#FF7E36] active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Public_Sans'] text-[11px] font-medium mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-400 dark:text-stone-500 hover:text-[#FF7E36] active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="map">map</span>
+<span class="font-['Public_Sans'] text-[11px] font-medium mt-1">Map</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-400 dark:text-stone-500 hover:text-[#FF7E36] active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-['Public_Sans'] text-[11px] font-medium mt-1">Board</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#FF7E36] font-bold active:scale-90 transition-all duration-150" href="#">
+<div class="relative flex flex-col items-center justify-center">
+<span class="material-symbols-outlined" data-icon="chat_bubble" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<div class="absolute -top-1 -right-1 w-4 h-4 bg-[#FF7E36] rounded-full border-2 border-white dark:border-stone-900 flex items-center justify-center">
+<span class="text-[8px] text-white font-bold">3</span>
+</div>
+</div>
+<span class="font-['Public_Sans'] text-[11px] font-medium mt-1">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-400 dark:text-stone-500 hover:text-[#FF7E36] active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-['Public_Sans'] text-[11px] font-medium mt-1">Shop</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#151c23",
+                        "on-primary-container": "#642600",
+                        "tertiary-container": "#d09854",
+                        "primary-container": "#FF7E36",
+                        "on-secondary-container": "#636262",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#d3dbe4",
+                        "surface-container": "#e7eff8",
+                        "on-tertiary-fixed": "#2b1700",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "inverse-primary": "#ffb693",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "tertiary-fixed-dim": "#f8bb73",
+                        "surface": "#f6faff",
+                        "on-surface-variant": "#584238",
+                        "on-secondary": "#ffffff",
+                        "background": "#f6faff",
+                        "on-surface": "#151c23",
+                        "on-secondary-fixed-variant": "#474746",
+                        "secondary": "#5f5e5e",
+                        "tertiary-fixed": "#ffddb9",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#7a3000",
+                        "surface-container-low": "#edf4fd",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f6faff",
+                        "secondary-container": "#e2dfde",
+                        "on-primary-fixed": "#351000",
+                        "surface-variant": "#dbe3ec",
+                        "primary-fixed": "#ffdbcc",
+                        "inverse-on-surface": "#eaf2fa",
+                        "outline-variant": "#dfc0b3",
+                        "tertiary": "#825516",
+                        "primary": "#FF7E36",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-container-high": "#e1e9f2",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e5e2e1",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#dbe3ec"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Pretendard", "sans-serif"],
+                        "body": ["Pretendard", "sans-serif"],
+                        "label": ["Pretendard", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Pretendard', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-60">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-4 h-16 bg-white border-b border-stone-100">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-[28px] fill" data-icon="local_bar">local_bar</span>
+<h1 class="text-xl font-black text-stone-900 uppercase tracking-tighter">ONTHEBLOCK</h1>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-2 text-stone-700">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="p-2 text-stone-700 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+</button>
+<button class="p-2 text-stone-700">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Tab Bar -->
+<nav class="mt-16 bg-white border-b border-stone-100 sticky top-16 z-40">
+<div class="flex w-full max-w-2xl mx-auto">
+<button class="flex-1 py-4 text-center font-bold text-stone-400">Wishlist
+<span class="ml-1.5 inline-flex items-center justify-center bg-stone-100 text-stone-500 text-[10px] font-bold h-5 px-1.5 rounded-full">3</span></button>
+<button class="flex-1 py-4 text-center font-bold text-primary relative">Cart
+<span class="ml-1.5 inline-flex items-center justify-center bg-primary text-white text-[10px] font-bold h-5 px-1.5 rounded-full">4</span>
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-[3px] bg-primary rounded-t-full"></div></button>
+</div>
+</nav>
+<!-- Main Content: Cart List -->
+<main class="max-w-2xl mx-auto px-4 py-6 space-y-8">
+<!-- Group by Shop: The Oak Barrel Spirits -->
+<section class="space-y-3">
+<div class="flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-stone-400 text-[20px]" data-icon="store">store</span>
+<h2 class="font-bold text-stone-800">The Oak Barrel Spirits</h2>
+</div>
+<div class="bg-white rounded-2xl p-4 flex gap-4 shadow-sm border border-stone-100 items-center">
+<div class="w-20 h-20 rounded-xl overflow-hidden bg-stone-50 flex-shrink-0">
+<img alt="Artisan Bourbon" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAqWHVBFwLJkZzAx2uW3EmJTXYW-SLhuk2_Dt-5jsiCC_OmYzk-xQB2WoV_quX9KnJIH7MMtoS6uUAWJ0VxhsEI9pil8lRGXuBYsDtVVJrEg0Ip3oMcNyEX6T1vjWozpmTMiTKPedCvjBxxw6IMM-c658bMLVxoXNEQcpe7ELaIxeL-kryd17Ctke4xQmKJ89UHNK9gmsZAIFXu_uTd3_h_LS5BymIhjbV_7NZEgE2VHrgx5aYw0-GYMVRnTVkPCSlOfRLrp1EeU0"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-on-surface">Small Batch Oak Bourbon</h3>
+<button class="text-stone-300">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+<div class="mt-3 flex justify-between items-center">
+<div class="flex items-center gap-4 bg-stone-100 rounded-full px-3 py-1">
+<button class="text-stone-500"><span class="material-symbols-outlined text-[18px]" data-icon="remove">remove</span></button>
+<span class="font-bold text-sm">1</span>
+<button class="text-stone-500"><span class="material-symbols-outlined text-[18px]" data-icon="add">add</span></button>
+</div>
+<span class="font-bold text-lg text-on-surface">$54.00</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Group by Shop: Heritage Gin Co. -->
+<section class="space-y-3">
+<div class="flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-stone-400 text-[20px]" data-icon="store">store</span>
+<h2 class="font-bold text-stone-800">Heritage Gin Co.</h2>
+</div>
+<div class="bg-white rounded-2xl p-4 flex gap-4 shadow-sm border border-stone-100 items-center">
+<div class="w-20 h-20 rounded-xl overflow-hidden bg-stone-50 flex-shrink-0">
+<img alt="Japanese Gin" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7YJBtCBhhsaLLLCzxNpaGKKtF3V_YL4YW6U_Ggpdz3XJin4b9vBN7dsUNkiNElqSXvFsIJnqgBhciRTfX9ol0N1ysd7aN0L4rt8NWcIXfju4ZKX49xYSz16kDOsOfsYZ8OecY8kqTtDns71Rg6B25BIejE2q52hDWW5krtsvxLJjGj2M8wJrQHPAuaoYkfw8RhrVSILjnWwoALuWbcyZYKiC_oK4r09cFBVm1qnea6S5c7yYvgCjTasb9XWA-gWq83YdrysKoz8k"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-on-surface">Kyoto Botanical Gin</h3>
+<button class="text-stone-300">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+<div class="mt-3 flex justify-between items-center">
+<div class="flex items-center gap-4 bg-stone-100 rounded-full px-3 py-1">
+<button class="text-stone-500"><span class="material-symbols-outlined text-[18px]" data-icon="remove">remove</span></button>
+<span class="font-bold text-sm">2</span>
+<button class="text-stone-500"><span class="material-symbols-outlined text-[18px]" data-icon="add">add</span></button>
+</div>
+<span class="font-bold text-lg text-on-surface">$89.98</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Group by Shop: Downtown Agave Shop -->
+<section class="space-y-3">
+<div class="flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-stone-400 text-[20px]" data-icon="store">store</span>
+<h2 class="font-bold text-stone-800">Downtown Agave Shop</h2>
+</div>
+<div class="bg-white rounded-2xl p-4 flex gap-4 shadow-sm border border-stone-100 items-center">
+<div class="w-20 h-20 rounded-xl overflow-hidden bg-stone-50 flex-shrink-0">
+<img alt="Mezcal Joven" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZh77EpkWGgjzrOZYgtRonD2YHpAzMV5RemVmsFaQkjSWwUskhHEK-hjcZsbSVLbA0DILxNSJ3K_Z1c1TfzG4FNoAQ8LU3ldxw63OU0_jszYx-rPH_-qIt_BRGFQ6KNMjlVaIl8FyRPcvcJyla8AS_YwtAEK9vAP13X5GMMSfZifS8DnYlJyBBf6FS10AByBM7YX8ESlUFmDrKCAjJHpPejeChEQ6J75KqBwrTkmbmR-K3hN7TFXFfZ9ZwXQfiWIxohuPTyzySfqY"/>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-on-surface">Oaxaca Blue Agave Mezcal</h3>
+<button class="text-stone-300">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+<div class="mt-3 flex justify-between items-center">
+<div class="flex items-center gap-4 bg-stone-100 rounded-full px-3 py-1">
+<button class="text-stone-500"><span class="material-symbols-outlined text-[18px]" data-icon="remove">remove</span></button>
+<span class="font-bold text-sm">1</span>
+<button class="text-stone-500"><span class="material-symbols-outlined text-[18px]" data-icon="add">add</span></button>
+</div>
+<span class="font-bold text-lg text-on-surface">$62.50</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Summary Section -->
+<div class="mt-12 bg-surface-container-low rounded-[24px] p-6 space-y-3">
+<div class="flex justify-between text-sm text-secondary">
+<span>Items (4)</span>
+<span>$206.48</span>
+</div>
+<div class="flex justify-between text-sm text-secondary">
+<span>Local Pickup Fee</span>
+<span class="text-primary font-bold">Free</span>
+</div>
+<div class="flex justify-between text-sm text-secondary">
+<span>Estimated Tax</span>
+<span>$18.52</span>
+</div>
+</div>
+</main>
+<!-- Sticky Bottom Checkout Bar -->
+<div class="fixed bottom-20 left-0 w-full px-4 z-40 bg-white/80 backdrop-blur-lg border-t border-stone-100 pt-4 pb-6">
+<div class="max-w-2xl mx-auto w-full">
+<div class="flex justify-between items-center mb-4 px-2">
+<span class="font-bold text-stone-700">Total Selection Amount</span>
+<span class="font-black text-2xl text-on-surface">$225.00</span>
+</div>
+<button class="w-full bg-primary text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+                Proceed to Checkout
+                <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-6 pt-2 bg-white border-t border-stone-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center text-stone-400 px-4 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-[11px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-400 px-4 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="map">map</span>
+<span class="text-[11px] font-medium">Map</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-400 px-4 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-[11px] font-medium">Board</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-400 px-4 py-2" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="text-[11px] font-medium">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary px-4 py-2 relative" href="#">
+<div class="relative">
+<span class="material-symbols-outlined fill" data-icon="back_hand">back_hand</span>
+<span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white ring-2 ring-white">7</span>
+</div>
+<span class="text-[11px] font-bold">Pick</span>
+</a>
+</nav>
+</body></html>

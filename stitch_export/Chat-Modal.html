@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "primary-fixed": "#ffdbcc",
+                "on-tertiary": "#ffffff",
+                "surface-dim": "#d3dbe4",
+                "surface-bright": "#f6faff",
+                "on-error-container": "#93000a",
+                "tertiary-fixed-dim": "#f8bb73",
+                "on-surface": "#151c23",
+                "secondary-fixed": "#e5e2e1",
+                "on-secondary-fixed": "#1c1b1b",
+                "on-secondary-container": "#636262",
+                "on-primary-fixed-variant": "#7a3000",
+                "primary-fixed-dim": "#ffb693",
+                "secondary-fixed-dim": "#c8c6c5",
+                "surface-tint": "#a04100",
+                "outline": "#8b7266",
+                "outline-variant": "#dfc0b3",
+                "on-primary-fixed": "#351000",
+                "on-secondary-fixed-variant": "#474746",
+                "surface-container-low": "#edf4fd",
+                "error-container": "#ffdad6",
+                "error": "#ba1a1a",
+                "on-background": "#151c23",
+                "secondary-container": "#e2dfde",
+                "tertiary-fixed": "#ffddb9",
+                "tertiary-container": "#d09854",
+                "inverse-primary": "#ffb693",
+                "inverse-surface": "#293138",
+                "inverse-on-surface": "#eaf2fa",
+                "surface-container-highest": "#dbe3ec",
+                "primary": "#a04100",
+                "surface-variant": "#dbe3ec",
+                "surface-container-high": "#e1e9f2",
+                "primary-container": "#ff7e36",
+                "on-tertiary-container": "#533200",
+                "on-error": "#ffffff",
+                "surface-container": "#e7eff8",
+                "on-tertiary-fixed": "#2b1700",
+                "on-secondary": "#ffffff",
+                "on-primary-container": "#642600",
+                "on-primary": "#ffffff",
+                "tertiary": "#825516",
+                "surface-container-lowest": "#ffffff",
+                "surface": "#f6faff",
+                "background": "#f6faff",
+                "secondary": "#5f5e5e",
+                "on-surface-variant": "#584238",
+                "on-tertiary-fixed-variant": "#663e00"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "fontFamily": {
+                "headline": ["Pretendard", "Public Sans", "sans-serif"],
+                "body": ["Pretendard", "Public Sans", "sans-serif"],
+                "label": ["Pretendard", "Public Sans", "sans-serif"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Pretendard', 'Public Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen relative overflow-hidden">
+<!-- Background Content (Discovery Screen Blurred) -->
+<div class="fixed inset-0 z-0 blur-md grayscale-[0.2] opacity-40">
+<!-- TopAppBar (Rectified) -->
+<header class="flex justify-between items-center px-4 h-16 w-full border-b border-stone-200 bg-white">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-orange-500 text-[28px]" style="font-variation-settings: 'FILL' 1;">liquor</span>
+<span class="font-black text-xl text-orange-600 tracking-tighter uppercase">ONTHEBLOCK</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-stone-600">search</span>
+<div class="relative">
+<span class="material-symbols-outlined text-stone-600">notifications</span>
+<span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">4</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-stone-200 overflow-hidden">
+<img alt="Profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHX1GkM6zY0jD4u8n2Xy5f9S2eB0Z1vV2r1G2S3T4U5V6W7X8Y9Z0a1b2c3d4e5f6g7h8i9j0k"/>
+</div>
+</div>
+</header>
+<!-- Discovery Content Canvas -->
+<main class="p-4 space-y-6">
+<section>
+<div class="flex justify-between items-end mb-4">
+<h2 class="text-2xl font-bold">Trending in West Village</h2>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white rounded-3xl overflow-hidden shadow-sm aspect-square relative">
+<img class="w-full h-full object-cover" data-alt="Close-up of a sophisticated amber cocktail in a crystal glass with a citrus garnish and soft bar lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz1SwQTxA0Ytxxnf_wYPY9BC9jooEydYp2CqSmYy0_CRriniaeAerN_0DFtLBxtum3m5FAiLXgAHcTXehiEQvqufKnMBQ2EzrK7U8vz6OMOblD8AeVOuCzoMhL3N-TqLBuJbKFzciF416FuTp05vyDOov35_VozOKT7mZEbyse0Rt6N79OkRQW69y2qozkC0cySGEe61OqQY7OfKJNRbsirqPzmX3hhFXhOGt0g5qSYvVPYijtaLEABvIsTy-cfhZk2dFrbkmvKhA"/>
+</div>
+<div class="bg-white rounded-3xl overflow-hidden shadow-sm aspect-square relative">
+<img class="w-full h-full object-cover" data-alt="A row of premium craft whiskey bottles on a rustic wooden shelf with warm atmospheric lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-UwNVUoYa7boJhsdEJFGRyoNGKKp1bUhn-gV8kBryXrYpV5BP8Vh7JMCOPJCbUg_DACNJljFDorQLJCliZWOG4A6Yskj0y28rFum3WF6H5PAsMyQQs2n5bvuht-eL6NzW6wHp27X2Q4SAj39h06QgDU6-PJyDFgMVtB4kpTCIuNu6IiPqVYrXTiNyCdBOjPsnsEB5j9YOZY4tKsl-JaZUkhx-7a17V3mSHWGeX9Got8XGw1jELwI7Crs27sZKgzTbbA28jyhHHaU"/>
+</div>
+</div>
+</section>
+<section class="bg-primary-container rounded-3xl p-6 text-on-primary-container">
+<h3 class="text-xl font-bold mb-2">Neighborhood Special</h3>
+<p class="text-sm opacity-90">Rare batch Bourbons just arrived at The Corner Cellar.</p>
+</section>
+<div class="h-40"></div>
+</main>
+</div>
+<!-- Semi-transparent Overlay -->
+<div class="fixed inset-0 bg-stone-900/40 z-10 backdrop-blur-[2px]"></div>
+<!-- Chatbot Modal Overlay -->
+<div class="fixed inset-0 z-20 flex items-center justify-center p-4 pb-20">
+<div class="bg-white w-full max-w-md rounded-[16px] shadow-2xl flex flex-col max-h-[618px] overflow-hidden">
+<!-- Modal Header -->
+<div class="px-5 py-4 border-b border-stone-100 flex justify-between items-center bg-white shrink-0">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<h2 class="font-bold text-stone-900 text-lg">Chat with Neighborhood Guide</h2>
+</div>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors text-stone-400">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Chat History -->
+<div class="flex-1 overflow-y-auto p-5 space-y-6 bg-stone-50/30">
+<!-- Guide Message -->
+<div class="flex gap-3 max-w-[85%]">
+<div class="shrink-0 w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-stone-500">liquor</span>
+</div>
+<div class="bg-[#F8F9FA] p-4 rounded-2xl rounded-tl-none shadow-sm">
+<p class="text-stone-700 text-sm leading-relaxed">Hi there! Looking for a specific bottle or a recommendation for a smooth Friday night in the neighborhood?</p>
+<span class="text-[10px] text-stone-400 mt-2 block font-medium uppercase tracking-wider">Guide • 10:24 AM</span>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex justify-end ml-auto max-w-[85%]">
+<div class="bg-white border-2 border-primary-container/20 p-4 rounded-2xl rounded-tr-none shadow-sm relative">
+<div class="absolute -right-[2px] top-0 w-1 h-full bg-primary-container rounded-r-full"></div>
+<p class="text-stone-800 text-sm leading-relaxed">I'm looking for a Japanese Whisky under $100 nearby. Any suggestions?</p>
+<span class="text-[10px] text-stone-400 mt-2 block text-right font-medium uppercase tracking-wider">You • 10:25 AM</span>
+</div>
+</div>
+<!-- Guide Message -->
+<div class="flex gap-3 max-w-[85%]">
+<div class="shrink-0 w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-stone-500">liquor</span>
+</div>
+<div class="bg-[#F8F9FA] p-4 rounded-2xl rounded-tl-none shadow-sm">
+<p class="text-stone-700 text-sm leading-relaxed">Excellent choice! <span class="font-bold text-stone-900">Suntory Toki</span> is currently in stock at <span class="underline decoration-primary-container underline-offset-2">Village Spirits</span> for $48.99. It's great for highballs!</p>
+<div class="mt-3 flex gap-2 overflow-x-auto pb-1">
+<span class="px-3 py-1 bg-white border border-stone-200 rounded-full text-[11px] font-bold text-stone-600 whitespace-nowrap">View Store</span>
+<span class="px-3 py-1 bg-white border border-stone-200 rounded-full text-[11px] font-bold text-stone-600 whitespace-nowrap">More options?</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-4 bg-white border-t border-stone-100 shrink-0">
+<div class="relative flex items-center bg-stone-100 rounded-[12px] p-1 pr-2">
+<button class="w-10 h-10 flex items-center justify-center text-stone-400 hover:text-stone-600 transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<input class="bg-transparent border-none focus:ring-0 text-sm flex-1 px-1 text-stone-800 placeholder:text-stone-400 py-3" placeholder="Type your message..." type="text"/>
+<button class="w-10 h-10 rounded-[10px] bg-primary-container text-white flex items-center justify-center active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- BottomNavBar (Rectified - Pretendard & 5 tabs) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 px-2 pb-safe bg-white/90 backdrop-blur-md border-t border-stone-200 shadow-lg">
+<div class="flex flex-col items-center justify-center text-[#FF7E36] transition-opacity active:opacity-80">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-['Pretendard'] text-[11px] font-bold mt-0.5">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-400 transition-opacity active:opacity-80">
+<span class="material-symbols-outlined">map</span>
+<span class="font-['Pretendard'] text-[11px] font-semibold mt-0.5">Map</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-400 transition-opacity active:opacity-80">
+<span class="material-symbols-outlined">grid_view</span>
+<span class="font-['Pretendard'] text-[11px] font-semibold mt-0.5">Board</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-400 transition-opacity active:opacity-80">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-['Pretendard'] text-[11px] font-semibold mt-0.5">Chat</span>
+</div>
+<div class="flex flex-col items-center justify-center text-stone-400 transition-opacity active:opacity-80">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="font-['Pretendard'] text-[11px] font-semibold mt-0.5">Shop</span>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Westside Bourbon Enthusiasts - Group Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#636262",
+                        "on-primary-fixed-variant": "#7a3000",
+                        "tertiary": "#825516",
+                        "secondary-fixed": "#e5e2e1",
+                        "tertiary-fixed-dim": "#f8bb73",
+                        "tertiary-fixed": "#ffddb9",
+                        "outline-variant": "#dfc0b3",
+                        "on-tertiary-fixed": "#2b1700",
+                        "secondary": "#5f5e5e",
+                        "primary": "#a04100",
+                        "inverse-surface": "#293138",
+                        "surface": "#f6faff",
+                        "on-primary-fixed": "#351000",
+                        "background": "#f6faff",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#ff7e36",
+                        "surface-variant": "#dbe3ec",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "surface-container-highest": "#dbe3ec",
+                        "surface-container-high": "#e1e9f2",
+                        "on-primary-container": "#642600",
+                        "outline": "#8b7266",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#d09854",
+                        "surface-dim": "#d3dbe4",
+                        "on-surface-variant": "#584238",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#edf4fd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "primary-fixed-dim": "#ffb693",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#ffb693",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-tertiary-container": "#533200",
+                        "on-background": "#151c23",
+                        "secondary-container": "#e2dfde",
+                        "inverse-on-surface": "#eaf2fa",
+                        "surface-bright": "#f6faff",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "surface-tint": "#a04100",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#e7eff8",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#ffdbcc",
+                        "on-surface": "#151c23"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Public Sans", "sans-serif"],
+                        "body": ["Public Sans", "sans-serif"],
+                        "label": ["Public Sans", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar - Sticky Header -->
+<header class="fixed top-0 w-full z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-4 h-16 shadow-sm">
+<div class="flex items-center gap-3">
+<button class="hover:bg-neutral-100 dark:hover:bg-neutral-800 p-2 rounded-full transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-orange-500 dark:text-orange-400">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<h1 class="font-['Public_Sans'] font-bold text-lg text-on-background leading-tight">Westside Bourbon Enthusiasts</h1>
+<span class="text-xs text-on-secondary-container">18 members</span>
+</div>
+</div>
+<button class="hover:bg-neutral-100 dark:hover:bg-neutral-800 p-2 rounded-full transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-orange-500 dark:text-orange-400">more_vert</span>
+</button>
+</header>
+<!-- Chat Canvas - Bento/Asymmetric Message List -->
+<main class="flex-1 mt-16 mb-24 px-4 py-6 space-y-6 max-w-3xl mx-auto w-full">
+<!-- Date Divider -->
+<div class="flex justify-center my-4">
+<span class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 bg-surface-container-low px-3 py-1 rounded-full">Today</span>
+</div>
+<!-- Others Message: Marcus -->
+<div class="flex items-end gap-3 max-w-[85%]">
+<div class="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0">
+<img alt="Marcus" class="w-full h-full object-cover" data-alt="close up portrait of a friendly man with a short beard in a cozy library setting, warm lighting, professional photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQyTCxVcaGae2XXiYc9clNsknzexQFUIJw4IIz-bVloxtDRPpP7ObGPHI55cbImyOzIURpuVZvOOCFKKdjejR-mMYFdU2coOwbogNYQegERt-IKDEBAAgDKM3pcI5LbeleKiLSHXwFGunfBTxkbvD1mTCfaKB_8XwiyXzaSVnoE9HBctIX6Met6ui0PxjnRGG0qHKNoMFz_8Rj2uaurIfu4Xz0uhDVppeB6VBQqk6lj2gZbx0zk8oLvtDoEbZxe3sH2OrGjAFwAYM"/>
+</div>
+<div class="flex flex-col space-y-1">
+<span class="text-[12px] font-medium text-tertiary ml-1">Marcus</span>
+<div class="bg-surface-container-high text-on-surface-variant px-4 py-3 rounded-2xl rounded-bl-none shadow-sm">
+<p class="text-[15px] leading-relaxed">Found that limited batch at the corner shop!</p>
+</div>
+</div>
+</div>
+<!-- Me Message -->
+<div class="flex flex-col items-end space-y-1 ml-auto max-w-[85%]">
+<div class="bg-primary-container text-on-primary px-4 py-3 rounded-2xl rounded-br-none shadow-md">
+<p class="text-[15px] leading-relaxed">Nice! Is there any left? I'm heading over now.</p>
+</div>
+<span class="text-[10px] text-neutral-400 mr-1">Delivered</span>
+</div>
+<!-- Group Interaction Graphic (Asymmetric UI Pattern) -->
+<div class="grid grid-cols-2 gap-3 my-8">
+<div class="col-span-1 bg-surface-container-low p-4 rounded-[2rem] border border-outline-variant/30">
+<div class="flex -space-x-2 mb-3">
+<div class="w-6 h-6 rounded-full border-2 border-white overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="professional headshot of a smiling woman with glasses, soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJGyP0CMkEcLsbSiFzEMQchVX-0GAyKLaKRqjp3IrEtnD20bE3m9NMqnGayWyZYTuPLahocLlboHf6FAEptbHAYvHdQLaRgQVXvIYVWshz4XTG04UmKyJwaPtchoAua3sXistiwPc6HklVKE4ZXgVErwnNn_C01l-g3CUnDEjBN-O3KNiPtoCHer6X_hQKxkfBu3LgP3YvbndXm4JwqkuBnsE4PnW6QdwVA6n0Dxv_vfXnAQWlQANU6dwquWbZ3E8tcgxL9NjRMu4"/>
+</div>
+<div class="w-6 h-6 rounded-full border-2 border-white overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="portrait of a middle aged man in a denim shirt, outdoor natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3qbHORfgLoegeAJLQw8LlVE6ka-Bac_imMNNXuG30tfP8OoPeIo8SAFInHx-nqjlAWMGhdtog3kdr1MgBFEYPZHfUqrPcalxlG0YNyIJapTjQhxhUWsWxDmBXGeY9fnDe29v6phTBF1m7i8-yPgsg8YoMkdqba2tCszAUSefsQCQN-dwgOjowmC6JWPW4lKAbmjrILxEHYEaR7m5WR_KDyRO8uVNgwPLEMG3AbBnvZ9kH35UmOSEkAsRBrceqtfZF-U_asipWV3k"/>
+</div>
+<div class="w-6 h-6 rounded-full border-2 border-white bg-orange-100 flex items-center justify-center text-[8px] font-bold text-orange-600">+15</div>
+</div>
+<p class="text-xs font-semibold text-on-surface">Live Drop Alert</p>
+<p class="text-[10px] text-neutral-500">3 people are typing...</p>
+</div>
+<div class="col-span-1 h-24 rounded-[2rem] overflow-hidden relative group cursor-pointer">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="luxury bourbon bottle on a dark wooden bar with ice and ambient golden lighting, premium aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8wvg2QG0ORmF90nqxTX5ewLuegJ-OZnvBYDGQnTTsyrj_L51Km0r3LzRoylI8qcJ0txZVKVwOat9qbOXudFm0O4Kf0CrbxOt8DavqjMdSV-l-hj4Xw1SN9AhYOWjadYkro7C9DUsH9XeakKAmHp_4qKecBGP5cTA2vwAGY1KuAg1fcpJCut1rv5yoQaeqcGnRi7-DB74k64Vhic0gd5DTjZPifnHBoOt2arIO025Y0v3PrHFWmkuIknTGxEbPVbtGNl46aN-fMSg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+<span class="text-[10px] text-white font-bold">View Bottle Stock</span>
+</div>
+</div>
+</div>
+<!-- Others Message: Sarah -->
+<div class="flex items-end gap-3 max-w-[85%]">
+<div class="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0">
+<img alt="Sarah" class="w-full h-full object-cover" data-alt="woman laughing in a sunlit kitchen, warm lifestyle photography, authentic mood" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwyCeyoBVoRJC2zf3eegEofu4Ru7FbX3PlX7UyNiwprPaUqcBV7_uvKhZBnGw8bqZ6c2dZmW663KVHvlHH2kEcKnp67_TvbLaclCqj2SEOdQdBTeqmFyTZxv2d9nHAz2a13uDjn8Dub7BphKighs55MT82O6DJd0gQAlUi2M7_9OD2AcO2ggnRAS4mLpPJqiSWbmP-ekqbxdNAzTKkVT6RYQsmMId0aTrGbkv_Clg9f2n1GF-8Il9LpMkO_EhFPO-ec_gCDp7OwpI"/>
+</div>
+<div class="flex flex-col space-y-1">
+<span class="text-[12px] font-medium text-tertiary ml-1">Sarah</span>
+<div class="bg-surface-container-high text-on-surface-variant px-4 py-3 rounded-2xl rounded-bl-none shadow-sm">
+<p class="text-[15px] leading-relaxed">I grabbed two bottles. There were 5 left as of 10 mins ago.</p>
+</div>
+</div>
+</div>
+<!-- Interactive Suggestion Chip -->
+<div class="flex gap-2 py-2 overflow-x-auto no-scrollbar">
+<button class="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 rounded-full text-xs font-semibold text-primary hover:bg-orange-50 transition-colors">📍 Shared Location</button>
+<button class="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 rounded-full text-xs font-semibold text-primary hover:bg-orange-50 transition-colors">🥃 Log Tasting</button>
+<button class="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 rounded-full text-xs font-semibold text-primary hover:bg-orange-50 transition-colors">📸 Send Photo</button>
+</div>
+</main>
+<!-- Input Area - Fixed Bottom -->
+<div class="fixed bottom-0 w-full bg-white dark:bg-neutral-900 px-4 pt-3 pb-8 border-t border-neutral-100 dark:border-neutral-800">
+<div class="max-w-3xl mx-auto flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">add</span>
+</button>
+<div class="flex-1 relative flex items-center">
+<input class="w-full h-12 bg-surface-container-low border border-outline-variant rounded-xl px-4 py-2 text-[15px] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-neutral-400" placeholder="Type a message..." type="text"/>
+</div>
+<button class="w-12 h-12 flex items-center justify-center rounded-full bg-primary-container text-white shadow-lg shadow-orange-200/50 active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+<!-- Hidden BottomNavBar logic for shell consistency - only visible if it's a top level destination, here we suppress it for focused chat -->
+</body></html>

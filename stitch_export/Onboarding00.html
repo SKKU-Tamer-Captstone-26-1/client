@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Onboarding - ON THE BLOCK</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#e5e2e1",
+                        "surface-tint": "#a04100",
+                        "tertiary-fixed": "#ffddb9",
+                        "secondary-container": "#e2dfde",
+                        "surface-container-highest": "#dbe3ec",
+                        "inverse-surface": "#293138",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f6faff",
+                        "tertiary": "#825516",
+                        "tertiary-container": "#d09854",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "outline-variant": "#dfc0b3",
+                        "on-primary-container": "#642600",
+                        "surface-container-high": "#e1e9f2",
+                        "surface-container-low": "#edf4fd",
+                        "surface-variant": "#dbe3ec",
+                        "outline": "#8b7266",
+                        "primary-fixed": "#ffdbcc",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "background": "#f6faff",
+                        "primary-container": "#ff7e36",
+                        "on-secondary-fixed-variant": "#474746",
+                        "on-surface-variant": "#584238",
+                        "inverse-on-surface": "#eaf2fa",
+                        "surface-container": "#e7eff8",
+                        "tertiary-fixed-dim": "#f8bb73",
+                        "surface": "#f6faff",
+                        "primary-fixed-dim": "#ffb693",
+                        "on-error-container": "#93000a",
+                        "on-background": "#151c23",
+                        "surface-dim": "#d3dbe4",
+                        "primary": "#a04100",
+                        "on-error": "#ffffff",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#2b1700",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb693",
+                        "on-secondary-container": "#636262",
+                        "on-surface": "#151c23",
+                        "on-tertiary-container": "#533200",
+                        "on-primary-fixed-variant": "#7a3000",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "on-primary-fixed": "#351000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Public Sans", "sans-serif"],
+                        "body": ["Public Sans", "sans-serif"],
+                        "label": ["Public Sans", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-white text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar Fragment from Shared Components Hierarchy -->
+<header class="bg-white dark:bg-zinc-950 flex justify-center items-center w-full px-6 py-8 fixed top-0 z-50">
+<h1 class="text-xl font-black text-orange-500 dark:text-orange-400 uppercase tracking-widest font-['Public_Sans']">
+            ON THE BLOCK
+        </h1>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center px-8 pt-20 pb-40">
+<!-- Premium Illustration Container -->
+<div class="w-full max-w-md aspect-square mb-12 flex items-center justify-center relative">
+<!-- Decorative Background Element -->
+<div class="absolute inset-0 bg-surface-container-low rounded-full opacity-30 blur-3xl scale-75"></div>
+<!-- Principal Visual -->
+<div class="relative w-72 h-72 rounded-[3rem] overflow-hidden shadow-2xl shadow-primary-container/10">
+<img alt="Premium Liquor" class="w-full h-full object-cover" data-alt="Sophisticated close-up of a premium whiskey bottle and a crystal glass with a large ice cube, warm amber lighting, elegant bar setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAED9BqjxN9S6pmPX8XKzqZjtPMX3zBCOzsAGNX8XJldV7sLCz-rfZrC99ZkUsBJ302jJueM-aK7sG9asZuEUQBIMdCpLWK_I7BKJpK0iyidyCrWIHeS7qX2k0Wr5hUxG3xsTL-ecLcj-mOVGvpEEVFS4nUlFiYVWZOufrVFhdaKKJnx1dOaySKoB5D4XT0mLCyeLDZnjZ-87_sl1jil3e2hMDg0VGAGJ9UERl-I-PPUG8fLxVanDfMLsDTIJF45NyEMcQfmmEosV8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+</div>
+</div>
+<!-- Guide Text Section -->
+<div class="text-center max-w-xs space-y-4">
+<h2 class="text-2xl font-bold text-on-surface leading-snug tracking-tight">
+                Take a quick survey to get better liquor recommendations.
+            </h2>
+</div>
+</main>
+<!-- Fixed Bottom CTA Section -->
+<footer class="fixed bottom-0 left-0 right-0 p-8 space-y-4 bg-gradient-to-t from-white via-white to-transparent">
+<div class="max-w-md mx-auto flex flex-col items-center gap-4">
+<!-- Primary Action -->
+<button class="w-full bg-primary-container text-white font-bold py-5 px-8 rounded-2xl text-lg shadow-lg shadow-primary-container/20 active:scale-95 transition-transform hover:opacity-90">
+                Start Survey
+            </button>
+<!-- Secondary/Skip Action -->
+<button class="text-secondary font-bold text-sm tracking-widest uppercase py-2 px-4 hover:text-on-surface transition-colors">
+                SKIP
+            </button>
+</div>
+</footer>
+<!-- No BottomNavBar as per "Step 0" / Task-Focused Suppression Rule -->
+</body></html>
