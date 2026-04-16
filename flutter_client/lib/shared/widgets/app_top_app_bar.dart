@@ -3,8 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_icons.dart';
+import '../../features/notifications/presentation/notification_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
-import 'notification_window.dart';
 
 class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   const AppTopAppBar({super.key});
@@ -64,7 +64,13 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
           alignment: Alignment.center,
           children: [
             IconButton(
-              onPressed: () => showNotificationWindow(context),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const NotificationScreen(),
+                  ),
+                );
+              },
               icon: const Icon(AppIcons.topAppBarNotifications),
               tooltip: 'Notifications',
             ),

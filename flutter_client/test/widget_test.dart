@@ -295,7 +295,7 @@ void main() {
     expect(find.text('Chat with Neighborhood Guide'), findsOneWidget);
   });
 
-  testWidgets('opens notification window from top app bar', (
+  testWidgets('opens notification screen and navigates to board target', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const OnTheBlockApp());
@@ -309,13 +309,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Notifications'), findsOneWidget);
+    expect(find.text('Recent activity'), findsOneWidget);
+    expect(find.text('New post in your board'), findsOneWidget);
     expect(find.text('Rare bourbon drop nearby'), findsOneWidget);
     expect(find.text('New reply on your board post'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Close notifications'));
+    await tester.tap(find.text('New post in your board'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Rare bourbon drop nearby'), findsNothing);
+    expect(find.text('#AllPosts'), findsOneWidget);
+    expect(
+      find.text('Hidden Gem: Old Soul Cask Strength Batch #4'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('opens search as a full screen from top app bar', (
