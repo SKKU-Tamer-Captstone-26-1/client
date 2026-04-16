@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
+import '../../../features/chatbot/presentation/chatbot_modal.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
@@ -24,12 +25,29 @@ class BoardScreen extends StatelessWidget {
         currentItem: AppBottomNavItem.board,
         onItemSelected: onBottomNavSelected,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: AppColors.primaryContainer,
-        foregroundColor: Colors.white,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 30),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.small(
+            heroTag: 'board-chatbot',
+            onPressed: () => showChatbotModal(context),
+            tooltip: 'Chat with Neighborhood Guide',
+            backgroundColor: palette.surfaceContainerLowest,
+            foregroundColor: AppColors.primaryContainer,
+            shape: const CircleBorder(),
+            child: const Icon(Icons.chat),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            heroTag: 'board-create-post',
+            onPressed: () {},
+            tooltip: 'Write post',
+            backgroundColor: AppColors.primaryContainer,
+            foregroundColor: Colors.white,
+            shape: const CircleBorder(),
+            child: const Icon(Icons.add, size: 30),
+          ),
+        ],
       ),
       body: SafeArea(
         top: false,
