@@ -7,7 +7,9 @@ import '../../features/notifications/presentation/notification_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 
 class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const AppTopAppBar({super.key});
+  const AppTopAppBar({super.key, this.onNotificationBoardSelected});
+
+  final VoidCallback? onNotificationBoardSelected;
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -67,7 +69,9 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (_) => const NotificationScreen(),
+                    builder: (_) => NotificationScreen(
+                      onBoardNotificationSelected: onNotificationBoardSelected,
+                    ),
                   ),
                 );
               },

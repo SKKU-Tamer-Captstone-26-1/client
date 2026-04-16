@@ -20,7 +20,11 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: palette.surfaceContainerLow,
-      appBar: const AppTopAppBar(),
+      appBar: AppTopAppBar(
+        onNotificationBoardSelected: () {
+          onBottomNavSelected?.call(AppBottomNavItem.board);
+        },
+      ),
       bottomNavigationBar: AppBottomNavBar(onItemSelected: onBottomNavSelected),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showChatbotModal(context),

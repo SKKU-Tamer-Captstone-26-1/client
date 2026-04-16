@@ -27,7 +27,11 @@ class _MapScreenState extends State<MapScreen> {
 
     return Scaffold(
       backgroundColor: palette.surfaceContainerLow,
-      appBar: const AppTopAppBar(),
+      appBar: AppTopAppBar(
+        onNotificationBoardSelected: () {
+          widget.onBottomNavSelected?.call(AppBottomNavItem.board);
+        },
+      ),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.map,
         onItemSelected: widget.onBottomNavSelected,

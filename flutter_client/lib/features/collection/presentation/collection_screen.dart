@@ -29,7 +29,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
     return Scaffold(
       backgroundColor: palette.surfaceContainerLow,
-      appBar: const AppTopAppBar(),
+      appBar: AppTopAppBar(
+        onNotificationBoardSelected: () {
+          widget.onBottomNavSelected?.call(AppBottomNavItem.board);
+        },
+      ),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.collection,
         onItemSelected: widget.onBottomNavSelected,

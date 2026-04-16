@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../board/presentation/board_screen.dart';
 import '../data/mock_notifications.dart';
 import '../models/notification_models.dart';
 
 class NotificationScreen extends StatelessWidget {
-  const NotificationScreen({super.key});
+  const NotificationScreen({super.key, this.onBoardNotificationSelected});
+
+  final VoidCallback? onBoardNotificationSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +67,10 @@ class NotificationScreen extends StatelessWidget {
                 _NotificationSummary(unreadCount: unreadCount),
                 const SizedBox(height: 18),
                 for (final notification in mockNotifications) ...[
-                  _NotificationCard(notification: notification),
+                  _NotificationCard(
+                    notification: notification,
+                    onBoardNotificationSelected: onBoardNotificationSelected,
+                  ),
                   const SizedBox(height: 12),
                 ],
               ],
@@ -137,9 +141,13 @@ class _NotificationSummary extends StatelessWidget {
 }
 
 class _NotificationCard extends StatelessWidget {
-  const _NotificationCard({required this.notification});
+  const _NotificationCard({
+    required this.notification,
+    this.onBoardNotificationSelected,
+  });
 
   final AppNotification notification;
+  final VoidCallback? onBoardNotificationSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -261,9 +269,8 @@ class _NotificationCard extends StatelessWidget {
 
   void _handleTap(BuildContext context, AppNotification notification) {
     if (notification.targetType == AppNotificationTargetType.boardPost) {
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute<void>(builder: (_) => const BoardScreen()));
+      Navigator.of(context).pop();
+      onBoardNotificationSelected?.call();
     }
   }
 }

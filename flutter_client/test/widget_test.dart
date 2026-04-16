@@ -322,6 +322,11 @@ void main() {
       find.text('Hidden Gem: Old Soul Cask Strength Batch #4'),
       findsOneWidget,
     );
+
+    await tester.tap(find.text('Map'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Search nearby bars and bottle shops'), findsOneWidget);
   });
 
   testWidgets('opens search as a full screen from top app bar', (

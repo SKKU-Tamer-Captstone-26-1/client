@@ -24,7 +24,11 @@ class GroupchatListScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: palette.surfaceContainerLow,
-      appBar: const AppTopAppBar(),
+      appBar: AppTopAppBar(
+        onNotificationBoardSelected: () {
+          onBottomNavSelected?.call(AppBottomNavItem.board);
+        },
+      ),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.chat,
         onItemSelected: onBottomNavSelected,
