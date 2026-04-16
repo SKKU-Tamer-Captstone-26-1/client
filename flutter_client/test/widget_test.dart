@@ -100,4 +100,28 @@ void main() {
     expect(find.text('Kakao Map baseline'), findsOneWidget);
     expect(find.text('The Oak & Barrel'), findsWidgets);
   });
+
+  testWidgets('navigates from home to board screen', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Board'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('#AllPosts'), findsOneWidget);
+    expect(
+      find.text('Hidden Gem: Old Soul Cask Strength Batch #4'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Looking for a recommendation: Peated scotch under \$100?'),
+      findsOneWidget,
+    );
+  });
 }
