@@ -176,6 +176,60 @@ void main() {
     expect(find.text('Active Board'), findsOneWidget);
   });
 
+  testWidgets('navigates to collection wishlist and cart tabs', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Collection'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Wishlist'), findsWidgets);
+    expect(find.text('Rare Barrel Reserve Bourbon'), findsOneWidget);
+    expect(
+      find.text('Saved bottles and local picks for later.'),
+      findsOneWidget,
+    );
+    expect(find.text('Low stock'), findsNothing);
+    expect(find.text('Saved'), findsNothing);
+    expect(find.text('Recommendation options'), findsNothing);
+
+    await tester.tap(
+      find.byKey(const ValueKey('toggle-Rare Barrel Reserve Bourbon')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Recommendation options'), findsOneWidget);
+    expect(find.text('The Oak Barrel Spirits'), findsWidgets);
+    expect(find.text('0.8 mi from you'), findsOneWidget);
+    expect(find.text('\$78.00'), findsWidgets);
+    expect(find.text('Westside Bottle Room'), findsOneWidget);
+    expect(find.text('1.4 mi from you'), findsOneWidget);
+    expect(find.text('\$74.50'), findsOneWidget);
+    expect(find.text('Downtown Reserve Market'), findsOneWidget);
+    expect(find.text('2.1 mi from you'), findsOneWidget);
+    expect(find.text('\$81.25'), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey('toggle-Rare Barrel Reserve Bourbon')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Recommendation options'), findsNothing);
+
+    await tester.tap(find.text('Cart'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Small Batch Oak Bourbon'), findsOneWidget);
+    expect(find.text('The Oak Barrel Spirits'), findsOneWidget);
+    expect(find.text('Proceed to Checkout'), findsOneWidget);
+  });
+
   testWidgets('opens chatbot modal from home but not map', (
     WidgetTester tester,
   ) async {

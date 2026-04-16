@@ -9,6 +9,7 @@ import 'features/chat/presentation/groupchat_list_screen.dart';
 import 'features/chat/presentation/groupchat_room_screen.dart';
 import 'features/chat/data/mock_groupchat_data.dart';
 import 'features/chat/models/groupchat_models.dart';
+import 'features/collection/presentation/collection_screen.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/map/presentation/map_screen.dart';
 import 'features/preference_survey/data/placeholder_preference_survey.dart';
@@ -119,6 +120,9 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
         },
         onBottomNavSelected: _selectBottomNavItem,
       ),
+      _AppStage.collection => CollectionScreen(
+        onBottomNavSelected: _selectBottomNavItem,
+      ),
     };
   }
 
@@ -129,7 +133,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
         AppBottomNavItem.map => _AppStage.map,
         AppBottomNavItem.board => _AppStage.board,
         AppBottomNavItem.chat => _AppStage.chat,
-        AppBottomNavItem.collection => _AppStage.home,
+        AppBottomNavItem.collection => _AppStage.collection,
       };
     });
   }
@@ -144,4 +148,5 @@ enum _AppStage {
   board,
   chat,
   groupchatRoom,
+  collection,
 }
