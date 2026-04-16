@@ -3,187 +3,329 @@
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Westside Bourbon Enthusiasts - Group Chat</title>
+<title>ONTHEBLOCK | Community Board</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-secondary-container": "#636262",
-                        "on-primary-fixed-variant": "#7a3000",
-                        "tertiary": "#825516",
-                        "secondary-fixed": "#e5e2e1",
-                        "tertiary-fixed-dim": "#f8bb73",
-                        "tertiary-fixed": "#ffddb9",
-                        "outline-variant": "#dfc0b3",
-                        "on-tertiary-fixed": "#2b1700",
-                        "secondary": "#5f5e5e",
-                        "primary": "#a04100",
-                        "inverse-surface": "#293138",
-                        "surface": "#f6faff",
-                        "on-primary-fixed": "#351000",
-                        "background": "#f6faff",
-                        "surface-container-lowest": "#ffffff",
-                        "primary-container": "#ff7e36",
-                        "surface-variant": "#dbe3ec",
-                        "on-primary": "#ffffff",
-                        "secondary-fixed-dim": "#c8c6c5",
-                        "surface-container-highest": "#dbe3ec",
-                        "surface-container-high": "#e1e9f2",
-                        "on-primary-container": "#642600",
-                        "outline": "#8b7266",
-                        "on-secondary": "#ffffff",
-                        "tertiary-container": "#d09854",
-                        "surface-dim": "#d3dbe4",
-                        "on-surface-variant": "#584238",
-                        "error": "#ba1a1a",
-                        "surface-container-low": "#edf4fd",
-                        "on-secondary-fixed": "#1c1b1b",
-                        "primary-fixed-dim": "#ffb693",
-                        "on-error": "#ffffff",
-                        "inverse-primary": "#ffb693",
-                        "on-secondary-fixed-variant": "#474746",
-                        "on-tertiary-container": "#533200",
-                        "on-background": "#151c23",
-                        "secondary-container": "#e2dfde",
-                        "inverse-on-surface": "#eaf2fa",
-                        "surface-bright": "#f6faff",
-                        "on-tertiary-fixed-variant": "#663e00",
-                        "surface-tint": "#a04100",
-                        "on-tertiary": "#ffffff",
-                        "error-container": "#ffdad6",
-                        "surface-container": "#e7eff8",
-                        "on-error-container": "#93000a",
-                        "primary-fixed": "#ffdbcc",
-                        "on-surface": "#151c23"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    "fontFamily": {
-                        "headline": ["Public Sans", "sans-serif"],
-                        "body": ["Public Sans", "sans-serif"],
-                        "label": ["Public Sans", "sans-serif"]
-                    }
-                },
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#e5e2e1",
+                    "surface-container": "#e7eff8",
+                    "on-error-container": "#93000a",
+                    "tertiary-container": "#d09854",
+                    "surface-container-highest": "#dbe3ec",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "primary-fixed": "#ffdbcc",
+                    "outline": "#8b7266",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#663e00",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-bright": "#f6faff",
+                    "surface": "#f6faff",
+                    "on-tertiary-container": "#533200",
+                    "background": "#f6faff",
+                    "error-container": "#ffdad6",
+                    "outline-variant": "#dfc0b3",
+                    "surface-container-lowest": "#ffffff",
+                    "primary-fixed-dim": "#ffb693",
+                    "on-primary": "#ffffff",
+                    "on-secondary-container": "#636262",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-container-low": "#edf4fd",
+                    "on-tertiary-fixed": "#2b1700",
+                    "surface-container-high": "#e1e9f2",
+                    "on-background": "#151c23",
+                    "inverse-primary": "#ffb693",
+                    "on-primary-container": "#642600",
+                    "on-error": "#ffffff",
+                    "inverse-surface": "#293138",
+                    "on-primary-fixed": "#351000",
+                    "tertiary-fixed": "#ffddb9",
+                    "inverse-on-surface": "#eaf2fa",
+                    "on-primary-fixed-variant": "#7a3000",
+                    "tertiary": "#825516",
+                    "surface-dim": "#d3dbe4",
+                    "primary": "#a04100",
+                    "on-surface": "#151c23",
+                    "tertiary-fixed-dim": "#f8bb73",
+                    "on-surface-variant": "#584238",
+                    "surface-variant": "#dbe3ec",
+                    "secondary": "#5f5e5e",
+                    "surface-tint": "#a04100",
+                    "secondary-container": "#e2dfde",
+                    "primary-container": "#ff7e36",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a"
             },
-        }
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["'Public Sans'", "sans-serif"],
+                    "body": ["'Public Sans'", "sans-serif"],
+                    "label": ["'Public Sans'", "sans-serif"]
+            }
+          },
+        },
+      }
     </script>
 <style>
         body { font-family: 'Public Sans', sans-serif; }
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 <style>
     body {
       min-height: max(884px, 100dvh);
     }
   </style>
-  </head>
-<body class="bg-background text-on-background min-h-screen flex flex-col">
-<!-- TopAppBar - Sticky Header -->
-<header class="fixed top-0 w-full z-50 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between px-4 h-16 shadow-sm">
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- TopAppBar Shell -->
+<nav class="sticky top-0 z-50 bg-white dark:bg-stone-900 border-b border-gray-100 dark:border-stone-800">
+<div class="flex items-center justify-between px-4 h-16 w-full max-w-7xl mx-auto">
 <div class="flex items-center gap-3">
-<button class="hover:bg-neutral-100 dark:hover:bg-neutral-800 p-2 rounded-full transition-colors active:scale-95 duration-150">
-<span class="material-symbols-outlined text-orange-500 dark:text-orange-400">arrow_back</span>
+<span class="material-symbols-outlined text-[#FF7E36] text-2xl">liquor</span>
+<span class="text-[#FF7E36] font-black text-xl tracking-tighter">ONTHEBLOCK</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:opacity-80 transition-opacity active:scale-95 transition-transform text-gray-400">
+<span class="material-symbols-outlined">search</span>
+</button><button class="relative hover:opacity-80 transition-opacity active:scale-95 transition-transform text-gray-400">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-stone-900">
+    4
+  </span>
+</button><button class="w-8 h-8 rounded-full overflow-hidden border-2 border-primary/20 hover:border-primary transition-colors active:scale-95">
+<img alt="Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtWhkWW2fEDphazGCI1UfA34SjfTVCnVOKVCsaQLo_XwcM7tKg3YIFBIKNMKSL1JVuXg44Eb_Om3fYMhrQVJhmc26L81l1CDcUaGICKFKwV5tHP96Cs3K2974KVHY-HkPp-9B8BgFIIWFnYo0bZWHmiWvm44xvghOYcH-2-w1hqqTqB_g_7caHh5jMSvVTjEqv-TsdZkn_h9WKJyUKKpBqmvOT39vEa9nmdmB9MRXdUCjBQOM4QS_MfdtYKN5Dy7qa5K462dS3ORw"/>
 </button>
-<div class="flex flex-col">
-<h1 class="font-['Public_Sans'] font-bold text-lg text-on-background leading-tight">Westside Bourbon Enthusiasts</h1>
-<span class="text-xs text-on-secondary-container">18 members</span>
 </div>
 </div>
-<button class="hover:bg-neutral-100 dark:hover:bg-neutral-800 p-2 rounded-full transition-colors active:scale-95 duration-150">
-<span class="material-symbols-outlined text-orange-500 dark:text-orange-400">more_vert</span>
-</button>
-</header>
-<!-- Chat Canvas - Bento/Asymmetric Message List -->
-<main class="flex-1 mt-16 mb-24 px-4 py-6 space-y-6 max-w-3xl mx-auto w-full">
-<!-- Date Divider -->
-<div class="flex justify-center my-4">
-<span class="text-[10px] font-bold uppercase tracking-widest text-neutral-400 bg-surface-container-low px-3 py-1 rounded-full">Today</span>
+</nav>
+<!-- Main Content Canvas -->
+<main class="max-w-7xl mx-auto px-4 py-6">
+<!-- Category Filter Chips -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar pb-6">
+<button class="px-5 py-2 rounded-[8px] bg-primary-container text-white font-semibold text-sm whitespace-nowrap shadow-sm">
+                #AllPosts
+            </button>
+<button class="px-5 py-2 rounded-[8px] bg-white border border-outline-variant text-secondary font-medium text-sm whitespace-nowrap hover:bg-surface-container-low transition-colors">
+                #TastingNotes
+            </button>
+<button class="px-5 py-2 rounded-[8px] bg-white border border-outline-variant text-secondary font-medium text-sm whitespace-nowrap hover:bg-surface-container-low transition-colors">
+                #Questions
+            </button>
+<button class="px-5 py-2 rounded-[8px] bg-white border border-outline-variant text-secondary font-medium text-sm whitespace-nowrap hover:bg-surface-container-low transition-colors">
+                #NearbyDrops
+            </button>
+<button class="px-5 py-2 rounded-[8px] bg-white border border-outline-variant text-secondary font-medium text-sm whitespace-nowrap hover:bg-surface-container-low transition-colors">
+                #Events
+            </button>
+<button class="px-5 py-2 rounded-[8px] bg-white border border-outline-variant text-secondary font-medium text-sm whitespace-nowrap hover:bg-surface-container-low transition-colors">
+                #TradeBoard
+            </button>
 </div>
-<!-- Others Message: Marcus -->
-<div class="flex items-end gap-3 max-w-[85%]">
-<div class="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0">
-<img alt="Marcus" class="w-full h-full object-cover" data-alt="close up portrait of a friendly man with a short beard in a cozy library setting, warm lighting, professional photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQyTCxVcaGae2XXiYc9clNsknzexQFUIJw4IIz-bVloxtDRPpP7ObGPHI55cbImyOzIURpuVZvOOCFKKdjejR-mMYFdU2coOwbogNYQegERt-IKDEBAAgDKM3pcI5LbeleKiLSHXwFGunfBTxkbvD1mTCfaKB_8XwiyXzaSVnoE9HBctIX6Met6ui0PxjnRGG0qHKNoMFz_8Rj2uaurIfu4Xz0uhDVppeB6VBQqk6lj2gZbx0zk8oLvtDoEbZxe3sH2OrGjAFwAYM"/>
-</div>
-<div class="flex flex-col space-y-1">
-<span class="text-[12px] font-medium text-tertiary ml-1">Marcus</span>
-<div class="bg-surface-container-high text-on-surface-variant px-4 py-3 rounded-2xl rounded-bl-none shadow-sm">
-<p class="text-[15px] leading-relaxed">Found that limited batch at the corner shop!</p>
-</div>
-</div>
-</div>
-<!-- Me Message -->
-<div class="flex flex-col items-end space-y-1 ml-auto max-w-[85%]">
-<div class="bg-primary-container text-on-primary px-4 py-3 rounded-2xl rounded-br-none shadow-md">
-<p class="text-[15px] leading-relaxed">Nice! Is there any left? I'm heading over now.</p>
-</div>
-<span class="text-[10px] text-neutral-400 mr-1">Delivered</span>
-</div>
-<!-- Group Interaction Graphic (Asymmetric UI Pattern) -->
-<div class="grid grid-cols-2 gap-3 my-8">
-<div class="col-span-1 bg-surface-container-low p-4 rounded-[2rem] border border-outline-variant/30">
-<div class="flex -space-x-2 mb-3">
-<div class="w-6 h-6 rounded-full border-2 border-white overflow-hidden">
-<img class="w-full h-full object-cover" data-alt="professional headshot of a smiling woman with glasses, soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJGyP0CMkEcLsbSiFzEMQchVX-0GAyKLaKRqjp3IrEtnD20bE3m9NMqnGayWyZYTuPLahocLlboHf6FAEptbHAYvHdQLaRgQVXvIYVWshz4XTG04UmKyJwaPtchoAua3sXistiwPc6HklVKE4ZXgVErwnNn_C01l-g3CUnDEjBN-O3KNiPtoCHer6X_hQKxkfBu3LgP3YvbndXm4JwqkuBnsE4PnW6QdwVA6n0Dxv_vfXnAQWlQANU6dwquWbZ3E8tcgxL9NjRMu4"/>
-</div>
-<div class="w-6 h-6 rounded-full border-2 border-white overflow-hidden">
-<img class="w-full h-full object-cover" data-alt="portrait of a middle aged man in a denim shirt, outdoor natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3qbHORfgLoegeAJLQw8LlVE6ka-Bac_imMNNXuG30tfP8OoPeIo8SAFInHx-nqjlAWMGhdtog3kdr1MgBFEYPZHfUqrPcalxlG0YNyIJapTjQhxhUWsWxDmBXGeY9fnDe29v6phTBF1m7i8-yPgsg8YoMkdqba2tCszAUSefsQCQN-dwgOjowmC6JWPW4lKAbmjrILxEHYEaR7m5WR_KDyRO8uVNgwPLEMG3AbBnvZ9kH35UmOSEkAsRBrceqtfZF-U_asipWV3k"/>
-</div>
-<div class="w-6 h-6 rounded-full border-2 border-white bg-orange-100 flex items-center justify-center text-[8px] font-bold text-orange-600">+15</div>
-</div>
-<p class="text-xs font-semibold text-on-surface">Live Drop Alert</p>
-<p class="text-[10px] text-neutral-500">3 people are typing...</p>
-</div>
-<div class="col-span-1 h-24 rounded-[2rem] overflow-hidden relative group cursor-pointer">
-<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="luxury bourbon bottle on a dark wooden bar with ice and ambient golden lighting, premium aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8wvg2QG0ORmF90nqxTX5ewLuegJ-OZnvBYDGQnTTsyrj_L51Km0r3LzRoylI8qcJ0txZVKVwOat9qbOXudFm0O4Kf0CrbxOt8DavqjMdSV-l-hj4Xw1SN9AhYOWjadYkro7C9DUsH9XeakKAmHp_4qKecBGP5cTA2vwAGY1KuAg1fcpJCut1rv5yoQaeqcGnRi7-DB74k64Vhic0gd5DTjZPifnHBoOt2arIO025Y0v3PrHFWmkuIknTGxEbPVbtGNl46aN-fMSg"/>
-<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-<span class="text-[10px] text-white font-bold">View Bottle Stock</span>
+<!-- Board Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Post Card 1: Tasting Note -->
+<article class="bg-white rounded-[16px] border border-[#E9ECEF] overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="aspect-video w-full relative">
+<img alt="Premium bourbon bottle" class="w-full h-full object-cover" data-alt="Close-up of a premium amber bourbon bottle with condensation on a dark mahogany bar top, warm golden lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnxWrLekV2XF-PGT9u8UCFhqLvWjW2zb81z9OsWmHyYOA54dvcM8UFXcGJZixM3-KTeuzv5frVPz3Uepm2jAD7tq0qPlAURsZjLWJGizGolgmFhPBlOvhS3UplLhXxq0_DjYxsEjVmJaojJXxO83AXkAitYtRc8wQ47sFOHxNtA6LO9ShHRt9KzMq0CyUhqcQT2qTBAKG-Hv-X4d1eyCL98uPI4iFpNyVmfKYZQPJnEMmQO9Gc7Ka0voGFbNa7OdfluQrn-ZEknls"/>
+<div class="absolute top-4 left-4">
+<span class="bg-primary-container text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Tasting Note</span>
 </div>
 </div>
+<div class="p-5 flex-1 flex flex-col">
+<h2 class="text-xl font-bold text-on-background leading-tight mb-3">Hidden Gem: Old Soul Cask Strength Batch #4</h2>
+<p class="text-secondary text-sm line-clamp-3 mb-6 leading-relaxed">Just cracked this open. The nose is heavy on burnt orange peel and vanilla bean. On the palate, it's surprisingly oily with a finish that lasts minutes...</p>
+<div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-[#868E96] text-xs font-medium">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden">
+<img alt="Author" class="w-full h-full object-cover" data-alt="Portrait of a smiling man with glasses in a casual denim shirt against a soft blurred urban background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtWhkWW2fEDphazGCI1UfA34SjfTVCnVOKVCsaQLo_XwcM7tKg3YIFBIKNMKSL1JVuXg44Eb_Om3fYMhrQVJhmc26L81l1CDcUaGICKFKwV5tHP96Cs3K2974KVHY-HkPp-9B8BgFIIWFnYo0bZWHmiWvm44xvghOYcH-2-w1hqqTqB_g_7caHh5jMSvVTjEqv-TsdZkn_h9WKJyUKKpBqmvOT39vEa9nmdmB9MRXdUCjBQOM4QS_MfdtYKN5Dy7qa5K462dS3ORw"/>
 </div>
-<!-- Others Message: Sarah -->
-<div class="flex items-end gap-3 max-w-[85%]">
-<div class="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0">
-<img alt="Sarah" class="w-full h-full object-cover" data-alt="woman laughing in a sunlit kitchen, warm lifestyle photography, authentic mood" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwyCeyoBVoRJC2zf3eegEofu4Ru7FbX3PlX7UyNiwprPaUqcBV7_uvKhZBnGw8bqZ6c2dZmW663KVHvlHH2kEcKnp67_TvbLaclCqj2SEOdQdBTeqmFyTZxv2d9nHAz2a13uDjn8Dub7BphKighs55MT82O6DJd0gQAlUi2M7_9OD2AcO2ggnRAS4mLpPJqiSWbmP-ekqbxdNAzTKkVT6RYQsmMId0aTrGbkv_Clg9f2n1GF-8Il9LpMkO_EhFPO-ec_gCDp7OwpI"/>
+<span>WhiskyWizard</span>
+<span class="opacity-40">•</span>
+<span>2h ago</span>
 </div>
-<div class="flex flex-col space-y-1">
-<span class="text-[12px] font-medium text-tertiary ml-1">Sarah</span>
-<div class="bg-surface-container-high text-on-surface-variant px-4 py-3 rounded-2xl rounded-bl-none shadow-sm">
-<p class="text-[15px] leading-relaxed">I grabbed two bottles. There were 5 left as of 10 mins ago.</p>
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">forum</span> 12</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 48</span>
 </div>
 </div>
 </div>
-<!-- Interactive Suggestion Chip -->
-<div class="flex gap-2 py-2 overflow-x-auto no-scrollbar">
-<button class="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 rounded-full text-xs font-semibold text-primary hover:bg-orange-50 transition-colors">📍 Shared Location</button>
-<button class="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 rounded-full text-xs font-semibold text-primary hover:bg-orange-50 transition-colors">🥃 Log Tasting</button>
-<button class="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 rounded-full text-xs font-semibold text-primary hover:bg-orange-50 transition-colors">📸 Send Photo</button>
+</article>
+<!-- Post Card 2: Question -->
+<article class="bg-white rounded-[16px] border border-[#E9ECEF] overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="p-6 flex-1 flex flex-col">
+<div class="mb-4">
+<span class="bg-primary-container text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Question</span>
+</div>
+<h2 class="text-xl font-bold text-on-background leading-tight mb-3">Looking for a recommendation: Peated scotch under $100?</h2>
+<p class="text-secondary text-sm leading-relaxed mb-6">I've usually stuck to Speyside, but I'm looking to venture into Islay territory. Is Laphroaig 10 the standard go-to or should I try something else for a beginner?</p>
+<div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-[#868E96] text-xs font-medium">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden">
+<img alt="Author" class="w-full h-full object-cover" data-alt="Professional young woman with brown hair and a warm smile, wearing a neutral blazer in a brightly lit studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0QrnKiNBvp_IicrdkXM5x7eVVlpFjZG2LzW9dnh-y5U8L2bp_D85CARz-qHqY3wGaUhoaKMROCkSuMcE3MJ4YnhD70_p1Ex4Wsilh1uAH189zMbwaG29kvfSDavz1UsvaG_VHdhobQNbrLuAXkY9P3vyB6xFzGc6ttWdWg6oRWURO-FHiB8DlWvUNsNL3nldeuCkWxQ7_5IS2jXs_gaAS2z9E4m7tdgssoTwAtCVnZ9CpWiuvYZC4lokeWTEdJsTlA9ZpXOwz5dg"/>
+</div>
+<span>PeatSeeker92</span>
+<span class="opacity-40">•</span>
+<span>4h ago</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">forum</span> 34</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 21</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Post Card 3: Nearby Drop -->
+<article class="bg-white rounded-[16px] border border-[#E9ECEF] overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="aspect-video w-full relative">
+<img alt="Store shelf with rare bottles" class="w-full h-full object-cover" data-alt="Blurry background of a high-end liquor store shelf with neatly arranged bottles and glowing ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXiTFz9CD2Ky3v_x976b85EAO18wu2IUr3cmjv26JDfcPp5NBeJunO37o4LuuFvPLJmn1XIL68fNp9qX-CDgFAk7vGv8TXVNOqpgQPK_Qng6WZjRQlzaUTSK5uad0DvsfiHoE_sCm1L4kIAxzAIQYq_IQXuNofgJkHuYSt3wHKVwESqT25tLaXpBCKnfNoFoTJeFia5ILAuJ5mIQt3Ge2CN0zXulLcFge_UR-m-giFV4yxwdeKSE7aNPC5fBuLepf5380HjWNcMrg"/>
+<div class="absolute top-4 left-4">
+<span class="bg-primary-container text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Nearby Drop</span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h2 class="text-xl font-bold text-on-background leading-tight mb-3">Spotted: Blanton's Gold at 4th St Liquors</h2>
+<p class="text-secondary text-sm leading-relaxed mb-6">Just walked by and they have 3 bottles of Gold on the shelf for MSRP. Limit one per customer. Get there fast!</p>
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-[#FF7E36] text-sm">location_on</span>
+<span class="text-xs font-semibold text-primary">Downtown District</span>
+</div>
+<div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-[#868E96] text-xs font-medium">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden">
+<img alt="Author" class="w-full h-full object-cover" data-alt="Man with a short beard and casual grey sweater looking towards the camera with a friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB63IC0ZuFF_pCyVtPPDO5QHDdrywyTiTs2b8cWNPeeDyIAEcRBRNyIAn5rFn9t0hnRxSCoCEun3pQmOPOEIdercKJvRm7OlkdZLKPnpuWUHyxoqseHri_EDwfxHCG3p3_Nc8BaG6H8OcYBssGnG6jIsB_96orEKkJz6y_B_FusvQNZK34toTH8KI29DU2w-kvT9QK9bM3wAN_xZkwLh3kxZ7kYk7LJkA4H6iU6fSZYJzJFkvSWmVUEl7u2UNrLPPiDyOvsn18x5G8"/>
+</div>
+<span>BottleHunter</span>
+<span class="opacity-40">•</span>
+<span>15m ago</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">forum</span> 8</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 156</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Post Card 4: Tasting Note -->
+<article class="bg-white rounded-[16px] border border-[#E9ECEF] overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="p-6 flex-1 flex flex-col">
+<div class="mb-4">
+<span class="bg-primary-container text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Tasting Note</span>
+</div>
+<h2 class="text-xl font-bold text-on-background leading-tight mb-3">Tequila Tuesday: Fortaleza Reposado</h2>
+<p class="text-secondary text-sm leading-relaxed mb-6">The hype is real. Notes of cooked agave, butter, and a slight vegetal pepperiness. It’s remarkably clean and structured. If you see it, buy it.</p>
+<div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-[#868E96] text-xs font-medium">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden">
+<img alt="Author" class="w-full h-full object-cover" data-alt="Confident woman with curly dark hair and a professional black top smiling in a bright office environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxH4dfKgZBYlFrtruee2rNDgnmusQFxSIti5oyJxdsPJUZjZupOjxJ5_r_XnyPpSp6EINzUp3uVLIg23kWKtxf32OeWpR_hsJ8meecv4ZumTZR7Av4646RNk0lfGhnPOKt_F-KuD4APRufdLi0g9OTrfwO3ceXrM7RL__WttWkb9oPhWleAzcxDmeHtx3d4vrCmVSPhq-TW7iuIRFS08gwkGwBc-Jdcobgs9V5qcprXM9wAJXe3-7IhDUYEaTXUw9rRGygJO5AKj8"/>
+</div>
+<span>AgaveGal</span>
+<span class="opacity-40">•</span>
+<span>6h ago</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">forum</span> 15</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 92</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Post Card 5: Nearby Drop -->
+<article class="bg-white rounded-[16px] border border-[#E9ECEF] overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="aspect-video w-full relative">
+<img alt="Gins on a shelf" class="w-full h-full object-cover" data-alt="Close up of artisanal gin bottles with artistic labels on a rustic wooden shelf with soft daylighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-7Jd-yuFH3SaHtAk0Muu2-rUmaT8xYANLhN0dryWrbHyHnG5c8-aOwi4idKQ9TYhhqOzbAuYswBUgN4dZBGVfP3xrLn3GzlUbFar2y0X9_4aFGg4Q-svBPG8rv58Jay4EucR2v-CnXojSP5dDweeRiRQS5bQ5GXHZHAMKqBmPCyzd9KiWEdffp5cQv8TnxYarSzb3R1oTdLNzph_WRZnmwF7J9BvB3vSftYBByqwIjqvte5xR9TN9iguzzgL34Q1t_JychzacibE"/>
+<div class="absolute top-4 left-4">
+<span class="bg-primary-container text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Nearby Drop</span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<h2 class="text-xl font-bold text-on-background leading-tight mb-3">New Local Gin Release</h2>
+<p class="text-secondary text-sm leading-relaxed mb-6">The distillery on 5th just released their botanical spring batch. Heavy on the lavender and grapefruit. Limited to 200 bottles.</p>
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-[#FF7E36] text-sm">location_on</span>
+<span class="text-xs font-semibold text-primary">Westside Artisan Hub</span>
+</div>
+<div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-[#868E96] text-xs font-medium">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden">
+<img alt="Author" class="w-full h-full object-cover" data-alt="Young man with a beanie and stubble looking off-camera with a thoughtful expression in an urban setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9ans6MvyOREsXYeZhd5x4vJ4G0-0ShILt6N9SVoK5yDz0AEVyh1INKM9PE2wXTxpjnKMKA7Ca0cdbFy3jRQ7JT8oBi5ffnckNbh0H-QWu9KK7dmuDjYCBAsuPWuah6Gd7-MEAJpHv3nTem-Umf1z3e7JvQAjLKmW-a5XZuDi9TgLomOAC4A7M4_PMSpcVIso7OCKNVReY3o3CzLQRZ3-4FY6_km2FnhHJCLfMgL8webMBTS9MRQvrB4aBu3v3yqyP_1zENFB4b6c"/>
+</div>
+<span>GinGenius</span>
+<span class="opacity-40">•</span>
+<span>8h ago</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">forum</span> 5</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 31</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Post Card 6: Question -->
+<article class="bg-white rounded-[16px] border border-[#E9ECEF] overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
+<div class="p-6 flex-1 flex flex-col">
+<div class="mb-4">
+<span class="bg-primary-container text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Question</span>
+</div>
+<h2 class="text-xl font-bold text-on-background leading-tight mb-3">Shelf life of Vermouth?</h2>
+<p class="text-secondary text-sm leading-relaxed mb-6">I keep my Carpano Antica on the shelf but someone told me it belongs in the fridge. Does it actually matter if I finish it in a month?</p>
+<div class="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-[#868E96] text-xs font-medium">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant overflow-hidden">
+<img alt="Author" class="w-full h-full object-cover" data-alt="Middle aged man with dark hair and a warm smile, wearing a simple white t-shirt against a clean studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-RNB5a3SZ1inLJYhS1HS7vKH_2y3Gx9kRV6NA62rQNpDZIym1OKCFbbj-jP13iyqkzxWHxFfxT3sHalL1SsgkFI4CJUwv6lW8S8Q4aIfSNn4xPRjnRnlXfX-LTic21bARbbgawVruNOrRSH_Xc3W_biUzZ_L4q2Mx8Lahi-zjwfLqNWnjIBmSDwZ8NIMFTr7XaJg8pC_tnv8BlxNjThKhA_vo_IYEBDiE0hUEVH7flGtfhDQPCSQerTfplHA5OAxw7cw-Qpj-CQc"/>
+</div>
+<span>MartiniMike</span>
+<span class="opacity-40">•</span>
+<span>1d ago</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">forum</span> 42</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 18</span>
+</div>
+</div>
+</div>
+</article>
 </div>
 </main>
-<!-- Input Area - Fixed Bottom -->
-<div class="fixed bottom-0 w-full bg-white dark:bg-neutral-900 px-4 pt-3 pb-8 border-t border-neutral-100 dark:border-neutral-800">
-<div class="max-w-3xl mx-auto flex items-center gap-3">
-<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-variant transition-colors">
-<span class="material-symbols-outlined text-on-surface-variant">add</span>
+<!-- Floating Action Button -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary-container text-white rounded-full shadow-xl flex items-center justify-center active:scale-90 transition-transform z-40">
+<span class="material-symbols-outlined text-3xl">add</span>
 </button>
-<div class="flex-1 relative flex items-center">
-<input class="w-full h-12 bg-surface-container-low border border-outline-variant rounded-xl px-4 py-2 text-[15px] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-neutral-400" placeholder="Type a message..." type="text"/>
-</div>
-<button class="w-12 h-12 flex items-center justify-center rounded-full bg-primary-container text-white shadow-lg shadow-orange-200/50 active:scale-90 transition-all duration-200">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
-</button>
-</div>
-</div>
-<!-- Hidden BottomNavBar logic for shell consistency - only visible if it's a top level destination, here we suppress it for focused chat -->
-</body></html>
+<!-- BottomNavBar Shell -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-2 py-3 pb-safe bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border-t border-gray-100 dark:border-stone-800 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] rounded-t-2xl">
+<a class="flex flex-col items-center justify-center text-gray-400 dark:text-stone-500 hover:text-[#FF7E36] active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Public_Sans'] text-[11px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-400 dark:text-stone-500 hover:text-[#FF7E36] active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-['Public_Sans'] text-[11px] font-medium">Map</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#FF7E36] font-bold active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">forum</span>
+<span class="font-['Public_Sans'] text-[11px] font-medium">Board</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-400 dark:text-stone-500 hover:text-[#FF7E36] active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-['Public_Sans'] text-[11px] font-medium">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-400 dark:text-stone-500 hover:text-[#FF7E36] active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span class="font-['Public_Sans'] text-[11px] font-medium">Shop</span>
+</a>
+</nav>
+</body></html>ㄴ
