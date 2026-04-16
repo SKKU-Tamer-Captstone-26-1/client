@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/theme/app_icons.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/home/presentation/home_screen.dart';
+import 'features/map/presentation/map_screen.dart';
 import 'features/preference_survey/data/placeholder_preference_survey.dart';
 import 'features/preference_survey/presentation/preference_survey_screen.dart';
 import 'features/preference_survey/presentation/survey_intro_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  const kakaoMapApiKey = String.fromEnvironment('KAKAO_MAP_API_KEY');
+  if (kakaoMapApiKey.isNotEmpty) {
+    await KakaoMapsFlutter.init(kakaoMapApiKey);
+  }
+
   runApp(const OnTheBlockApp());
 }
 
@@ -83,9 +92,22 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
           });
         },
       ),
-      _AppStage.home => const HomeScreen(),
+      _AppStage.home => HomeScreen(onBottomNavSelected: _selectBottomNavItem),
+      _AppStage.map => MapScreen(onBottomNavSelected: _selectBottomNavItem),
     };
+  }
+
+  void _selectBottomNavItem(AppBottomNavItem item) {
+    setState(() {
+      _stage = switch (item) {
+        AppBottomNavItem.home => _AppStage.home,
+        AppBottomNavItem.map => _AppStage.map,
+        AppBottomNavItem.board => _AppStage.home,
+        AppBottomNavItem.chat => _AppStage.home,
+        AppBottomNavItem.collection => _AppStage.home,
+      };
+    });
   }
 }
 
-enum _AppStage { login, surveyIntro, survey, home }
+enum _AppStage { login, surveyIntro, survey, home, map }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_icons.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
@@ -8,7 +9,9 @@ import '../data/mock_home_data.dart';
 import '../models/home_models.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.onBottomNavSelected});
+
+  final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +20,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: palette.surfaceContainerLow,
       appBar: const AppTopAppBar(),
-      bottomNavigationBar: const AppBottomNavBar(),
+      bottomNavigationBar: AppBottomNavBar(onItemSelected: onBottomNavSelected),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         backgroundColor: AppColors.primaryContainer,

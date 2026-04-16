@@ -84,4 +84,20 @@ void main() {
     expect(find.text('Outdoor Vaults'), findsOneWidget);
     expect(find.text('Neighborhood Buzz'), findsOneWidget);
   });
+
+  testWidgets('navigates from home to map screen', (WidgetTester tester) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Map'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Search nearby bars and bottle shops'), findsOneWidget);
+    expect(find.text('Kakao Map baseline'), findsOneWidget);
+    expect(find.text('The Oak & Barrel'), findsWidgets);
+  });
 }
