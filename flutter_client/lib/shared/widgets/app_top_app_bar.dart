@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_icons.dart';
+import '../../features/search/presentation/search_screen.dart';
 import 'notification_window.dart';
 
 class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -51,7 +52,11 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         IconButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SearchScreen()),
+            );
+          },
           icon: const Icon(AppIcons.topAppBarSearch),
           tooltip: 'Search',
         ),

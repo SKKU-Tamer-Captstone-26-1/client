@@ -102,6 +102,20 @@ void main() {
     expect(find.byIcon(Icons.chat), findsNothing);
   });
 
+  testWidgets('shows chat and collection bottom nav count bubbles', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('3'), findsOneWidget);
+    expect(find.text('7'), findsOneWidget);
+  });
+
   testWidgets('navigates from home to board screen', (
     WidgetTester tester,
   ) async {
@@ -302,5 +316,31 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Rare bourbon drop nearby'), findsNothing);
+  });
+
+  testWidgets('opens search as a full screen from top app bar', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Search'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Search bottles, stores, boards'), findsOneWidget);
+    expect(find.text('Suggested searches'), findsOneWidget);
+    expect(find.text('Bourbon near me'), findsOneWidget);
+    expect(find.text('Quick results'), findsOneWidget);
+    expect(find.text('The Oak & Barrel'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Search bottles, stores, boards'), findsNothing);
+    expect(find.text('The Golden Old Fashioned'), findsOneWidget);
   });
 }
