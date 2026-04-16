@@ -98,3 +98,28 @@ const mockGroupchatRooms = [
     trailingIcon: Icons.image,
   ),
 ];
+
+const mockGroupchatMessages = [
+  GroupchatMessage(
+    kind: GroupchatMessageKind.incoming,
+    senderName: 'Marcus',
+    senderAvatarUrl:
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuAQyTCxVcaGae2XXiYc9clNsknzexQFUIJw4IIz-bVloxtDRPpP7ObGPHI55cbImyOzIURpuVZvOOCFKKdjejR-mMYFdU2coOwbogNYQegERt-IKDEBAAgDKM3pcI5LbeleKiLSHXwFGunfBTxkbvD1mTCfaKB_8XwiyXzaSVnoE9HBctIX6Met6ui0PxjnRGG0qHKNoMFz_8Rj2uaurIfu4Xz0uhDVppeB6VBQqk6lj2gZbx0zk8oLvtDoEbZxe3sH2OrGjAFwAYM',
+    text: 'Found that limited batch at the corner shop!',
+    timeLabel: '10:24 AM',
+  ),
+  GroupchatMessage(
+    kind: GroupchatMessageKind.outgoing,
+    text: "Nice! Is there any left? I'm heading over now.",
+    timeLabel: '10:25 AM',
+    deliveryLabel: 'Delivered',
+  ),
+  GroupchatMessage(
+    kind: GroupchatMessageKind.incoming,
+    senderName: 'Sarah',
+    senderAvatarUrl:
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuAwyCeyoBVoRJC2zf3eegEofu4Ru7FbX3PlX7UyNiwprPaUqcBV7_uvKhZBnGw8bqZ6c2dZmW663KVHvlHH2kEcKnp67_TvbLaclCqj2SEOdQdBTeqmFyTZxv2d9nHAz2a13uDjn8Dub7BphKighs55MT82O6DJd0gQAlUi2M7_9OD2AcO2ggnRAS4mLpPJqiSWbmP-ekqbxdNAzTKkVT6RYQsmMId0aTrGbkv_Clg9f2n1GF-8Il9LpMkO_EhFPO-ec_gCDp7OwpI',
+    text: 'I grabbed two bottles. There were 5 left as of 10 mins ago.',
+    timeLabel: '10:29 AM',
+  ),
+];

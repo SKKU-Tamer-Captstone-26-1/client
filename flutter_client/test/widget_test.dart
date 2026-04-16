@@ -145,6 +145,37 @@ void main() {
     expect(find.text('Downtown Whiskey Circle'), findsOneWidget);
   });
 
+  testWidgets('opens groupchat room as full screen with bottom nav', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Chat'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Westside Bourbon Enthusiasts'));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Back to messages'), findsOneWidget);
+    expect(find.text('18 members'), findsOneWidget);
+    expect(
+      find.text('Found that limited batch at the corner shop!'),
+      findsOneWidget,
+    );
+    expect(find.text('Type a message...'), findsOneWidget);
+    expect(find.text('Chat'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Back to messages'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Messages'), findsOneWidget);
+    expect(find.text('Active Board'), findsOneWidget);
+  });
+
   testWidgets('opens chatbot modal from home but not map', (
     WidgetTester tester,
   ) async {

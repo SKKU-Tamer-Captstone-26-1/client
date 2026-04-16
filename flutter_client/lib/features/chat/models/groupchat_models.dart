@@ -43,3 +43,26 @@ class GroupchatRoomSummary {
 
   bool get hasUnread => unreadCount > 0;
 }
+
+enum GroupchatMessageKind { incoming, outgoing }
+
+@immutable
+class GroupchatMessage {
+  const GroupchatMessage({
+    required this.kind,
+    required this.text,
+    required this.timeLabel,
+    this.senderName,
+    this.senderAvatarUrl,
+    this.deliveryLabel,
+  });
+
+  final GroupchatMessageKind kind;
+  final String text;
+  final String timeLabel;
+  final String? senderName;
+  final String? senderAvatarUrl;
+  final String? deliveryLabel;
+
+  bool get isOutgoing => kind == GroupchatMessageKind.outgoing;
+}

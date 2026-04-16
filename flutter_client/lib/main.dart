@@ -6,6 +6,9 @@ import 'core/theme/app_icons.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/board/presentation/board_screen.dart';
 import 'features/chat/presentation/groupchat_list_screen.dart';
+import 'features/chat/presentation/groupchat_room_screen.dart';
+import 'features/chat/data/mock_groupchat_data.dart';
+import 'features/chat/models/groupchat_models.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/map/presentation/map_screen.dart';
 import 'features/preference_survey/data/placeholder_preference_survey.dart';
@@ -32,6 +35,7 @@ class OnTheBlockApp extends StatefulWidget {
 class _OnTheBlockAppState extends State<OnTheBlockApp> {
   ThemeMode _themeMode = ThemeMode.light;
   _AppStage _stage = _AppStage.login;
+  GroupchatRoomSummary _selectedGroupchatRoom = mockGroupchatRooms.first;
 
   void _toggleThemeMode() {
     setState(() {
@@ -99,6 +103,21 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.board => BoardScreen(onBottomNavSelected: _selectBottomNavItem),
       _AppStage.chat => GroupchatListScreen(
         onBottomNavSelected: _selectBottomNavItem,
+        onRoomSelected: (room) {
+          setState(() {
+            _selectedGroupchatRoom = room;
+            _stage = _AppStage.groupchatRoom;
+          });
+        },
+      ),
+      _AppStage.groupchatRoom => GroupchatRoomScreen(
+        room: _selectedGroupchatRoom,
+        onBack: () {
+          setState(() {
+            _stage = _AppStage.chat;
+          });
+        },
+        onBottomNavSelected: _selectBottomNavItem,
       ),
     };
   }
@@ -116,4 +135,13 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
   }
 }
 
-enum _AppStage { login, surveyIntro, survey, home, map, board, chat }
+enum _AppStage {
+  login,
+  surveyIntro,
+  survey,
+  home,
+  map,
+  board,
+  chat,
+  groupchatRoom,
+}

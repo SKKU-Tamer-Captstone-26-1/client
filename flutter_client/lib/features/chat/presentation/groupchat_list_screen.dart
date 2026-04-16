@@ -9,9 +9,14 @@ import '../data/mock_groupchat_data.dart';
 import '../models/groupchat_models.dart';
 
 class GroupchatListScreen extends StatelessWidget {
-  const GroupchatListScreen({super.key, this.onBottomNavSelected});
+  const GroupchatListScreen({
+    super.key,
+    this.onBottomNavSelected,
+    this.onRoomSelected,
+  });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
+  final ValueChanged<GroupchatRoomSummary>? onRoomSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -39,12 +44,15 @@ class GroupchatListScreen extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 672),
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 96),
-              children: const [
-                _MessagesHeader(unreadCount: 4),
-                SizedBox(height: 26),
-                _ActiveBoardSection(rooms: mockActiveBoardRooms),
-                SizedBox(height: 24),
-                _ChatRoomList(rooms: mockGroupchatRooms),
+              children: [
+                const _MessagesHeader(unreadCount: 4),
+                const SizedBox(height: 26),
+                const _ActiveBoardSection(rooms: mockActiveBoardRooms),
+                const SizedBox(height: 24),
+                _ChatRoomList(
+                  rooms: mockGroupchatRooms,
+                  onRoomSelected: onRoomSelected,
+                ),
               ],
             ),
           ),
@@ -188,9 +196,10 @@ class _ActiveBoardCard extends StatelessWidget {
 }
 
 class _ChatRoomList extends StatelessWidget {
-  const _ChatRoomList({required this.rooms});
+  const _ChatRoomList({required this.rooms, this.onRoomSelected});
 
   final List<GroupchatRoomSummary> rooms;
+  final ValueChanged<GroupchatRoomSummary>? onRoomSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -209,7 +218,10 @@ class _ChatRoomList extends StatelessWidget {
         child: Column(
           children: [
             for (final (index, room) in rooms.indexed) ...[
-              _ChatRoomTile(room: room),
+              _ChatRoomTile(
+                room: room,
+                onTap: () => onRoomSelected?.call(room),
+              ),
               if (index != rooms.length - 1)
                 Divider(
                   height: 1,
@@ -226,16 +238,17 @@ class _ChatRoomList extends StatelessWidget {
 }
 
 class _ChatRoomTile extends StatelessWidget {
-  const _ChatRoomTile({required this.room});
+  const _ChatRoomTile({required this.room, required this.onTap});
 
   final GroupchatRoomSummary room;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
 
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
