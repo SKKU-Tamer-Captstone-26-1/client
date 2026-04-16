@@ -1,7 +1,23 @@
-# Flutter-related
-**/Flutter/ephemeral/
-**/Pods/
+# Flutter/Dart generated files
+Flutter/ephemeral/
+Flutter/Generated.xcconfig
+Flutter/flutter_export_environment.sh
 
-# Xcode-related
-**/dgph
+# CocoaPods generated files
+Pods/
+
+# Xcode generated files
+DerivedData/
+build/
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.perspectivev3
+*.pbxuser
+*.xcscmblueprint
+*.xcuserstate
+xcuserdata/
 **/xcuserdata/
+
+# macOS local files
+.DS_Store

@@ -1,14 +1,26 @@
+# Gradle generated files
+.gradle/
+build/
+**/build/
 gradle-wrapper.jar
-/.gradle
-/captures/
-/gradlew
-/gradlew.bat
-/local.properties
-GeneratedPluginRegistrant.java
+gradlew
+gradlew.bat
+
+# Android Studio generated files
+captures/
 .cxx/
+.externalNativeBuild/
+.idea/
+*.iml
+
+# Local machine configuration
+local.properties
 
 # Remember to never publicly share your keystore.
 # See https://flutter.dev/to/reference-keystore
 key.properties
 **/*.keystore
 **/*.jks
+
+# Flutter generated Android files
+app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
