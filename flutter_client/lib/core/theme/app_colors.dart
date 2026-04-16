@@ -21,6 +21,7 @@ abstract final class AppColors {
 
   static const primaryContainer = Color(0xFFFF7E36);
   static const darkPrimaryContainer = Color(0xFFFFB693);
+  static const error = Color(0xFFBA1A1A);
 }
 
 @immutable

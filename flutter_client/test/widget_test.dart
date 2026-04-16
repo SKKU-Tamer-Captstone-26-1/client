@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:flutter_client/main.dart';
@@ -61,5 +62,26 @@ void main() {
 
     expect(find.text('STEP 2 OF 10'), findsOneWidget);
     expect(find.text('Which categories interest you most?'), findsOneWidget);
+  });
+
+  testWidgets('shows home screen after skipping survey', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('OnTheBlock'), findsOneWidget);
+    expect(find.text('The Golden Old Fashioned'), findsOneWidget);
+    expect(find.text('Local Establishments'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView).first, const Offset(0, -600));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Outdoor Vaults'), findsOneWidget);
+    expect(find.text('Neighborhood Buzz'), findsOneWidget);
   });
 }

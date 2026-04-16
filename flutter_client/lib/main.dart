@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/login_screen.dart';
+import 'features/home/presentation/home_screen.dart';
 import 'features/preference_survey/data/placeholder_preference_survey.dart';
 import 'features/preference_survey/presentation/preference_survey_screen.dart';
 import 'features/preference_survey/presentation/survey_intro_screen.dart';
@@ -60,7 +61,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
         },
         onSkip: () {
           setState(() {
-            _stage = _AppStage.survey;
+            _stage = _AppStage.home;
           });
         },
       ),
@@ -71,11 +72,20 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
             _stage = _AppStage.surveyIntro;
           });
         },
-        onSkip: () {},
-        onCompleted: () {},
+        onSkip: () {
+          setState(() {
+            _stage = _AppStage.home;
+          });
+        },
+        onCompleted: () {
+          setState(() {
+            _stage = _AppStage.home;
+          });
+        },
       ),
+      _AppStage.home => const HomeScreen(),
     };
   }
 }
 
-enum _AppStage { login, surveyIntro, survey }
+enum _AppStage { login, surveyIntro, survey, home }
