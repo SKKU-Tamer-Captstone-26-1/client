@@ -5,6 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/app_icons.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/board/presentation/board_screen.dart';
+import 'features/chat/presentation/groupchat_list_screen.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/map/presentation/map_screen.dart';
 import 'features/preference_survey/data/placeholder_preference_survey.dart';
@@ -96,6 +97,9 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.home => HomeScreen(onBottomNavSelected: _selectBottomNavItem),
       _AppStage.map => MapScreen(onBottomNavSelected: _selectBottomNavItem),
       _AppStage.board => BoardScreen(onBottomNavSelected: _selectBottomNavItem),
+      _AppStage.chat => GroupchatListScreen(
+        onBottomNavSelected: _selectBottomNavItem,
+      ),
     };
   }
 
@@ -105,11 +109,11 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
         AppBottomNavItem.home => _AppStage.home,
         AppBottomNavItem.map => _AppStage.map,
         AppBottomNavItem.board => _AppStage.board,
-        AppBottomNavItem.chat => _AppStage.home,
+        AppBottomNavItem.chat => _AppStage.chat,
         AppBottomNavItem.collection => _AppStage.home,
       };
     });
   }
 }
 
-enum _AppStage { login, surveyIntro, survey, home, map, board }
+enum _AppStage { login, surveyIntro, survey, home, map, board, chat }

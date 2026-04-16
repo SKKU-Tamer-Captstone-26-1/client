@@ -99,6 +99,7 @@ void main() {
     expect(find.text('Search nearby bars and bottle shops'), findsOneWidget);
     expect(find.text('Kakao Map baseline'), findsOneWidget);
     expect(find.text('The Oak & Barrel'), findsWidgets);
+    expect(find.byIcon(Icons.chat), findsNothing);
   });
 
   testWidgets('navigates from home to board screen', (
@@ -123,5 +124,98 @@ void main() {
       find.text('Looking for a recommendation: Peated scotch under \$100?'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('navigates from home to groupchat list screen', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Chat'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Messages'), findsOneWidget);
+    expect(find.text('Active Board'), findsOneWidget);
+    expect(find.text('Westside Bourbon Enthusiasts'), findsOneWidget);
+    expect(find.text('Downtown Whiskey Circle'), findsOneWidget);
+  });
+
+  testWidgets('opens chatbot modal from home but not map', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.chat));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Chat with Neighborhood Guide'), findsOneWidget);
+    expect(
+      find.textContaining('Looking for a specific bottle'),
+      findsOneWidget,
+    );
+    expect(find.text('Type your message...'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Map'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Chat with Neighborhood Guide'), findsNothing);
+    expect(find.byIcon(Icons.chat), findsNothing);
+  });
+
+  testWidgets('board keeps plus for writing and has separate chatbot button', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Board'));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Write post'), findsOneWidget);
+    expect(find.byTooltip('Chat with Neighborhood Guide'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Chat with Neighborhood Guide'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Chat with Neighborhood Guide'), findsOneWidget);
+  });
+
+  testWidgets('opens notification window from top app bar', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const OnTheBlockApp());
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Notifications'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Notifications'), findsOneWidget);
+    expect(find.text('Rare bourbon drop nearby'), findsOneWidget);
+    expect(find.text('New reply on your board post'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Close notifications'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Rare bourbon drop nearby'), findsNothing);
   });
 }

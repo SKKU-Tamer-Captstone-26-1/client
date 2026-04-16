@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
+import '../../../features/chatbot/presentation/chatbot_modal.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
@@ -22,7 +23,7 @@ class HomeScreen extends StatelessWidget {
       appBar: const AppTopAppBar(),
       bottomNavigationBar: AppBottomNavBar(onItemSelected: onBottomNavSelected),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () => showChatbotModal(context),
         backgroundColor: AppColors.primaryContainer,
         foregroundColor: Colors.white,
         shape: const CircleBorder(),
