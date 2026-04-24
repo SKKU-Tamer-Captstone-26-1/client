@@ -43,6 +43,38 @@ Until official contracts are defined:
 
 Do not hard-code speculative backend rules into the Flutter client.
 
+## Chat Integration Rules
+
+For chat specifically, the client now follows a stable integration pattern:
+
+- Keep chat UI and transport concerns separated under `lib/features/chat/`.
+- Put gRPC adapters and generated stubs in `lib/features/chat/data/`.
+- Keep presentation models (`groupchat_models.dart`) independent from generated proto classes.
+- Map proto responses to UI models through repository/data-source adapters, not directly in widgets.
+
+### Proto Source of Truth
+
+- Use shared proto contracts from `on-the-block-infra/proto`.
+- Do not manually edit generated Dart files under `grpc_gen/`.
+- Regenerate stubs when proto changes; treat generated code as replaceable artifacts.
+
+### gRPC Boundaries
+
+- The client is a transport consumer only; server authority rules stay on backend.
+- Keep endpoint selection environment-driven (`host`, `port`, `tls`) rather than hard-coded per screen.
+- Keep request-level identity handling replaceable so JWT metadata migration can happen later.
+
+### Message and Stream Rendering
+
+- Stream events are incremental UI updates; do not infer extra business state client-side.
+- If server marks a message as deleted (`is_deleted`), render a placeholder text and never reconstruct deleted content.
+- Use conservative fallback rendering for unknown/empty payloads (`[Image]`, `[System message]`, etc.).
+
+### Membership and Moderation Ownership
+
+- Membership status semantics (ACTIVE/LEFT/REMOVED), rejoin policy, owner transfer, and moderation permissions are backend-owned.
+- The client should display server outcomes and errors, not attempt to emulate these rules locally.
+
 ## Design Source of Truth
 
 Stitch designs and the repository design documentation are the visual source of truth.

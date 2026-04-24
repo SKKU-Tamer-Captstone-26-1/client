@@ -1,17 +1,59 @@
 # flutter_client
 
-A new Flutter project.
+Flutter client for On The Block.
 
-## Getting Started
+## Chat gRPC Integration (Current Stage)
 
-This project is a starting point for a Flutter application.
+This app keeps existing UI mocks but now includes a replaceable chat gRPC adapter layer under:
 
-A few resources to get you started if this is your first Flutter project:
+- `lib/features/chat/data/grpc_gen/`
+- `lib/features/chat/data/chat_grpc_endpoint.dart`
+- `lib/features/chat/data/chat_remote_data_source.dart`
+- `lib/features/chat/data/chat_repository.dart`
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## 1) Install dependencies
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+flutter pub get
+```
+
+## 2) Generate chat Dart stubs from infra proto
+
+Default infra proto root: `$HOME/on-the-block-infra/proto`
+
+```bash
+./tool/generate_chat_proto.sh
+```
+
+Or pass explicit proto root:
+
+```bash
+./tool/generate_chat_proto.sh /absolute/path/to/on-the-block-infra/proto
+```
+
+## 3) Run app against local chat-service
+
+When your chat-service is running on `localhost:9090`, run Flutter with endpoint defines.
+
+### iOS simulator / macOS
+
+```bash
+flutter run \
+  --dart-define=CHAT_GRPC_HOST=localhost \
+  --dart-define=CHAT_GRPC_PORT=9090 \
+  --dart-define=CHAT_GRPC_TLS=false
+```
+
+### Android emulator
+
+```bash
+flutter run \
+  --dart-define=CHAT_GRPC_HOST=10.0.2.2 \
+  --dart-define=CHAT_GRPC_PORT=9090 \
+  --dart-define=CHAT_GRPC_TLS=false
+```
+
+## Notes
+
+- Backend currently expects UUID-formatted user IDs.
+- Current chat screens remain mock-driven by design; repository layer is ready for incremental wiring.

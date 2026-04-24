@@ -145,6 +145,40 @@ Treat chat and chatbot as separate features.
 
 Do not merge them into one feature only because both involve message-like UI.
 
+## Chat Feature Rules
+
+Apply the following stable rules for chat work:
+
+- Keep chat structure split into:
+  - `presentation/` for widgets and screen state
+  - `models/` for UI-facing chat models
+  - `data/` for repositories, gRPC remote data sources, and generated stubs
+- Do not import generated proto classes directly into chat presentation widgets.
+- Keep mapper/adapters between proto DTOs and UI models in the data layer.
+
+### Proto and Stub Usage
+
+- Shared proto source for chat is `on-the-block-infra/proto/chat/v1/chat.proto`.
+- Generated Dart stubs under `lib/features/chat/data/grpc_gen/` are build artifacts.
+- Never hand-edit generated files; regenerate them when proto updates.
+
+### gRPC Integration Constraints
+
+- Keep endpoint config environment-driven (host/port/tls), not screen-specific.
+- Keep remote data source and repository interfaces replaceable for mock/real switching.
+- Do not duplicate backend validation in client logic.
+
+### Rendering and Stream Behavior
+
+- Render message lists from server order/cursors; do not fabricate ordering guarantees client-side.
+- For deleted messages, always render placeholder behavior and do not expose original deleted payload fields.
+- Treat stream disconnects and status errors as server-driven state changes; reflect them in UI without re-implementing membership rules.
+
+### Backend-Owned Membership Rules
+
+- Rejoin/removal/deactivation/owner moderation behavior is backend authority.
+- Client must not locally override server outcomes for LEFT/REMOVED/inactive room cases.
+
 ## External Package Policy
 
 External UI packages may be used only when they accelerate implementation without taking ownership of core product architecture.
