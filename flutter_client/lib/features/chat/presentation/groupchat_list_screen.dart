@@ -5,18 +5,146 @@ import '../../../core/theme/app_icons.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
+import '../data/chat_repository.dart';
 import '../data/mock_groupchat_data.dart';
 import '../models/groupchat_models.dart';
 
-class GroupchatListScreen extends StatelessWidget {
+class GroupchatListScreen extends StatefulWidget {
   const GroupchatListScreen({
     super.key,
     this.onBottomNavSelected,
     this.onRoomSelected,
+    this.chatRepository,
+    this.currentUserId,
   });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final ValueChanged<GroupchatRoomSummary>? onRoomSelected;
+  final ChatRepository? chatRepository;
+  final String? currentUserId;
+
+  @override
+  State<GroupchatListScreen> createState() => _GroupchatListScreenState();
+}
+
+class _GroupchatListScreenState extends State<GroupchatListScreen> {
+  List<GroupchatRoomSummary> _rooms = mockGroupchatRooms;
+  bool _loading = false;
+
+  int get _unreadCount =>
+      _rooms.fold<int>(0, (sum, room) => sum + room.unreadCount);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRooms();
+  }
+
+  Future<void> _loadRooms() async {
+    final repo = widget.chatRepository;
+    final userId = widget.currentUserId;
+    if (repo == null || userId == null || userId.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+    });
+
+    try {
+      final rooms = await repo.listMyRooms(userId: userId, pageSize: 20);
+      if (!mounted || rooms.isEmpty) {
+        return;
+      }
+      setState(() {
+        _rooms = rooms;
+      });
+    } catch (_) {
+      // Keep mock fallback on remote errors.
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _createRoomFromFab() async {
+    final repo = widget.chatRepository;
+    final userId = widget.currentUserId;
+    if (repo == null || userId == null || userId.isEmpty) {
+      final localRoom = _buildLocalRoom();
+      setState(() {
+        _rooms = [localRoom, ..._rooms];
+      });
+      widget.onRoomSelected?.call(localRoom);
+      _showInfo('Chat backend unavailable. Opened local preview room.');
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+    });
+
+    try {
+      final created = await repo.createRoom(
+        creatorUserId: userId,
+        title:
+            'New chat ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _rooms = [created, ..._rooms];
+      });
+      widget.onRoomSelected?.call(created);
+      _showInfo('Room created.');
+    } catch (error) {
+      final localRoom = _buildLocalRoom();
+      setState(() {
+        _rooms = [localRoom, ..._rooms];
+      });
+      widget.onRoomSelected?.call(localRoom);
+      _showInfo('Could not create server room. Opened local preview room.');
+      // ignore: avoid_print
+      print('create room failed: $error');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  GroupchatRoomSummary _buildLocalRoom() {
+    final now = DateTime.now();
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
+    final title = 'New chat $hour:$minute';
+    return GroupchatRoomSummary(
+      roomId: 'mock-room-local-${now.microsecondsSinceEpoch}',
+      title: title,
+      memberSummary: '1/1',
+      location: 'Local Preview',
+      lastMessage: 'No messages yet',
+      timeLabel: '$hour:$minute',
+      tags: const [],
+      avatarUrls: const [],
+      unreadCount: 0,
+    );
+  }
+
+  void _showInfo(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +154,15 @@ class GroupchatListScreen extends StatelessWidget {
       backgroundColor: palette.surfaceContainerLow,
       appBar: AppTopAppBar(
         onNotificationBoardSelected: () {
-          onBottomNavSelected?.call(AppBottomNavItem.board);
+          widget.onBottomNavSelected?.call(AppBottomNavItem.board);
         },
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.chat,
-        onItemSelected: onBottomNavSelected,
+        onItemSelected: widget.onBottomNavSelected,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: _createRoomFromFab,
         tooltip: 'Start chat',
         backgroundColor: AppColors.primaryContainer,
         foregroundColor: Colors.white,
@@ -46,18 +174,26 @@ class GroupchatListScreen extends StatelessWidget {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 672),
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 96),
-              children: [
-                const _MessagesHeader(unreadCount: 4),
-                const SizedBox(height: 26),
-                const _ActiveBoardSection(rooms: mockActiveBoardRooms),
-                const SizedBox(height: 24),
-                _ChatRoomList(
-                  rooms: mockGroupchatRooms,
-                  onRoomSelected: onRoomSelected,
-                ),
-              ],
+            child: RefreshIndicator(
+              onRefresh: _loadRooms,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 96),
+                children: [
+                  _MessagesHeader(unreadCount: _unreadCount),
+                  const SizedBox(height: 26),
+                  const _ActiveBoardSection(rooms: mockActiveBoardRooms),
+                  const SizedBox(height: 24),
+                  if (_loading)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 16),
+                      child: LinearProgressIndicator(minHeight: 2),
+                    ),
+                  _ChatRoomList(
+                    rooms: _rooms,
+                    onRoomSelected: widget.onRoomSelected,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
