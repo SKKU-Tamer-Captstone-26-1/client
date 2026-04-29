@@ -38,28 +38,32 @@ class OnTheBlockApp extends StatefulWidget {
 }
 
 class _OnTheBlockAppState extends State<OnTheBlockApp> {
-  static const _fallbackUserId = '11111111-1111-1111-1111-111111111111';
-  static const _currentUserId = String.fromEnvironment(
-    'CHAT_USER_ID',
-    defaultValue: _fallbackUserId,
-  );
+  static const _currentUserId = String.fromEnvironment('CHAT_USER_ID');
 
   ThemeMode _themeMode = ThemeMode.light;
   _AppStage _stage = _AppStage.login;
   GroupchatRoomSummary _selectedGroupchatRoom = mockGroupchatRooms.first;
-  late final GrpcChatRemoteDataSource _chatRemoteDataSource;
-  late final GrpcChatRepository _chatRepository;
+  GrpcChatRepository? _chatRepository;
 
   @override
   void initState() {
     super.initState();
-    _chatRemoteDataSource = GrpcChatRemoteDataSource();
-    _chatRepository = GrpcChatRepository(_chatRemoteDataSource);
+    if (_currentUserId.isEmpty) {
+      return;
+    }
+    try {
+      _chatRepository = GrpcChatRepository(GrpcChatRemoteDataSource());
+    } catch (_) {
+      _chatRepository = null;
+    }
   }
 
   @override
   void dispose() {
-    unawaited(_chatRepository.dispose());
+    final repo = _chatRepository;
+    if (repo != null) {
+      unawaited(repo.dispose());
+    }
     super.dispose();
   }
 
@@ -129,7 +133,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.board => BoardScreen(onBottomNavSelected: _selectBottomNavItem),
       _AppStage.chat => GroupchatListScreen(
         chatRepository: _chatRepository,
-        currentUserId: _currentUserId,
+        currentUserId: _currentUserId.isEmpty ? null : _currentUserId,
         onBottomNavSelected: _selectBottomNavItem,
         onRoomSelected: (room) {
           setState(() {
@@ -141,7 +145,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.groupchatRoom => GroupchatRoomScreen(
         room: _selectedGroupchatRoom,
         chatRepository: _chatRepository,
-        currentUserId: _currentUserId,
+        currentUserId: _currentUserId.isEmpty ? null : _currentUserId,
         onBack: () {
           setState(() {
             _stage = _AppStage.chat;
