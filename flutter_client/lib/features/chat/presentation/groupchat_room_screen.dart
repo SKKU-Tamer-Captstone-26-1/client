@@ -1,23 +1,153 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
+import '../data/chat_repository.dart';
 import '../data/mock_groupchat_data.dart';
 import '../models/groupchat_models.dart';
 
-class GroupchatRoomScreen extends StatelessWidget {
+class GroupchatRoomScreen extends StatefulWidget {
   const GroupchatRoomScreen({
     super.key,
     required this.room,
     this.onBack,
     this.onBottomNavSelected,
+    this.chatRepository,
+    this.currentUserId,
   });
 
   final GroupchatRoomSummary room;
   final VoidCallback? onBack;
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
+  final ChatRepository? chatRepository;
+  final String? currentUserId;
+
+  @override
+  State<GroupchatRoomScreen> createState() => _GroupchatRoomScreenState();
+}
+
+class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
+  late List<GroupchatMessage> _messages;
+  final TextEditingController _composerController = TextEditingController();
+  bool _loading = false;
+  StreamSubscription<GroupchatMessage>? _streamSub;
+
+  bool get _canUseRemote {
+    return widget.chatRepository != null &&
+        widget.currentUserId != null &&
+        widget.currentUserId!.isNotEmpty &&
+        widget.room.roomId.isNotEmpty &&
+        !widget.room.roomId.startsWith('mock-room-');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _messages = mockGroupchatMessages;
+    _loadMessages();
+    _startMessageStream();
+  }
+
+  @override
+  void dispose() {
+    _streamSub?.cancel();
+    _composerController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadMessages() async {
+    if (!_canUseRemote) {
+      return;
+    }
+    setState(() {
+      _loading = true;
+    });
+    try {
+      final fetched = await widget.chatRepository!.getMessages(
+        roomId: widget.room.roomId,
+        userId: widget.currentUserId!,
+        limit: 50,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _messages = _normalizeMessages(fetched);
+      });
+    } catch (_) {
+      // Keep existing messages on errors.
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  void _startMessageStream() {
+    if (!_canUseRemote) {
+      return;
+    }
+    _streamSub = widget.chatRepository!
+        .streamMessages(
+          roomId: widget.room.roomId,
+          userId: widget.currentUserId!,
+        )
+        .listen((message) {
+          if (!mounted) {
+            return;
+          }
+          final exists = _messages.any((m) => m.messageId == message.messageId);
+          if (exists) {
+            return;
+          }
+          setState(() {
+            _messages = [..._messages, message];
+          });
+        });
+  }
+
+  Future<void> _sendMessage() async {
+    final text = _composerController.text.trim();
+    if (text.isEmpty) {
+      return;
+    }
+    if (!_canUseRemote) {
+      setState(() {
+        _messages = [
+          ..._messages,
+          GroupchatMessage(
+            messageId: 'local-${DateTime.now().microsecondsSinceEpoch}',
+            roomId: widget.room.roomId,
+            sequenceNo: _messages.length + 1,
+            kind: GroupchatMessageKind.outgoing,
+            text: text,
+            timeLabel: _nowTimeLabel(),
+            deliveryLabel: 'Sent',
+          ),
+        ];
+      });
+      _composerController.clear();
+      return;
+    }
+
+    try {
+      await widget.chatRepository!.sendTextMessage(
+        roomId: widget.room.roomId,
+        senderUserId: widget.currentUserId!,
+        content: text,
+      );
+      _composerController.clear();
+      await _loadMessages();
+    } catch (_) {
+      // Keep composer text on failure so user can retry.
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +155,10 @@ class GroupchatRoomScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: palette.surfaceContainerLow,
-      appBar: _GroupchatRoomAppBar(room: room, onBack: onBack),
+      appBar: _GroupchatRoomAppBar(room: widget.room, onBack: widget.onBack),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.chat,
-        onItemSelected: onBottomNavSelected,
+        onItemSelected: widget.onBottomNavSelected,
       ),
       body: SafeArea(
         top: false,
@@ -40,25 +170,46 @@ class GroupchatRoomScreen extends StatelessWidget {
                   constraints: const BoxConstraints(maxWidth: 768),
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(16, 22, 16, 22),
-                    children: const [
-                      _DateDivider(label: 'Today'),
-                      SizedBox(height: 20),
-                      _MessageList(messages: mockGroupchatMessages),
-                      SizedBox(height: 22),
-                      _LiveDropPreview(),
-                      SizedBox(height: 22),
-                      _SuggestionChips(),
+                    children: [
+                      const _DateDivider(label: 'Today'),
+                      const SizedBox(height: 20),
+                      if (_loading)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 16),
+                          child: LinearProgressIndicator(minHeight: 2),
+                        ),
+                      _MessageList(messages: _messages),
+                      const SizedBox(height: 22),
+                      const _LiveDropPreview(),
+                      const SizedBox(height: 22),
+                      const _SuggestionChips(),
                     ],
                   ),
                 ),
               ),
             ),
-            const _MessageComposer(),
+            _MessageComposer(
+              controller: _composerController,
+              onSend: _sendMessage,
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+List<GroupchatMessage> _normalizeMessages(List<GroupchatMessage> messages) {
+  final cloned = [...messages];
+  cloned.sort((a, b) => a.sequenceNo.compareTo(b.sequenceNo));
+  return cloned;
+}
+
+String _nowTimeLabel() {
+  final now = DateTime.now();
+  final hour = now.hour.toString().padLeft(2, '0');
+  final minute = now.minute.toString().padLeft(2, '0');
+  return '$hour:$minute';
 }
 
 class _GroupchatRoomAppBar extends StatelessWidget
@@ -546,7 +697,10 @@ class _SuggestionChips extends StatelessWidget {
 }
 
 class _MessageComposer extends StatelessWidget {
-  const _MessageComposer();
+  const _MessageComposer({required this.controller, required this.onSend});
+
+  final TextEditingController controller;
+  final VoidCallback onSend;
 
   @override
   Widget build(BuildContext context) {
@@ -576,23 +730,34 @@ class _MessageComposer extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Container(
-                    height: 48,
-                    alignment: Alignment.centerLeft,
+                    constraints: const BoxConstraints(minHeight: 48),
                     decoration: BoxDecoration(
                       color: palette.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: palette.outlineVariant),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: Text(
-                      'Type a message...',
-                      style: TextStyle(color: palette.secondary, fontSize: 15),
+                    child: TextField(
+                      controller: controller,
+                      minLines: 1,
+                      maxLines: 4,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => onSend(),
+                      decoration: InputDecoration(
+                        hintText: 'Type a message...',
+                        hintStyle: TextStyle(
+                          color: palette.secondary,
+                          fontSize: 15,
+                        ),
+                        border: InputBorder.none,
+                        isCollapsed: true,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 IconButton.filled(
-                  onPressed: () {},
+                  onPressed: onSend,
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.primaryContainer,
                     foregroundColor: Colors.white,

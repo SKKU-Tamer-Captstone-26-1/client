@@ -16,6 +16,7 @@ class ActiveBoardRoom {
 @immutable
 class GroupchatRoomSummary {
   const GroupchatRoomSummary({
+    required this.roomId,
     required this.title,
     required this.memberSummary,
     required this.location,
@@ -29,6 +30,7 @@ class GroupchatRoomSummary {
     this.extraMemberCount = 0,
   });
 
+  final String roomId;
   final String title;
   final String memberSummary;
   final String location;
@@ -49,6 +51,9 @@ enum GroupchatMessageKind { incoming, outgoing }
 @immutable
 class GroupchatMessage {
   const GroupchatMessage({
+    required this.messageId,
+    required this.roomId,
+    required this.sequenceNo,
     required this.kind,
     required this.text,
     required this.timeLabel,
@@ -57,6 +62,9 @@ class GroupchatMessage {
     this.deliveryLabel,
   });
 
+  final String messageId;
+  final String roomId;
+  final int sequenceNo;
   final GroupchatMessageKind kind;
   final String text;
   final String timeLabel;

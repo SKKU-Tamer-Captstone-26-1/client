@@ -43,6 +43,7 @@ const _avatarJasmine =
 
 const mockGroupchatRooms = [
   GroupchatRoomSummary(
+    roomId: 'mock-room-1',
     title: 'Westside Bourbon Enthusiasts',
     memberSummary: '18/25',
     location: 'Westside',
@@ -54,6 +55,7 @@ const mockGroupchatRooms = [
     extraMemberCount: 15,
   ),
   GroupchatRoomSummary(
+    roomId: 'mock-room-2',
     title: 'Downtown Whiskey Circle',
     memberSummary: '12/20',
     location: 'Downtown',
@@ -65,6 +67,7 @@ const mockGroupchatRooms = [
     extraMemberCount: 8,
   ),
   GroupchatRoomSummary(
+    roomId: 'mock-room-3',
     title: 'Vintage Cellar Logistics',
     memberSummary: '8/10',
     location: 'Arts District',
@@ -76,6 +79,7 @@ const mockGroupchatRooms = [
     trailingIcon: Icons.inventory_2,
   ),
   GroupchatRoomSummary(
+    roomId: 'mock-room-4',
     title: 'Hoppy Explorers (IPA Central)',
     memberSummary: '45/100',
     location: 'North Block',
@@ -87,6 +91,7 @@ const mockGroupchatRooms = [
     trailingIcon: Icons.done_all,
   ),
   GroupchatRoomSummary(
+    roomId: 'mock-room-5',
     title: 'Weekly Tastings & Photos',
     memberSummary: '24/30',
     location: 'Eastside',
@@ -101,6 +106,9 @@ const mockGroupchatRooms = [
 
 const mockGroupchatMessages = [
   GroupchatMessage(
+    messageId: 'mock-msg-1',
+    roomId: 'mock-room-1',
+    sequenceNo: 1,
     kind: GroupchatMessageKind.incoming,
     senderName: 'Marcus',
     senderAvatarUrl:
@@ -109,12 +117,18 @@ const mockGroupchatMessages = [
     timeLabel: '10:24 AM',
   ),
   GroupchatMessage(
+    messageId: 'mock-msg-2',
+    roomId: 'mock-room-1',
+    sequenceNo: 2,
     kind: GroupchatMessageKind.outgoing,
     text: "Nice! Is there any left? I'm heading over now.",
     timeLabel: '10:25 AM',
     deliveryLabel: 'Delivered',
   ),
   GroupchatMessage(
+    messageId: 'mock-msg-3',
+    roomId: 'mock-room-1',
+    sequenceNo: 3,
     kind: GroupchatMessageKind.incoming,
     senderName: 'Sarah',
     senderAvatarUrl:

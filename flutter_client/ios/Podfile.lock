@@ -1,0 +1,36 @@
+PODS:
+  - Flutter (1.0.0)
+  - kakao_maps_flutter (0.0.1):
+    - Flutter
+    - KakaoMapsSDK (~> 2.12.5)
+  - KakaoMapsSDK (2.12.10)
+  - webview_flutter_wkwebview (0.0.1):
+    - Flutter
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - kakao_maps_flutter (from `.symlinks/plugins/kakao_maps_flutter/ios`)
+  - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
+
+SPEC REPOS:
+  trunk:
+    - KakaoMapsSDK
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  kakao_maps_flutter:
+    :path: ".symlinks/plugins/kakao_maps_flutter/ios"
+  webview_flutter_wkwebview:
+    :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
+
+SPEC CHECKSUMS:
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  kakao_maps_flutter: 145c86ebbd402a13d54adb9e8ae3a620d71546f3
+  KakaoMapsSDK: 32040e6268df2447c3f56dc4acada339d8eb8f32
+  webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
+
+PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+
+COCOAPODS: 1.16.2
