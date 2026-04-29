@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
 
@@ -53,7 +55,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
 
   @override
   void dispose() {
-    _chatRepository.dispose();
+    unawaited(_chatRepository.dispose());
     super.dispose();
   }
 
