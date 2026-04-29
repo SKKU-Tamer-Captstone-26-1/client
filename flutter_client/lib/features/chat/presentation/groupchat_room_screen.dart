@@ -35,6 +35,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
   final TextEditingController _composerController = TextEditingController();
   bool _loading = false;
   StreamSubscription<GroupchatMessage>? _streamSub;
+  int _latestSequenceNo = 0;
 
   bool get _canUseRemote {
     return widget.chatRepository != null &&
@@ -49,7 +50,6 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
     super.initState();
     _messages = mockGroupchatMessages;
     _loadMessages();
-    _startMessageStream();
   }
 
   @override
@@ -77,10 +77,16 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
       }
       setState(() {
         _messages = _normalizeMessages(fetched);
+        _latestSequenceNo = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
       });
+      _restartMessageStream();
     } catch (_) {
       // Keep existing messages on errors.
     } finally {
+      if (_streamSub == null) {
+        _latestSequenceNo = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
+        _restartMessageStream();
+      }
       if (mounted) {
         setState(() {
           _loading = false;
@@ -93,10 +99,12 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
     if (!_canUseRemote) {
       return;
     }
+    _streamSub?.cancel();
     _streamSub = widget.chatRepository!
         .streamMessages(
           roomId: widget.room.roomId,
           userId: widget.currentUserId!,
+          afterSequenceNo: _latestSequenceNo,
         )
         .listen((message) {
           if (!mounted) {
@@ -107,9 +115,17 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
             return;
           }
           setState(() {
-            _messages = [..._messages, message];
+            _messages = _normalizeMessages([..._messages, message]);
+            _latestSequenceNo = _messages.last.sequenceNo;
           });
         });
+  }
+
+  void _restartMessageStream() {
+    if (!_canUseRemote) {
+      return;
+    }
+    _startMessageStream();
   }
 
   Future<void> _sendMessage() async {
@@ -741,6 +757,12 @@ class _MessageComposer extends StatelessWidget {
                       controller: controller,
                       minLines: 1,
                       maxLines: 4,
+                      style: TextStyle(
+                        color: palette.onSurface,
+                        fontSize: 15,
+                        height: 1.3,
+                      ),
+                      cursorColor: AppColors.primaryContainer,
                       textInputAction: TextInputAction.send,
                       onSubmitted: (_) => onSend(),
                       decoration: InputDecoration(
