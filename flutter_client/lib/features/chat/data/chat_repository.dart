@@ -192,12 +192,28 @@ extension _ChatMessageMapper on ChatMessage {
       kind: isOutgoing
           ? GroupchatMessageKind.outgoing
           : GroupchatMessageKind.incoming,
+      contentType: _toContentType(),
+      imageUrl: imageUrl,
       text: _toPreviewText(),
       timeLabel: _formatTimestamp(hasSentAt() ? sentAt : null),
       senderName: isOutgoing ? null : _shortUserLabel(senderUserId),
       senderAvatarUrl: null,
       deliveryLabel: isOutgoing ? 'Sent' : null,
     );
+  }
+
+  GroupchatMessageContentType _toContentType() {
+    switch (messageType) {
+      case MessageType.MESSAGE_TYPE_IMAGE:
+        return GroupchatMessageContentType.image;
+      case MessageType.MESSAGE_TYPE_SYSTEM:
+        return GroupchatMessageContentType.system;
+      case MessageType.MESSAGE_TYPE_TEXT:
+      case MessageType.MESSAGE_TYPE_UNSPECIFIED:
+        return GroupchatMessageContentType.text;
+      default:
+        return GroupchatMessageContentType.text;
+    }
   }
 
   String _toPreviewText() {

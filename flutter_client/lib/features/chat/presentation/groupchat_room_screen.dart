@@ -381,13 +381,9 @@ class _IncomingMessage extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: AppNetworkImage(
-                url: message.senderAvatarUrl ?? '',
-                width: 40,
-                height: 40,
-              ),
+            _SenderAvatar(
+              avatarUrl: message.senderAvatarUrl,
+              senderName: message.senderName,
             ),
             const SizedBox(width: 10),
             Flexible(
@@ -425,13 +421,9 @@ class _IncomingMessage extends StatelessWidget {
                         horizontal: 16,
                         vertical: 12,
                       ),
-                      child: Text(
-                        message.text,
-                        style: TextStyle(
-                          color: palette.onSurfaceVariant,
-                          fontSize: 15,
-                          height: 1.4,
-                        ),
+                      child: _MessageContent(
+                        message: message,
+                        textColor: palette.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -483,13 +475,9 @@ class _OutgoingMessage extends StatelessWidget {
                   horizontal: 16,
                   vertical: 12,
                 ),
-                child: Text(
-                  message.text,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    height: 1.4,
-                  ),
+                child: _MessageContent(
+                  message: message,
+                  textColor: Colors.white,
                 ),
               ),
             ),
@@ -509,6 +497,107 @@ class _OutgoingMessage extends StatelessWidget {
       ),
     );
   }
+}
+
+class _MessageContent extends StatelessWidget {
+  const _MessageContent({required this.message, required this.textColor});
+
+  final GroupchatMessage message;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final shouldRenderImage =
+        message.contentType == GroupchatMessageContentType.image &&
+        message.imageUrl.trim().isNotEmpty;
+
+    if (shouldRenderImage) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: AppNetworkImage(
+              url: message.imageUrl,
+              width: 220,
+              height: 160,
+              fit: BoxFit.cover,
+            ),
+          ),
+          if (message.text.trim().isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              message.text,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 15,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ],
+      );
+    }
+
+    return Text(
+      message.text,
+      style: TextStyle(
+        color: textColor,
+        fontSize: 15,
+        height: 1.4,
+      ),
+    );
+  }
+}
+
+class _SenderAvatar extends StatelessWidget {
+  const _SenderAvatar({required this.avatarUrl, required this.senderName});
+
+  final String? avatarUrl;
+  final String? senderName;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final url = avatarUrl?.trim() ?? '';
+    if (url.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AppNetworkImage(
+          url: url,
+          width: 40,
+          height: 40,
+        ),
+      );
+    }
+
+    final fallbackChar = _avatarInitial(senderName);
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        fallbackChar,
+        style: TextStyle(
+          color: palette.onSurfaceVariant,
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+String _avatarInitial(String? senderName) {
+  final normalized = (senderName ?? '').trim();
+  if (normalized.isEmpty) {
+    return 'M';
+  }
+  return normalized.substring(0, 1).toUpperCase();
 }
 
 class _LiveDropPreview extends StatelessWidget {
