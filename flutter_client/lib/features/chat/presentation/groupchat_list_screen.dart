@@ -53,7 +53,7 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
 
     try {
       final rooms = await repo.listMyRooms(userId: userId, pageSize: 20);
-      if (!mounted || rooms.isEmpty) {
+      if (!mounted) {
         return;
       }
       setState(() {
@@ -101,15 +101,13 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
       });
       widget.onRoomSelected?.call(created);
       _showInfo('Room created.');
-    } catch (error) {
+    } catch (_) {
       final localRoom = _buildLocalRoom();
       setState(() {
         _rooms = [localRoom, ..._rooms];
       });
       widget.onRoomSelected?.call(localRoom);
       _showInfo('Could not create server room. Opened local preview room.');
-      // ignore: avoid_print
-      print('create room failed: $error');
     } finally {
       if (mounted) {
         setState(() {

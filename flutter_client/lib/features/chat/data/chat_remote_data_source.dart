@@ -62,10 +62,7 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
       ),
     );
 
-    final client = ChatServiceClient(
-      channel,
-      options: CallOptions(timeout: const Duration(seconds: 10)),
-    );
+    final client = ChatServiceClient(channel);
 
     return GrpcChatRemoteDataSource._(resolvedEndpoint, channel, client);
   }
@@ -85,6 +82,7 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
       CreateRoomRequest()
         ..creatorUserId = creatorUserId
         ..title = title,
+      options: CallOptions(timeout: const Duration(seconds: 10)),
     );
   }
 
@@ -97,6 +95,7 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
       JoinRoomRequest()
         ..roomId = roomId
         ..userId = userId,
+      options: CallOptions(timeout: const Duration(seconds: 10)),
     );
   }
 
@@ -112,6 +111,7 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
         ..senderUserId = senderUserId
         ..messageType = MessageType.MESSAGE_TYPE_TEXT
         ..content = content,
+      options: CallOptions(timeout: const Duration(seconds: 10)),
     );
   }
 
@@ -128,6 +128,7 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
         ..userId = userId
         ..beforeSequenceNo = fixnum.Int64(beforeSequenceNo)
         ..limit = limit,
+      options: CallOptions(timeout: const Duration(seconds: 10)),
     );
   }
 
@@ -142,6 +143,7 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
         ..roomId = roomId
         ..userId = userId
         ..lastReadSequenceNo = fixnum.Int64(lastReadSequenceNo),
+      options: CallOptions(timeout: const Duration(seconds: 10)),
     );
   }
 
@@ -157,6 +159,7 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
         ..pagination = (PaginationRequest()
           ..pageSize = pageSize
           ..pageToken = pageToken),
+      options: CallOptions(timeout: const Duration(seconds: 10)),
     );
   }
 

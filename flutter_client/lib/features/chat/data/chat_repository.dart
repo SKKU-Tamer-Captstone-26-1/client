@@ -1,6 +1,7 @@
 import '../models/groupchat_models.dart';
 import 'chat_remote_data_source.dart';
 import 'grpc_gen/chat/v1/chat.pb.dart';
+import 'grpc_gen/google/protobuf/timestamp.pb.dart';
 
 abstract class ChatRepository {
   Future<GroupchatRoomSummary> createRoom({
@@ -153,7 +154,7 @@ extension _ChatRoomMapper on ChatRoom {
       memberSummary: '-/-',
       location: 'Unknown',
       lastMessage: 'No messages yet',
-      timeLabel: _formatTimestamp(updatedAt),
+      timeLabel: _formatTimestamp(hasUpdatedAt() ? updatedAt : null),
       tags: const [],
       avatarUrls: const [],
       unreadCount: 0,
@@ -172,7 +173,7 @@ extension _ChatRoomSummaryMapper on ChatRoomSummary {
       memberSummary: '-/-',
       location: 'Unknown',
       lastMessage: preview,
-      timeLabel: _formatTimestamp(updatedAt),
+      timeLabel: _formatTimestamp(hasUpdatedAt() ? updatedAt : null),
       tags: const [],
       avatarUrls: const [],
       unreadCount: unreadCount.toInt(),
@@ -192,7 +193,7 @@ extension _ChatMessageMapper on ChatMessage {
           ? GroupchatMessageKind.outgoing
           : GroupchatMessageKind.incoming,
       text: _toPreviewText(),
-      timeLabel: _formatTimestamp(sentAt),
+      timeLabel: _formatTimestamp(hasSentAt() ? sentAt : null),
       senderName: isOutgoing ? null : _shortUserLabel(senderUserId),
       senderAvatarUrl: null,
       deliveryLabel: isOutgoing ? 'Sent' : null,
@@ -216,13 +217,16 @@ extension _ChatMessageMapper on ChatMessage {
   }
 }
 
-String _formatTimestamp(dynamic timestamp) {
+String _formatTimestamp(Timestamp? timestamp) {
   if (timestamp == null) {
+    return '';
+  }
+  if (timestamp.seconds == 0 && timestamp.nanos == 0) {
     return '';
   }
 
   try {
-    final dateTime = (timestamp as dynamic).toDateTime().toLocal() as DateTime;
+    final dateTime = timestamp.toDateTime().toLocal();
     final hour = dateTime.hour.toString().padLeft(2, '0');
     final minute = dateTime.minute.toString().padLeft(2, '0');
     return '$hour:$minute';

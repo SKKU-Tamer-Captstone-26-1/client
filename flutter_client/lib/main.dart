@@ -38,7 +38,11 @@ class OnTheBlockApp extends StatefulWidget {
 }
 
 class _OnTheBlockAppState extends State<OnTheBlockApp> {
-  static const _demoUserId = '11111111-1111-1111-1111-111111111111';
+  static const _fallbackUserId = '11111111-1111-1111-1111-111111111111';
+  static const _currentUserId = String.fromEnvironment(
+    'CHAT_USER_ID',
+    defaultValue: _fallbackUserId,
+  );
 
   ThemeMode _themeMode = ThemeMode.light;
   _AppStage _stage = _AppStage.login;
@@ -125,7 +129,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.board => BoardScreen(onBottomNavSelected: _selectBottomNavItem),
       _AppStage.chat => GroupchatListScreen(
         chatRepository: _chatRepository,
-        currentUserId: _demoUserId,
+        currentUserId: _currentUserId,
         onBottomNavSelected: _selectBottomNavItem,
         onRoomSelected: (room) {
           setState(() {
@@ -137,7 +141,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.groupchatRoom => GroupchatRoomScreen(
         room: _selectedGroupchatRoom,
         chatRepository: _chatRepository,
-        currentUserId: _demoUserId,
+        currentUserId: _currentUserId,
         onBack: () {
           setState(() {
             _stage = _AppStage.chat;
