@@ -173,6 +173,9 @@ Apply the following stable rules for chat work:
 - Render message lists from server order/cursors; do not fabricate ordering guarantees client-side.
 - For deleted messages, always render placeholder behavior and do not expose original deleted payload fields.
 - Treat stream disconnects and status errors as server-driven state changes; reflect them in UI without re-implementing membership rules.
+- Do not infer image messages from optional metadata. Render image content only when `message_type == IMAGE` and `image_url` is non-empty.
+- Always render `TEXT` messages as text bubbles even if metadata is empty.
+- For missing sender avatar URLs, render a local avatar placeholder; do not call network image widgets with empty URLs.
 
 ### Backend-Owned Membership Rules
 
