@@ -15,12 +15,14 @@ class GroupchatListScreen extends StatefulWidget {
     this.onRoomSelected,
     this.chatRepository,
     this.currentUserId,
+    this.excludedRoomIds = const <String>{},
   });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final ValueChanged<GroupchatRoomSummary>? onRoomSelected;
   final ChatRepository? chatRepository;
   final String? currentUserId;
+  final Set<String> excludedRoomIds;
 
   @override
   State<GroupchatListScreen> createState() => _GroupchatListScreenState();
@@ -42,6 +44,14 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
     super.initState();
     _scrollController.addListener(_onScroll);
     _loadRooms();
+  }
+
+  @override
+  void didUpdateWidget(covariant GroupchatListScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.excludedRoomIds != widget.excludedRoomIds) {
+      _applyExclusions();
+    }
   }
 
   @override
@@ -69,7 +79,9 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
         return;
       }
       setState(() {
-        _rooms = page.rooms;
+        _rooms = page.rooms
+            .where((room) => !widget.excludedRoomIds.contains(room.roomId))
+            .toList();
         _nextPageToken = page.nextPageToken;
         _hasMore = _nextPageToken.isNotEmpty;
       });
@@ -111,7 +123,11 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
       final existingRoomIds = _rooms.map((room) => room.roomId).toSet();
       final merged = [
         ..._rooms,
-        ...page.rooms.where((room) => !existingRoomIds.contains(room.roomId)),
+        ...page.rooms.where(
+          (room) =>
+              !existingRoomIds.contains(room.roomId) &&
+              !widget.excludedRoomIds.contains(room.roomId),
+        ),
       ];
       setState(() {
         _rooms = merged;
@@ -156,6 +172,17 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
     });
   }
 
+  void _applyExclusions() {
+    if (!mounted || widget.excludedRoomIds.isEmpty) {
+      return;
+    }
+    setState(() {
+      _rooms = _rooms
+          .where((room) => !widget.excludedRoomIds.contains(room.roomId))
+          .toList();
+    });
+  }
+
   Future<void> _createRoomFromFab() async {
     final repo = widget.chatRepository;
     final userId = widget.currentUserId;
@@ -178,7 +205,10 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
         return;
       }
       setState(() {
-        _rooms = [created, ..._rooms];
+        _rooms = [
+          if (!widget.excludedRoomIds.contains(created.roomId)) created,
+          ..._rooms,
+        ];
       });
       widget.onRoomSelected?.call(created);
       _showInfo('Room created.');
@@ -244,7 +274,12 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
                       child: LinearProgressIndicator(minHeight: 2),
                     ),
                   _ChatRoomList(
-                    rooms: _rooms,
+                    rooms: _rooms
+                        .where(
+                          (room) =>
+                              !widget.excludedRoomIds.contains(room.roomId),
+                        )
+                        .toList(),
                     onRoomSelected: widget.onRoomSelected,
                   ),
                   if (_loadingMore)

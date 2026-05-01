@@ -11,7 +11,6 @@ import 'features/chat/data/chat_remote_data_source.dart';
 import 'features/chat/data/chat_repository.dart';
 import 'features/chat/presentation/groupchat_list_screen.dart';
 import 'features/chat/presentation/groupchat_room_screen.dart';
-import 'features/chat/data/mock_groupchat_data.dart';
 import 'features/chat/models/groupchat_models.dart';
 import 'features/collection/presentation/collection_screen.dart';
 import 'features/home/presentation/home_screen.dart';
@@ -43,10 +42,22 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
     defaultValue: '11111111-1111-1111-1111-111111111111',
   );
 
+  static const _emptyRoom = GroupchatRoomSummary(
+    roomId: '',
+    title: '',
+    memberSummary: '-/-',
+    location: '',
+    lastMessage: '',
+    timeLabel: '',
+    tags: <String>[],
+    avatarUrls: <String>[],
+  );
+
   ThemeMode _themeMode = ThemeMode.light;
   _AppStage _stage = _AppStage.login;
-  GroupchatRoomSummary _selectedGroupchatRoom = mockGroupchatRooms.first;
+  GroupchatRoomSummary _selectedGroupchatRoom = _emptyRoom;
   GrpcChatRepository? _chatRepository;
+  final Set<String> _locallyHiddenRoomIds = <String>{};
 
   @override
   void initState() {
@@ -130,9 +141,11 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.chat => GroupchatListScreen(
         chatRepository: _chatRepository,
         currentUserId: _currentUserId,
+        excludedRoomIds: _locallyHiddenRoomIds,
         onBottomNavSelected: _selectBottomNavItem,
         onRoomSelected: (room) {
           setState(() {
+            _locallyHiddenRoomIds.remove(room.roomId);
             _selectedGroupchatRoom = room;
             _stage = _AppStage.groupchatRoom;
           });
@@ -145,6 +158,11 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
         onBack: () {
           setState(() {
             _stage = _AppStage.chat;
+          });
+        },
+        onRoomDeactivated: (roomId) {
+          setState(() {
+            _locallyHiddenRoomIds.add(roomId);
           });
         },
         onBottomNavSelected: _selectBottomNavItem,

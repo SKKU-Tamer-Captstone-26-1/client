@@ -16,6 +16,7 @@ class GroupchatRoomScreen extends StatefulWidget {
     super.key,
     required this.room,
     this.onBack,
+    this.onRoomDeactivated,
     this.onBottomNavSelected,
     this.chatRepository,
     this.currentUserId,
@@ -23,6 +24,7 @@ class GroupchatRoomScreen extends StatefulWidget {
 
   final GroupchatRoomSummary room;
   final VoidCallback? onBack;
+  final ValueChanged<String>? onRoomDeactivated;
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final ChatRepository? chatRepository;
   final String? currentUserId;
@@ -51,7 +53,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _messages = mockGroupchatMessages;
+    _messages = const [];
     _bootstrapMessages();
   }
 
@@ -111,7 +113,9 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       unawaited(_persistLatestSequenceNo());
       _restartMessageStream();
     } catch (_) {
-      // Keep existing messages on errors.
+      if (_messages.isEmpty) {
+        _showInfo('Room unavailable or inactive.');
+      }
     } finally {
       if (_streamSub == null) {
         final currentLatest = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
@@ -310,6 +314,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         roomId: widget.room.roomId,
         ownerUserId: userId,
       );
+      widget.onRoomDeactivated?.call(widget.room.roomId);
       _showInfo('Room deactivated.');
       widget.onBack?.call();
     } catch (_) {
