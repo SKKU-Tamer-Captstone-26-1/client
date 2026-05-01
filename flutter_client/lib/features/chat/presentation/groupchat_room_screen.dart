@@ -45,8 +45,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     return widget.chatRepository != null &&
         widget.currentUserId != null &&
         widget.currentUserId!.isNotEmpty &&
-        widget.room.roomId.isNotEmpty &&
-        !widget.room.roomId.startsWith('mock-room-');
+        widget.room.roomId.isNotEmpty;
   }
 
   @override
@@ -174,23 +173,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       return;
     }
     if (!_canUseRemote) {
-      setState(() {
-        _messages = [
-          ..._messages,
-          GroupchatMessage(
-            messageId: 'local-${DateTime.now().microsecondsSinceEpoch}',
-            roomId: widget.room.roomId,
-            sequenceNo: _messages.length + 1,
-            kind: GroupchatMessageKind.outgoing,
-            text: text,
-            timeLabel: _nowTimeLabel(),
-            deliveryLabel: 'Sent',
-          ),
-        ];
-      });
-      _latestSequenceNo = _messages.last.sequenceNo;
-      unawaited(_persistLatestSequenceNo());
-      _composerController.clear();
+      _showInfo('Chat backend unavailable.');
       return;
     }
 
@@ -211,7 +194,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     if (!_canUseRemote) {
       return;
     }
-    if (message.messageId.isEmpty || message.messageId.startsWith('local-')) {
+    if (message.messageId.isEmpty) {
       return;
     }
 
@@ -418,13 +401,6 @@ List<GroupchatMessage> _normalizeMessages(List<GroupchatMessage> messages) {
   final cloned = [...messages];
   cloned.sort((a, b) => a.sequenceNo.compareTo(b.sequenceNo));
   return cloned;
-}
-
-String _nowTimeLabel() {
-  final now = DateTime.now();
-  final hour = now.hour.toString().padLeft(2, '0');
-  final minute = now.minute.toString().padLeft(2, '0');
-  return '$hour:$minute';
 }
 
 class _GroupchatRoomAppBar extends StatelessWidget
