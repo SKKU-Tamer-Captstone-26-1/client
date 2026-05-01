@@ -28,7 +28,7 @@ class GroupchatListScreen extends StatefulWidget {
 }
 
 class _GroupchatListScreenState extends State<GroupchatListScreen> {
-  List<GroupchatRoomSummary> _rooms = mockGroupchatRooms;
+  List<GroupchatRoomSummary> _rooms = const [];
   bool _loading = false;
 
   int get _unreadCount =>
@@ -74,12 +74,7 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
     final repo = widget.chatRepository;
     final userId = widget.currentUserId;
     if (repo == null || userId == null || userId.isEmpty) {
-      final localRoom = _buildLocalRoom();
-      setState(() {
-        _rooms = [localRoom, ..._rooms];
-      });
-      widget.onRoomSelected?.call(localRoom);
-      _showInfo('Chat backend unavailable. Opened local preview room.');
+      _showInfo('Chat backend unavailable.');
       return;
     }
 
@@ -102,12 +97,7 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
       widget.onRoomSelected?.call(created);
       _showInfo('Room created.');
     } catch (_) {
-      final localRoom = _buildLocalRoom();
-      setState(() {
-        _rooms = [localRoom, ..._rooms];
-      });
-      widget.onRoomSelected?.call(localRoom);
-      _showInfo('Could not create server room. Opened local preview room.');
+      _showInfo('Could not create room on server.');
     } finally {
       if (mounted) {
         setState(() {
@@ -115,24 +105,6 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
         });
       }
     }
-  }
-
-  GroupchatRoomSummary _buildLocalRoom() {
-    final now = DateTime.now();
-    final hour = now.hour.toString().padLeft(2, '0');
-    final minute = now.minute.toString().padLeft(2, '0');
-    final title = 'New chat $hour:$minute';
-    return GroupchatRoomSummary(
-      roomId: 'mock-room-local-${now.microsecondsSinceEpoch}',
-      title: title,
-      memberSummary: '1/1',
-      location: 'Local Preview',
-      lastMessage: 'No messages yet',
-      timeLabel: '$hour:$minute',
-      tags: const [],
-      avatarUrls: const [],
-      unreadCount: 0,
-    );
   }
 
   void _showInfo(String message) {
@@ -342,6 +314,37 @@ class _ChatRoomList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+
+    if (rooms.isEmpty) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: palette.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: palette.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+          child: Row(
+            children: [
+              Icon(Icons.chat_bubble_outline, color: palette.secondary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'No chat rooms yet. Create your first room.',
+                  style: TextStyle(
+                    color: palette.secondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return DecoratedBox(
       decoration: BoxDecoration(
