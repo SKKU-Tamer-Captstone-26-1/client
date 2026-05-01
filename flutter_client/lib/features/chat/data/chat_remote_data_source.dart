@@ -27,6 +27,11 @@ abstract class ChatRemoteDataSource {
     required String ownerUserId,
   });
 
+  Future<DeactivateRoomResponse> deactivateRoom({
+    required String roomId,
+    required String ownerUserId,
+  });
+
   Future<GetMessagesResponse> getMessages({
     required String roomId,
     required String userId,
@@ -131,6 +136,19 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
       DeleteMessageRequest()
         ..roomId = roomId
         ..messageId = messageId
+        ..ownerUserId = ownerUserId,
+      options: CallOptions(timeout: const Duration(seconds: 10)),
+    );
+  }
+
+  @override
+  Future<DeactivateRoomResponse> deactivateRoom({
+    required String roomId,
+    required String ownerUserId,
+  }) {
+    return _client.deactivateRoom(
+      DeactivateRoomRequest()
+        ..roomId = roomId
         ..ownerUserId = ownerUserId,
       options: CallOptions(timeout: const Duration(seconds: 10)),
     );

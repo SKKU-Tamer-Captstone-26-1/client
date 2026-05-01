@@ -250,6 +250,73 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     }
   }
 
+  Future<void> _showRoomOptions() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: ListTile(
+            leading: const Icon(Icons.delete_sweep_outlined),
+            title: const Text('Deactivate room'),
+            onTap: () => Navigator.of(context).pop('deactivate'),
+          ),
+        );
+      },
+    );
+    if (selected == 'deactivate' && mounted) {
+      await _deactivateRoom();
+    }
+  }
+
+  Future<void> _deactivateRoom() async {
+    if (!_canUseRemote) {
+      _showInfo('Chat backend unavailable.');
+      return;
+    }
+    final repo = widget.chatRepository;
+    final userId = widget.currentUserId;
+    if (repo == null || userId == null || userId.isEmpty) {
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Deactivate room?'),
+          content: const Text(
+            'This room will be deactivated and removed from active chat.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Deactivate'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    try {
+      await repo.deactivateRoom(
+        roomId: widget.room.roomId,
+        ownerUserId: userId,
+      );
+      _showInfo('Room deactivated.');
+      widget.onBack?.call();
+    } catch (_) {
+      _showInfo('Could not deactivate room. Owner permission required.');
+    }
+  }
+
   void _showInfo(String message) {
     if (!mounted) {
       return;
@@ -265,7 +332,13 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
 
     return Scaffold(
       backgroundColor: palette.surfaceContainerLow,
-      appBar: _GroupchatRoomAppBar(room: widget.room, onBack: widget.onBack),
+      appBar: _GroupchatRoomAppBar(
+        room: widget.room,
+        onBack: widget.onBack,
+        onRoomOptionsPressed: () {
+          _showRoomOptions();
+        },
+      ),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.chat,
         onItemSelected: widget.onBottomNavSelected,
@@ -351,10 +424,15 @@ String _nowTimeLabel() {
 
 class _GroupchatRoomAppBar extends StatelessWidget
     implements PreferredSizeWidget {
-  const _GroupchatRoomAppBar({required this.room, this.onBack});
+  const _GroupchatRoomAppBar({
+    required this.room,
+    this.onBack,
+    this.onRoomOptionsPressed,
+  });
 
   final GroupchatRoomSummary room;
   final VoidCallback? onBack;
+  final VoidCallback? onRoomOptionsPressed;
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -413,7 +491,7 @@ class _GroupchatRoomAppBar extends StatelessWidget
       ),
       actions: [
         IconButton(
-          onPressed: () {},
+          onPressed: onRoomOptionsPressed,
           tooltip: 'Room options',
           icon: const Icon(Icons.more_vert, color: AppColors.primaryContainer),
         ),
