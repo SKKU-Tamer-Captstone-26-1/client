@@ -38,7 +38,10 @@ class OnTheBlockApp extends StatefulWidget {
 }
 
 class _OnTheBlockAppState extends State<OnTheBlockApp> {
-  static const _currentUserId = String.fromEnvironment('CHAT_USER_ID');
+  static const _currentUserId = String.fromEnvironment(
+    'CHAT_USER_ID',
+    defaultValue: '11111111-1111-1111-1111-111111111111',
+  );
 
   ThemeMode _themeMode = ThemeMode.light;
   _AppStage _stage = _AppStage.login;
@@ -48,14 +51,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
   @override
   void initState() {
     super.initState();
-    if (_currentUserId.isEmpty) {
-      return;
-    }
-    try {
-      _chatRepository = GrpcChatRepository(GrpcChatRemoteDataSource());
-    } catch (_) {
-      _chatRepository = null;
-    }
+    _chatRepository = GrpcChatRepository(GrpcChatRemoteDataSource());
   }
 
   @override
@@ -133,7 +129,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.board => BoardScreen(onBottomNavSelected: _selectBottomNavItem),
       _AppStage.chat => GroupchatListScreen(
         chatRepository: _chatRepository,
-        currentUserId: _currentUserId.isEmpty ? null : _currentUserId,
+        currentUserId: _currentUserId,
         onBottomNavSelected: _selectBottomNavItem,
         onRoomSelected: (room) {
           setState(() {
@@ -145,7 +141,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.groupchatRoom => GroupchatRoomScreen(
         room: _selectedGroupchatRoom,
         chatRepository: _chatRepository,
-        currentUserId: _currentUserId.isEmpty ? null : _currentUserId,
+        currentUserId: _currentUserId,
         onBack: () {
           setState(() {
             _stage = _AppStage.chat;

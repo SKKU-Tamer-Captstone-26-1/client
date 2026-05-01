@@ -51,12 +51,7 @@ abstract class ChatRemoteDataSource {
 
 class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
   factory GrpcChatRemoteDataSource({ChatGrpcEndpoint? endpoint}) {
-    final resolvedEndpoint = endpoint ?? ChatGrpcEndpoint.tryFromEnvironment();
-    if (resolvedEndpoint == null) {
-      throw StateError(
-        'Missing chat endpoint config. Set CHAT_GRPC_HOST and CHAT_GRPC_PORT.',
-      );
-    }
+    final resolvedEndpoint = endpoint ?? ChatGrpcEndpoint.fromEnvironment();
     final channel = ClientChannel(
       resolvedEndpoint.host,
       port: resolvedEndpoint.port,

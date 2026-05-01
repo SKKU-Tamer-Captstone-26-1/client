@@ -9,27 +9,23 @@ class ChatGrpcEndpoint {
   final int port;
   final bool useTls;
 
-  static ChatGrpcEndpoint? tryFromEnvironment() {
-    const host = String.fromEnvironment('CHAT_GRPC_HOST');
-    const portValue = String.fromEnvironment('CHAT_GRPC_PORT');
+  static ChatGrpcEndpoint fromEnvironment() {
+    const host = String.fromEnvironment(
+      'CHAT_GRPC_HOST',
+      defaultValue: '127.0.0.1',
+    );
+    const portValue = String.fromEnvironment(
+      'CHAT_GRPC_PORT',
+      defaultValue: '9090',
+    );
     const useTlsValue = String.fromEnvironment(
       'CHAT_GRPC_TLS',
       defaultValue: 'false',
     );
 
-    if (host.isEmpty || portValue.isEmpty) {
-      return null;
-    }
-    final parsedPort = int.tryParse(portValue);
-    if (parsedPort == null || parsedPort <= 0) {
-      return null;
-    }
+    final parsedPort = int.tryParse(portValue) ?? 9090;
     final parsedTls = useTlsValue.toLowerCase() == 'true';
 
-    return ChatGrpcEndpoint(
-      host: host,
-      port: parsedPort,
-      useTls: parsedTls,
-    );
+    return ChatGrpcEndpoint(host: host, port: parsedPort, useTls: parsedTls);
   }
 }
