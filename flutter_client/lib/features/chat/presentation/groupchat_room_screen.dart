@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
@@ -30,7 +31,8 @@ class GroupchatRoomScreen extends StatefulWidget {
   State<GroupchatRoomScreen> createState() => _GroupchatRoomScreenState();
 }
 
-class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
+class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
+    with WidgetsBindingObserver {
   late List<GroupchatMessage> _messages;
   final TextEditingController _composerController = TextEditingController();
   bool _loading = false;
@@ -48,15 +50,41 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _messages = mockGroupchatMessages;
-    _loadMessages();
+    _bootstrapMessages();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _streamSub?.cancel();
     _composerController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!_canUseRemote) {
+      return;
+    }
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      _streamSub?.cancel();
+      _streamSub = null;
+      return;
+    }
+    if (state == AppLifecycleState.resumed) {
+      _loadMessages();
+    }
+  }
+
+  Future<void> _bootstrapMessages() async {
+    if (_canUseRemote) {
+      _latestSequenceNo = await _readPersistedSequenceNo();
+    }
+    await _loadMessages();
   }
 
   Future<void> _loadMessages() async {
@@ -77,14 +105,17 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
       }
       setState(() {
         _messages = _normalizeMessages(fetched);
-        _latestSequenceNo = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
+        final fetchedLatest = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
+        _latestSequenceNo = _maxSequenceNo(_latestSequenceNo, fetchedLatest);
       });
+      unawaited(_persistLatestSequenceNo());
       _restartMessageStream();
     } catch (_) {
       // Keep existing messages on errors.
     } finally {
       if (_streamSub == null) {
-        _latestSequenceNo = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
+        final currentLatest = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
+        _latestSequenceNo = _maxSequenceNo(_latestSequenceNo, currentLatest);
         _restartMessageStream();
       }
       if (mounted) {
@@ -110,7 +141,11 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
           if (!mounted) {
             return;
           }
-          final exists = _messages.any((m) => m.messageId == message.messageId);
+          final exists = _messages.any(
+            (m) =>
+                m.messageId == message.messageId ||
+                m.sequenceNo == message.sequenceNo,
+          );
           if (exists) {
             return;
           }
@@ -118,6 +153,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
             _messages = _normalizeMessages([..._messages, message]);
             _latestSequenceNo = _messages.last.sequenceNo;
           });
+          unawaited(_persistLatestSequenceNo());
         });
   }
 
@@ -148,6 +184,8 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
           ),
         ];
       });
+      _latestSequenceNo = _messages.last.sequenceNo;
+      unawaited(_persistLatestSequenceNo());
       _composerController.clear();
       return;
     }
@@ -213,6 +251,30 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen> {
       ),
     );
   }
+
+  String _sequenceStorageKey() {
+    return 'chat.last_sequence.${widget.currentUserId}.${widget.room.roomId}';
+  }
+
+  Future<int> _readPersistedSequenceNo() async {
+    final userId = widget.currentUserId;
+    if (userId == null || userId.isEmpty) {
+      return 0;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_sequenceStorageKey()) ?? 0;
+  }
+
+  Future<void> _persistLatestSequenceNo() async {
+    final userId = widget.currentUserId;
+    if (userId == null || userId.isEmpty || _latestSequenceNo <= 0) {
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_sequenceStorageKey(), _latestSequenceNo);
+  }
+
+  int _maxSequenceNo(int a, int b) => a > b ? a : b;
 }
 
 List<GroupchatMessage> _normalizeMessages(List<GroupchatMessage> messages) {

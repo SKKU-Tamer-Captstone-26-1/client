@@ -17,7 +17,7 @@ abstract class ChatRepository {
     required String content,
   });
 
-  Future<List<GroupchatRoomSummary>> listMyRooms({
+  Future<ChatRoomPage> listMyRooms({
     required String userId,
     int pageSize = 20,
     String pageToken = '',
@@ -43,6 +43,13 @@ abstract class ChatRepository {
   });
 
   Future<void> dispose();
+}
+
+class ChatRoomPage {
+  const ChatRoomPage({required this.rooms, required this.nextPageToken});
+
+  final List<GroupchatRoomSummary> rooms;
+  final String nextPageToken;
 }
 
 class GrpcChatRepository implements ChatRepository {
@@ -81,7 +88,7 @@ class GrpcChatRepository implements ChatRepository {
   }
 
   @override
-  Future<List<GroupchatRoomSummary>> listMyRooms({
+  Future<ChatRoomPage> listMyRooms({
     required String userId,
     int pageSize = 20,
     String pageToken = '',
@@ -91,7 +98,10 @@ class GrpcChatRepository implements ChatRepository {
       pageSize: pageSize,
       pageToken: pageToken,
     );
-    return response.rooms.map((room) => room.toUiRoomSummary()).toList();
+    return ChatRoomPage(
+      rooms: response.rooms.map((room) => room.toUiRoomSummary()).toList(),
+      nextPageToken: response.pagination.nextPageToken,
+    );
   }
 
   @override
