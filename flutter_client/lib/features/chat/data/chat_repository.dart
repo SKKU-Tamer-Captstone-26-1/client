@@ -17,6 +17,12 @@ abstract class ChatRepository {
     required String content,
   });
 
+  Future<void> deleteMessage({
+    required String roomId,
+    required String messageId,
+    required String ownerUserId,
+  });
+
   Future<ChatRoomPage> listMyRooms({
     required String userId,
     int pageSize = 20,
@@ -84,6 +90,19 @@ class GrpcChatRepository implements ChatRepository {
       roomId: roomId,
       senderUserId: senderUserId,
       content: content,
+    );
+  }
+
+  @override
+  Future<void> deleteMessage({
+    required String roomId,
+    required String messageId,
+    required String ownerUserId,
+  }) {
+    return _remote.deleteMessage(
+      roomId: roomId,
+      messageId: messageId,
+      ownerUserId: ownerUserId,
     );
   }
 

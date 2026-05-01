@@ -203,6 +203,62 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     }
   }
 
+  Future<void> _onMessageLongPress(GroupchatMessage message) async {
+    if (!_canUseRemote) {
+      return;
+    }
+    if (message.messageId.isEmpty || message.messageId.startsWith('local-')) {
+      return;
+    }
+
+    final shouldDelete = await showModalBottomSheet<bool>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: ListTile(
+            leading: const Icon(Icons.delete_outline),
+            title: const Text('Delete message'),
+            onTap: () => Navigator.of(context).pop(true),
+          ),
+        );
+      },
+    );
+    if (shouldDelete != true || !mounted) {
+      return;
+    }
+
+    await _deleteMessage(message);
+  }
+
+  Future<void> _deleteMessage(GroupchatMessage message) async {
+    final repo = widget.chatRepository;
+    final userId = widget.currentUserId;
+    if (repo == null || userId == null || userId.isEmpty) {
+      return;
+    }
+
+    try {
+      await repo.deleteMessage(
+        roomId: widget.room.roomId,
+        messageId: message.messageId,
+        ownerUserId: userId,
+      );
+      _showInfo('Message deleted.');
+      await _loadMessages();
+    } catch (_) {
+      _showInfo('Could not delete message. Owner permission required.');
+    }
+  }
+
+  void _showInfo(String message) {
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
@@ -232,7 +288,10 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
                           padding: EdgeInsets.only(bottom: 16),
                           child: LinearProgressIndicator(minHeight: 2),
                         ),
-                      _MessageList(messages: _messages),
+                      _MessageList(
+                        messages: _messages,
+                        onMessageLongPress: _onMessageLongPress,
+                      ),
                       const SizedBox(height: 22),
                       const _LiveDropPreview(),
                       const SizedBox(height: 22),
@@ -397,16 +456,20 @@ class _DateDivider extends StatelessWidget {
 }
 
 class _MessageList extends StatelessWidget {
-  const _MessageList({required this.messages});
+  const _MessageList({required this.messages, this.onMessageLongPress});
 
   final List<GroupchatMessage> messages;
+  final ValueChanged<GroupchatMessage>? onMessageLongPress;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         for (final message in messages) ...[
-          _MessageBubble(message: message),
+          _MessageBubble(
+            message: message,
+            onLongPress: onMessageLongPress,
+          ),
           const SizedBox(height: 20),
         ],
       ],
@@ -415,15 +478,19 @@ class _MessageList extends StatelessWidget {
 }
 
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message});
+  const _MessageBubble({required this.message, this.onLongPress});
 
   final GroupchatMessage message;
+  final ValueChanged<GroupchatMessage>? onLongPress;
 
   @override
   Widget build(BuildContext context) {
-    return message.isOutgoing
-        ? _OutgoingMessage(message: message)
-        : _IncomingMessage(message: message);
+    return GestureDetector(
+      onLongPress: onLongPress == null ? null : () => onLongPress!(message),
+      child: message.isOutgoing
+          ? _OutgoingMessage(message: message)
+          : _IncomingMessage(message: message),
+    );
   }
 }
 
