@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -365,6 +367,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
             _MessageComposer(
               controller: _composerController,
               onSend: _sendMessage,
+              onPickAttachment: _showAttachmentOptions,
             ),
           ],
         ),
@@ -395,6 +398,116 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
   }
 
   int _maxSequenceNo(int a, int b) => a > b ? a : b;
+
+  Future<void> _showAttachmentOptions() async {
+    final option = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ListTile(
+                    leading: const Icon(Icons.photo_library_outlined),
+                    title: const Text('Image'),
+                    onTap: () => Navigator.of(context).pop('image'),
+                  ),
+                ),
+                Expanded(
+                  child: ListTile(
+                    leading: const Icon(Icons.insert_drive_file_outlined),
+                    title: const Text('File'),
+                    onTap: () => Navigator.of(context).pop('file'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (option == 'image') {
+      await _pickAndSendImage();
+      return;
+    }
+    if (option == 'file') {
+      await _pickAndSendFile();
+      return;
+    }
+  }
+
+  Future<void> _pickAndSendImage() async {
+    if (!_canUseRemote) {
+      _showInfo('Chat backend unavailable.');
+      return;
+    }
+    final userId = widget.currentUserId;
+    final repo = widget.chatRepository;
+    if (userId == null || userId.isEmpty || repo == null) {
+      return;
+    }
+
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: ImageSource.gallery);
+    if (file == null) {
+      return;
+    }
+
+    final filename = file.name.trim().isEmpty ? 'image' : file.name.trim();
+    final label = '[Image] $filename';
+
+    try {
+      await repo.sendTextMessage(
+        roomId: widget.room.roomId,
+        senderUserId: userId,
+        content: label,
+      );
+      await _loadMessages();
+      _showInfo('Image sent: $filename');
+    } catch (_) {
+      _showInfo('Could not send image.');
+    }
+  }
+
+  Future<void> _pickAndSendFile() async {
+    if (!_canUseRemote) {
+      _showInfo('Chat backend unavailable.');
+      return;
+    }
+    final userId = widget.currentUserId;
+    final repo = widget.chatRepository;
+    if (userId == null || userId.isEmpty || repo == null) {
+      return;
+    }
+
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['pdf'],
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty) {
+      return;
+    }
+
+    final file = result.files.first;
+    final filename = file.name.trim().isEmpty ? 'attachment' : file.name.trim();
+    final label = '[PDF] $filename';
+
+    try {
+      await repo.sendTextMessage(
+        roomId: widget.room.roomId,
+        senderUserId: userId,
+        content: label,
+      );
+      await _loadMessages();
+      _showInfo('File sent: $filename');
+    } catch (_) {
+      _showInfo('Could not send file.');
+    }
+  }
 }
 
 List<GroupchatMessage> _normalizeMessages(List<GroupchatMessage> messages) {
@@ -990,10 +1103,15 @@ class _SuggestionChips extends StatelessWidget {
 }
 
 class _MessageComposer extends StatelessWidget {
-  const _MessageComposer({required this.controller, required this.onSend});
+  const _MessageComposer({
+    required this.controller,
+    required this.onSend,
+    required this.onPickAttachment,
+  });
 
   final TextEditingController controller;
   final VoidCallback onSend;
+  final VoidCallback onPickAttachment;
 
   @override
   Widget build(BuildContext context) {
@@ -1012,7 +1130,7 @@ class _MessageComposer extends StatelessWidget {
             child: Row(
               children: [
                 IconButton.filledTonal(
-                  onPressed: () {},
+                  onPressed: onPickAttachment,
                   style: IconButton.styleFrom(
                     backgroundColor: palette.surfaceContainerLow,
                     foregroundColor: palette.onSurfaceVariant,
