@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:fixnum/fixnum.dart' as fixnum;
 import 'package:grpc/grpc.dart';
+import 'grpc_gen/google/protobuf/struct.pb.dart' as structpb;
 
 import 'chat_grpc_endpoint.dart';
 import 'grpc_gen/chat/v1/chat.pbgrpc.dart';
@@ -19,6 +23,32 @@ abstract class ChatRemoteDataSource {
     required String roomId,
     required String senderUserId,
     required String content,
+  });
+
+  Future<CreateAttachmentUploadURLResponse> createAttachmentUploadURL({
+    required String userId,
+    required String fileName,
+    required String contentType,
+  });
+
+  Future<void> uploadToSignedUrl({
+    required String uploadUrl,
+    required String contentType,
+    required List<int> bytes,
+  });
+
+  Future<SendMessageResponse> sendImageMessage({
+    required String roomId,
+    required String senderUserId,
+    required String imageUrl,
+  });
+
+  Future<SendMessageResponse> sendFileMessage({
+    required String roomId,
+    required String senderUserId,
+    required String fileUrl,
+    required String fileName,
+    required String contentType,
   });
 
   Future<DeleteMessageResponse> deleteMessage({
@@ -122,6 +152,88 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
         ..senderUserId = senderUserId
         ..messageType = MessageType.MESSAGE_TYPE_TEXT
         ..content = content,
+      options: CallOptions(timeout: const Duration(seconds: 10)),
+    );
+  }
+
+  @override
+  Future<CreateAttachmentUploadURLResponse> createAttachmentUploadURL({
+    required String userId,
+    required String fileName,
+    required String contentType,
+  }) {
+    return _client.createAttachmentUploadURL(
+      CreateAttachmentUploadURLRequest()
+        ..userId = userId
+        ..fileName = fileName
+        ..contentType = contentType,
+      options: CallOptions(timeout: const Duration(seconds: 10)),
+    );
+  }
+
+  @override
+  Future<void> uploadToSignedUrl({
+    required String uploadUrl,
+    required String contentType,
+    required List<int> bytes,
+  }) async {
+    final client = HttpClient();
+    try {
+      final request = await client.putUrl(Uri.parse(uploadUrl));
+      request.headers.set(HttpHeaders.contentTypeHeader, contentType);
+      request.contentLength = bytes.length;
+      request.add(bytes);
+      final response = await request.close();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final responseBody = await response.transform(utf8.decoder).join();
+        final compactBody = responseBody.replaceAll(RegExp(r'\s+'), ' ').trim();
+        throw HttpException(
+          'upload failed with status ${response.statusCode}'
+          '${compactBody.isEmpty ? '' : ': $compactBody'}',
+          uri: Uri.parse(uploadUrl),
+        );
+      }
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  @override
+  Future<SendMessageResponse> sendImageMessage({
+    required String roomId,
+    required String senderUserId,
+    required String imageUrl,
+  }) {
+    return _client.sendMessage(
+      SendMessageRequest()
+        ..roomId = roomId
+        ..senderUserId = senderUserId
+        ..messageType = MessageType.MESSAGE_TYPE_IMAGE
+        ..imageUrl = imageUrl,
+      options: CallOptions(timeout: const Duration(seconds: 10)),
+    );
+  }
+
+  @override
+  Future<SendMessageResponse> sendFileMessage({
+    required String roomId,
+    required String senderUserId,
+    required String fileUrl,
+    required String fileName,
+    required String contentType,
+  }) {
+    return _client.sendMessage(
+      SendMessageRequest()
+        ..roomId = roomId
+        ..senderUserId = senderUserId
+        ..messageType = MessageType.MESSAGE_TYPE_FILE
+        ..fileUrl = fileUrl
+        ..metadata = (structpb.Struct()
+          ..fields.addAll({
+            'file_url': structpb.Value()..stringValue = fileUrl,
+            'file_name': structpb.Value()..stringValue = fileName,
+            'content_type': structpb.Value()..stringValue = contentType,
+          })),
       options: CallOptions(timeout: const Duration(seconds: 10)),
     );
   }
