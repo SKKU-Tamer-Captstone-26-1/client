@@ -17,6 +17,32 @@ abstract class ChatRepository {
     required String content,
   });
 
+  Future<AttachmentUploadTarget> createAttachmentUploadURL({
+    required String userId,
+    required String fileName,
+    required String contentType,
+  });
+
+  Future<void> uploadToSignedUrl({
+    required String uploadUrl,
+    required String contentType,
+    required List<int> bytes,
+  });
+
+  Future<void> sendImageMessage({
+    required String roomId,
+    required String senderUserId,
+    required String imageUrl,
+  });
+
+  Future<void> sendFileMessage({
+    required String roomId,
+    required String senderUserId,
+    required String fileUrl,
+    required String fileName,
+    required String contentType,
+  });
+
   Future<void> deleteMessage({
     required String roomId,
     required String messageId,
@@ -63,6 +89,18 @@ class ChatRoomPage {
   final String nextPageToken;
 }
 
+class AttachmentUploadTarget {
+  const AttachmentUploadTarget({
+    required this.objectName,
+    required this.uploadUrl,
+    required this.fileUrl,
+  });
+
+  final String objectName;
+  final String uploadUrl;
+  final String fileUrl;
+}
+
 class GrpcChatRepository implements ChatRepository {
   GrpcChatRepository(this._remote);
 
@@ -95,6 +133,67 @@ class GrpcChatRepository implements ChatRepository {
       roomId: roomId,
       senderUserId: senderUserId,
       content: content,
+    );
+  }
+
+  @override
+  Future<AttachmentUploadTarget> createAttachmentUploadURL({
+    required String userId,
+    required String fileName,
+    required String contentType,
+  }) async {
+    final response = await _remote.createAttachmentUploadURL(
+      userId: userId,
+      fileName: fileName,
+      contentType: contentType,
+    );
+    return AttachmentUploadTarget(
+      objectName: response.objectName,
+      uploadUrl: response.uploadUrl,
+      fileUrl: response.fileUrl,
+    );
+  }
+
+  @override
+  Future<void> uploadToSignedUrl({
+    required String uploadUrl,
+    required String contentType,
+    required List<int> bytes,
+  }) {
+    return _remote.uploadToSignedUrl(
+      uploadUrl: uploadUrl,
+      contentType: contentType,
+      bytes: bytes,
+    );
+  }
+
+  @override
+  Future<void> sendImageMessage({
+    required String roomId,
+    required String senderUserId,
+    required String imageUrl,
+  }) {
+    return _remote.sendImageMessage(
+      roomId: roomId,
+      senderUserId: senderUserId,
+      imageUrl: imageUrl,
+    );
+  }
+
+  @override
+  Future<void> sendFileMessage({
+    required String roomId,
+    required String senderUserId,
+    required String fileUrl,
+    required String fileName,
+    required String contentType,
+  }) {
+    return _remote.sendFileMessage(
+      roomId: roomId,
+      senderUserId: senderUserId,
+      fileUrl: fileUrl,
+      fileName: fileName,
+      contentType: contentType,
     );
   }
 
@@ -239,6 +338,9 @@ extension _ChatMessageMapper on ChatMessage {
           : GroupchatMessageKind.incoming,
       contentType: _toContentType(),
       imageUrl: imageUrl,
+      fileUrl: _resolvedFileUrl(),
+      fileName: _metadataString('file_name'),
+      fileContentType: _metadataString('content_type'),
       text: _toPreviewText(),
       timeLabel: _formatTimestamp(hasSentAt() ? sentAt : null),
       senderName: isOutgoing ? null : _shortUserLabel(senderUserId),
@@ -253,6 +355,8 @@ extension _ChatMessageMapper on ChatMessage {
         return GroupchatMessageContentType.image;
       case MessageType.MESSAGE_TYPE_SYSTEM:
         return GroupchatMessageContentType.system;
+      case MessageType.MESSAGE_TYPE_FILE:
+        return GroupchatMessageContentType.file;
       case MessageType.MESSAGE_TYPE_TEXT:
       case MessageType.MESSAGE_TYPE_UNSPECIFIED:
         return GroupchatMessageContentType.text;
@@ -271,10 +375,32 @@ extension _ChatMessageMapper on ChatMessage {
     if (messageType == MessageType.MESSAGE_TYPE_IMAGE) {
       return '[Image]';
     }
+    if (messageType == MessageType.MESSAGE_TYPE_FILE) {
+      final fileName = _metadataString('file_name');
+      return fileName.isNotEmpty ? '[File] $fileName' : '[File]';
+    }
     if (messageType == MessageType.MESSAGE_TYPE_SYSTEM) {
       return '[System message]';
     }
     return '';
+  }
+
+  String _metadataString(String key) {
+    if (!hasMetadata()) {
+      return '';
+    }
+    final value = metadata.fields[key];
+    if (value == null || !value.hasStringValue()) {
+      return '';
+    }
+    return value.stringValue;
+  }
+
+  String _resolvedFileUrl() {
+    if (fileUrl.trim().isNotEmpty) {
+      return fileUrl;
+    }
+    return _metadataString('file_url');
   }
 }
 

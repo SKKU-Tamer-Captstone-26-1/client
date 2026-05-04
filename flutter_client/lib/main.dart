@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
 
@@ -63,6 +64,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
   void initState() {
     super.initState();
     _chatRepository = GrpcChatRepository(GrpcChatRemoteDataSource());
+    unawaited(_printDevErrorLogPathAtStartup());
   }
 
   @override
@@ -183,6 +185,13 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
         AppBottomNavItem.collection => _AppStage.collection,
       };
     });
+  }
+
+  Future<void> _printDevErrorLogPathAtStartup() async {
+    if (!kDebugMode) {
+      return;
+    }
+    debugPrint('DEV_ERROR_JSONL_ENABLED');
   }
 }
 

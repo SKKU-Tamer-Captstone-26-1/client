@@ -1,9 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:grpc/grpc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
@@ -113,9 +119,15 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       });
       unawaited(_persistLatestSequenceNo());
       _restartMessageStream();
-    } catch (_) {
+    } catch (error, stackTrace) {
       if (_messages.isEmpty) {
-        _showInfo('Room unavailable or inactive.');
+        _showError(
+          'Room unavailable or inactive.',
+          operation: 'load_messages',
+          technicalMessage: error.toString(),
+          error: error,
+          stackTrace: stackTrace,
+        );
       }
     } finally {
       if (_streamSub == null) {
@@ -175,7 +187,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       return;
     }
     if (!_canUseRemote) {
-      _showInfo('Chat backend unavailable.');
+      _showError('Chat backend unavailable.', operation: 'send_text');
       return;
     }
 
@@ -187,8 +199,14 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       );
       _composerController.clear();
       await _loadMessages();
-    } catch (_) {
-      // Keep composer text on failure so user can retry.
+    } catch (error, stackTrace) {
+      _showError(
+        'Could not send message.',
+        operation: 'send_text',
+        technicalMessage: error.toString(),
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -234,8 +252,14 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       );
       _showInfo('Message deleted.');
       await _loadMessages();
-    } catch (_) {
-      _showInfo('Could not delete message. Owner permission required.');
+    } catch (error, stackTrace) {
+      _showError(
+        'Could not delete message. Owner permission required.',
+        operation: 'delete_message',
+        technicalMessage: error.toString(),
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -259,7 +283,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
 
   Future<void> _deactivateRoom() async {
     if (!_canUseRemote) {
-      _showInfo('Chat backend unavailable.');
+      _showError('Chat backend unavailable.', operation: 'deactivate_room');
       return;
     }
     final repo = widget.chatRepository;
@@ -302,8 +326,14 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       widget.onRoomDeactivated?.call(widget.room.roomId);
       _showInfo('Room deactivated.');
       widget.onBack?.call();
-    } catch (_) {
-      _showInfo('Could not deactivate room. Owner permission required.');
+    } catch (error, stackTrace) {
+      _showError(
+        'Could not deactivate room. Owner permission required.',
+        operation: 'deactivate_room',
+        technicalMessage: error.toString(),
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
@@ -441,7 +471,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
 
   Future<void> _pickAndSendImage() async {
     if (!_canUseRemote) {
-      _showInfo('Chat backend unavailable.');
+      _showError('Chat backend unavailable.', operation: 'send_image');
       return;
     }
     final userId = widget.currentUserId;
@@ -456,25 +486,47 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       return;
     }
 
-    final filename = file.name.trim().isEmpty ? 'image' : file.name.trim();
-    final label = '[Image] $filename';
+    final filename = file.name.trim().isEmpty ? 'image.jpg' : file.name.trim();
+    final contentType = _resolveImageContentType(file, filename);
+    final bytes = await file.readAsBytes();
+    final createContentType = contentType;
+    final putContentType = contentType;
 
     try {
-      await repo.sendTextMessage(
+      _logUploadMime(operation: 'send_image', createContentType: createContentType, putContentType: putContentType);
+      final target = await repo.createAttachmentUploadURL(
+        userId: userId,
+        fileName: filename,
+        contentType: createContentType,
+      );
+      await repo.uploadToSignedUrl(
+        uploadUrl: target.uploadUrl,
+        contentType: putContentType,
+        bytes: bytes,
+      );
+      await _retrySendImageMessage(
         roomId: widget.room.roomId,
         senderUserId: userId,
-        content: label,
+        imageUrl: target.fileUrl,
       );
       await _loadMessages();
       _showInfo('Image sent: $filename');
-    } catch (_) {
-      _showInfo('Could not send image.');
+    } catch (error, stackTrace) {
+      final detail = _describeAttachmentError(error);
+      _showError(
+        'Could not send image.',
+        operation: 'send_image',
+        technicalMessage:
+            'create_content_type=$createContentType put_content_type=$putContentType detail=$detail',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
 
   Future<void> _pickAndSendFile() async {
     if (!_canUseRemote) {
-      _showInfo('Chat backend unavailable.');
+      _showError('Chat backend unavailable.', operation: 'send_file');
       return;
     }
     final userId = widget.currentUserId;
@@ -487,6 +539,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       type: FileType.custom,
       allowedExtensions: const ['pdf'],
       allowMultiple: false,
+      withData: true,
     );
     if (result == null || result.files.isEmpty) {
       return;
@@ -494,20 +547,255 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
 
     final file = result.files.first;
     final filename = file.name.trim().isEmpty ? 'attachment' : file.name.trim();
-    final label = '[PDF] $filename';
+    final contentType = _guessContentType(filename, fallback: 'application/pdf');
+    final createContentType = contentType;
+    final putContentType = contentType;
+    final bytes = file.bytes ?? await _readBytesFromPath(file.path);
+    if (bytes == null || bytes.isEmpty) {
+      _showError('Could not read file bytes.', operation: 'send_file');
+      return;
+    }
 
     try {
-      await repo.sendTextMessage(
+      _logUploadMime(operation: 'send_file', createContentType: createContentType, putContentType: putContentType);
+      final target = await repo.createAttachmentUploadURL(
+        userId: userId,
+        fileName: filename,
+        contentType: createContentType,
+      );
+      await repo.uploadToSignedUrl(
+        uploadUrl: target.uploadUrl,
+        contentType: putContentType,
+        bytes: bytes,
+      );
+      await _retrySendFileMessage(
         roomId: widget.room.roomId,
         senderUserId: userId,
-        content: label,
+        fileUrl: target.fileUrl,
+        fileName: filename,
+        contentType: contentType,
       );
       await _loadMessages();
       _showInfo('File sent: $filename');
-    } catch (_) {
-      _showInfo('Could not send file.');
+    } catch (error, stackTrace) {
+      final detail = _describeAttachmentError(error);
+      _showError(
+        'Could not send file.',
+        operation: 'send_file',
+        technicalMessage:
+            'create_content_type=$createContentType put_content_type=$putContentType detail=$detail',
+        error: error,
+        stackTrace: stackTrace,
+      );
     }
   }
+
+  Future<void> _retrySendImageMessage({
+    required String roomId,
+    required String senderUserId,
+    required String imageUrl,
+  }) async {
+    try {
+      await widget.chatRepository!.sendImageMessage(
+        roomId: roomId,
+        senderUserId: senderUserId,
+        imageUrl: imageUrl,
+      );
+    } catch (_) {
+      await widget.chatRepository!.sendImageMessage(
+        roomId: roomId,
+        senderUserId: senderUserId,
+        imageUrl: imageUrl,
+      );
+    }
+  }
+
+  Future<void> _retrySendFileMessage({
+    required String roomId,
+    required String senderUserId,
+    required String fileUrl,
+    required String fileName,
+    required String contentType,
+  }) async {
+    try {
+      await widget.chatRepository!.sendFileMessage(
+        roomId: roomId,
+        senderUserId: senderUserId,
+        fileUrl: fileUrl,
+        fileName: fileName,
+        contentType: contentType,
+      );
+    } catch (_) {
+      await widget.chatRepository!.sendFileMessage(
+        roomId: roomId,
+        senderUserId: senderUserId,
+        fileUrl: fileUrl,
+        fileName: fileName,
+        contentType: contentType,
+      );
+    }
+  }
+
+  Future<List<int>?> _readBytesFromPath(String? path) async {
+    if (path == null || path.isEmpty) {
+      return null;
+    }
+    return File(path).readAsBytes();
+  }
+
+  String _guessContentType(String fileName, {required String fallback}) {
+    final lower = fileName.toLowerCase();
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
+      return 'image/jpeg';
+    }
+    if (lower.endsWith('.png')) {
+      return 'image/png';
+    }
+    if (lower.endsWith('.gif')) {
+      return 'image/gif';
+    }
+    if (lower.endsWith('.webp')) {
+      return 'image/webp';
+    }
+    if (lower.endsWith('.pdf')) {
+      return 'application/pdf';
+    }
+    return fallback;
+  }
+
+  String _resolveImageContentType(XFile file, String fileName) {
+    final mimeType = file.mimeType?.trim();
+    if (mimeType != null && mimeType.isNotEmpty) {
+      return mimeType;
+    }
+    return _guessContentType(fileName, fallback: 'image/jpeg');
+  }
+
+  String _describeAttachmentError(Object error) {
+    if (error is GrpcError) {
+      return 'grpc ${error.codeName}: ${error.message}';
+    }
+    if (error is SocketException) {
+      return 'network: ${error.message}';
+    }
+    if (error is HttpException) {
+      return error.message;
+    }
+    return error.toString();
+  }
+
+  void _showError(
+    String message, {
+    required String operation,
+    String? technicalMessage,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    _showInfo(message);
+    if (!kDebugMode) {
+      return;
+    }
+    unawaited(
+      _appendErrorJsonl(
+        operation: operation,
+        userFacingMessage: message,
+        technicalMessage: technicalMessage ?? error?.toString() ?? message,
+        error: error,
+        stackTrace: stackTrace,
+      ),
+    );
+  }
+
+  Future<void> _appendErrorJsonl({
+    required String operation,
+    required String userFacingMessage,
+    required String technicalMessage,
+    Object? error,
+    StackTrace? stackTrace,
+  }) async {
+    try {
+      final grpcStatusCode = error is GrpcError ? error.codeName : '';
+      final summarizedTechnical = _summarizeTechnicalMessage(
+        technicalMessage: technicalMessage,
+        error: error,
+      );
+      final entry = jsonEncode({
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
+        'feature': 'chat',
+        'screen': 'groupchat_room',
+        'operation': operation,
+        'userFacingMessage': _sanitizeForLog(userFacingMessage),
+        'technicalMessage': _sanitizeForLog(summarizedTechnical),
+        'grpcStatusCode': grpcStatusCode,
+      });
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/flutter_errors.jsonl');
+      await file.writeAsString('$entry\n', mode: FileMode.append, flush: true);
+      debugPrint('DEV_ERROR_JSONL: $entry');
+    } catch (_) {
+      // Do not break UX if local dev logging cannot write on this platform.
+    }
+  }
+
+  String _sanitizeForLog(String value) {
+    var sanitized = value;
+    sanitized = sanitized.replaceAll(
+      RegExp(r'https?:\/\/\S+'),
+      '[REDACTED_URL]',
+    );
+    sanitized = sanitized.replaceAll(
+      RegExp(r'<StringToSign>.*?<\/StringToSign>', dotAll: true),
+      '<StringToSign>[REDACTED]</StringToSign>',
+    );
+    sanitized = sanitized.replaceAll(
+      RegExp(r'<CanonicalRequest>.*?<\/CanonicalRequest>', dotAll: true),
+      '<CanonicalRequest>[REDACTED]</CanonicalRequest>',
+    );
+    sanitized = sanitized.replaceAll(
+      RegExp(
+        r'(authorization|token|password|credential)[^,\n]*',
+        caseSensitive: false,
+      ),
+      '[REDACTED_SECRET]',
+    );
+    return sanitized;
+  }
+
+  String _summarizeTechnicalMessage({
+    required String technicalMessage,
+    Object? error,
+  }) {
+    if (error is GrpcError) {
+      return 'grpc ${error.codeName}';
+    }
+    final uploadStatus = RegExp(r'upload failed with status (\d{3})')
+        .firstMatch(technicalMessage)
+        ?.group(1);
+    if (uploadStatus != null) {
+      return 'upload failed with status $uploadStatus';
+    }
+    if (error is SocketException) {
+      return 'network error';
+    }
+    if (error is HttpException) {
+      return 'http error';
+    }
+    return 'unexpected error';
+  }
+
+  void _logUploadMime({
+    required String operation,
+    required String createContentType,
+    required String putContentType,
+  }) {
+    if (!kDebugMode) {
+      return;
+    }
+    debugPrint(
+      'DEV_UPLOAD_MIME: op=$operation create_content_type=$createContentType put_content_type=$putContentType',
+    );
+  }
+
 }
 
 List<GroupchatMessage> _normalizeMessages(List<GroupchatMessage> messages) {
@@ -837,6 +1125,52 @@ class _MessageContent extends StatelessWidget {
             ),
           ],
         ],
+      );
+    }
+
+    final shouldRenderFile =
+        message.contentType == GroupchatMessageContentType.file &&
+        message.fileUrl.trim().isNotEmpty;
+    if (shouldRenderFile) {
+      final filename = message.fileName.trim().isEmpty
+          ? 'Attachment'
+          : message.fileName.trim();
+      return InkWell(
+        onTap: () async {
+          final uri = Uri.tryParse(message.fileUrl);
+          if (uri == null) {
+            return;
+          }
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.insert_drive_file_outlined, size: 18),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  filename,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 14,
+                    height: 1.3,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
