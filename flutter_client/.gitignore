@@ -64,3 +64,6 @@ app.*.map.json
 
 # Vscode
 .vscode
+
+# Local Flutter DevTools preferences
+devtools_options.yaml
