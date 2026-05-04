@@ -71,12 +71,14 @@ class MessageType extends $pb.ProtobufEnum {
   static const MessageType MESSAGE_TYPE_TEXT = MessageType._(1, _omitEnumNames ? '' : 'MESSAGE_TYPE_TEXT');
   static const MessageType MESSAGE_TYPE_SYSTEM = MessageType._(2, _omitEnumNames ? '' : 'MESSAGE_TYPE_SYSTEM');
   static const MessageType MESSAGE_TYPE_IMAGE = MessageType._(3, _omitEnumNames ? '' : 'MESSAGE_TYPE_IMAGE');
+  static const MessageType MESSAGE_TYPE_FILE = MessageType._(4, _omitEnumNames ? '' : 'MESSAGE_TYPE_FILE');
 
   static const $core.List<MessageType> values = <MessageType> [
     MESSAGE_TYPE_UNSPECIFIED,
     MESSAGE_TYPE_TEXT,
     MESSAGE_TYPE_SYSTEM,
     MESSAGE_TYPE_IMAGE,
+    MESSAGE_TYPE_FILE,
   ];
 
   static final $core.Map<$core.int, MessageType> _byValue = $pb.ProtobufEnum.initByValue(values);

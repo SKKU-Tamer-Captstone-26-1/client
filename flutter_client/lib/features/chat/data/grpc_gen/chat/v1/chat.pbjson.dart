@@ -68,6 +68,7 @@ const MessageType$json = {
     {'1': 'MESSAGE_TYPE_TEXT', '2': 1},
     {'1': 'MESSAGE_TYPE_SYSTEM', '2': 2},
     {'1': 'MESSAGE_TYPE_IMAGE', '2': 3},
+    {'1': 'MESSAGE_TYPE_FILE', '2': 4},
   ],
 };
 
@@ -75,7 +76,7 @@ const MessageType$json = {
 final $typed_data.Uint8List messageTypeDescriptor = $convert.base64Decode(
     'CgtNZXNzYWdlVHlwZRIcChhNRVNTQUdFX1RZUEVfVU5TUEVDSUZJRUQQABIVChFNRVNTQUdFX1'
     'RZUEVfVEVYVBABEhcKE01FU1NBR0VfVFlQRV9TWVNURU0QAhIWChJNRVNTQUdFX1RZUEVfSU1B'
-    'R0UQAw==');
+    'R0UQAxIVChFNRVNTQUdFX1RZUEVfRklMRRAE');
 
 @$core.Deprecated('Use createRoomRequestDescriptor instead')
 const CreateRoomRequest$json = {
@@ -394,6 +395,7 @@ const SendMessageRequest$json = {
     {'1': 'message_type', '3': 3, '4': 1, '5': 14, '6': '.ontheblock.chat.v1.MessageType', '10': 'messageType'},
     {'1': 'content', '3': 4, '4': 1, '5': 9, '10': 'content'},
     {'1': 'image_url', '3': 5, '4': 1, '5': 9, '10': 'imageUrl'},
+    {'1': 'file_url', '3': 7, '4': 1, '5': 9, '10': 'fileUrl'},
     {'1': 'metadata', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Struct', '10': 'metadata'},
   ],
 };
@@ -403,8 +405,9 @@ final $typed_data.Uint8List sendMessageRequestDescriptor = $convert.base64Decode
     'ChJTZW5kTWVzc2FnZVJlcXVlc3QSFwoHcm9vbV9pZBgBIAEoCVIGcm9vbUlkEiQKDnNlbmRlcl'
     '91c2VyX2lkGAIgASgJUgxzZW5kZXJVc2VySWQSQgoMbWVzc2FnZV90eXBlGAMgASgOMh8ub250'
     'aGVibG9jay5jaGF0LnYxLk1lc3NhZ2VUeXBlUgttZXNzYWdlVHlwZRIYCgdjb250ZW50GAQgAS'
-    'gJUgdjb250ZW50EhsKCWltYWdlX3VybBgFIAEoCVIIaW1hZ2VVcmwSMwoIbWV0YWRhdGEYBiAB'
-    'KAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0UghtZXRhZGF0YQ==');
+    'gJUgdjb250ZW50EhsKCWltYWdlX3VybBgFIAEoCVIIaW1hZ2VVcmwSGQoIZmlsZV91cmwYByAB'
+    'KAlSB2ZpbGVVcmwSMwoIbWV0YWRhdGEYBiABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0Ug'
+    'htZXRhZGF0YQ==');
 
 @$core.Deprecated('Use sendMessageResponseDescriptor instead')
 const SendMessageResponse$json = {
@@ -418,6 +421,74 @@ const SendMessageResponse$json = {
 final $typed_data.Uint8List sendMessageResponseDescriptor = $convert.base64Decode(
     'ChNTZW5kTWVzc2FnZVJlc3BvbnNlEjkKB21lc3NhZ2UYASABKAsyHy5vbnRoZWJsb2NrLmNoYX'
     'QudjEuQ2hhdE1lc3NhZ2VSB21lc3NhZ2U=');
+
+@$core.Deprecated('Use createAttachmentUploadURLRequestDescriptor instead')
+const CreateAttachmentUploadURLRequest$json = {
+  '1': 'CreateAttachmentUploadURLRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'file_name', '3': 2, '4': 1, '5': 9, '10': 'fileName'},
+    {'1': 'content_type', '3': 3, '4': 1, '5': 9, '10': 'contentType'},
+  ],
+};
+
+/// Descriptor for `CreateAttachmentUploadURLRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createAttachmentUploadURLRequestDescriptor = $convert.base64Decode(
+    'CiBDcmVhdGVBdHRhY2htZW50VXBsb2FkVVJMUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2'
+    'VySWQSGwoJZmlsZV9uYW1lGAIgASgJUghmaWxlTmFtZRIhCgxjb250ZW50X3R5cGUYAyABKAlS'
+    'C2NvbnRlbnRUeXBl');
+
+@$core.Deprecated('Use createAttachmentUploadURLResponseDescriptor instead')
+const CreateAttachmentUploadURLResponse$json = {
+  '1': 'CreateAttachmentUploadURLResponse',
+  '2': [
+    {'1': 'object_name', '3': 1, '4': 1, '5': 9, '10': 'objectName'},
+    {'1': 'upload_url', '3': 2, '4': 1, '5': 9, '10': 'uploadUrl'},
+    {'1': 'file_url', '3': 3, '4': 1, '5': 9, '10': 'fileUrl'},
+    {'1': 'expires_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiresAt'},
+  ],
+};
+
+/// Descriptor for `CreateAttachmentUploadURLResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createAttachmentUploadURLResponseDescriptor = $convert.base64Decode(
+    'CiFDcmVhdGVBdHRhY2htZW50VXBsb2FkVVJMUmVzcG9uc2USHwoLb2JqZWN0X25hbWUYASABKA'
+    'lSCm9iamVjdE5hbWUSHQoKdXBsb2FkX3VybBgCIAEoCVIJdXBsb2FkVXJsEhkKCGZpbGVfdXJs'
+    'GAMgASgJUgdmaWxlVXJsEjkKCmV4cGlyZXNfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVG'
+    'ltZXN0YW1wUglleHBpcmVzQXQ=');
+
+@$core.Deprecated('Use createImageUploadURLRequestDescriptor instead')
+const CreateImageUploadURLRequest$json = {
+  '1': 'CreateImageUploadURLRequest',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'file_name', '3': 2, '4': 1, '5': 9, '10': 'fileName'},
+    {'1': 'content_type', '3': 3, '4': 1, '5': 9, '10': 'contentType'},
+  ],
+};
+
+/// Descriptor for `CreateImageUploadURLRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createImageUploadURLRequestDescriptor = $convert.base64Decode(
+    'ChtDcmVhdGVJbWFnZVVwbG9hZFVSTFJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEh'
+    'sKCWZpbGVfbmFtZRgCIAEoCVIIZmlsZU5hbWUSIQoMY29udGVudF90eXBlGAMgASgJUgtjb250'
+    'ZW50VHlwZQ==');
+
+@$core.Deprecated('Use createImageUploadURLResponseDescriptor instead')
+const CreateImageUploadURLResponse$json = {
+  '1': 'CreateImageUploadURLResponse',
+  '2': [
+    {'1': 'object_name', '3': 1, '4': 1, '5': 9, '10': 'objectName'},
+    {'1': 'upload_url', '3': 2, '4': 1, '5': 9, '10': 'uploadUrl'},
+    {'1': 'image_url', '3': 3, '4': 1, '5': 9, '10': 'imageUrl'},
+    {'1': 'expires_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'expiresAt'},
+  ],
+};
+
+/// Descriptor for `CreateImageUploadURLResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createImageUploadURLResponseDescriptor = $convert.base64Decode(
+    'ChxDcmVhdGVJbWFnZVVwbG9hZFVSTFJlc3BvbnNlEh8KC29iamVjdF9uYW1lGAEgASgJUgpvYm'
+    'plY3ROYW1lEh0KCnVwbG9hZF91cmwYAiABKAlSCXVwbG9hZFVybBIbCglpbWFnZV91cmwYAyAB'
+    'KAlSCGltYWdlVXJsEjkKCmV4cGlyZXNfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZX'
+    'N0YW1wUglleHBpcmVzQXQ=');
 
 @$core.Deprecated('Use deleteMessageRequestDescriptor instead')
 const DeleteMessageRequest$json = {
@@ -459,6 +530,7 @@ const ChatMessage$json = {
     {'1': 'sequence_no', '3': 5, '4': 1, '5': 3, '10': 'sequenceNo'},
     {'1': 'content', '3': 6, '4': 1, '5': 9, '10': 'content'},
     {'1': 'image_url', '3': 7, '4': 1, '5': 9, '10': 'imageUrl'},
+    {'1': 'file_url', '3': 14, '4': 1, '5': 9, '10': 'fileUrl'},
     {'1': 'metadata', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Struct', '10': 'metadata'},
     {'1': 'is_deleted', '3': 9, '4': 1, '5': 8, '10': 'isDeleted'},
     {'1': 'deleted_by_user_id', '3': 10, '4': 1, '5': 9, '10': 'deletedByUserId'},
@@ -474,13 +546,13 @@ final $typed_data.Uint8List chatMessageDescriptor = $convert.base64Decode(
     'gCIAEoCVIGcm9vbUlkEiQKDnNlbmRlcl91c2VyX2lkGAMgASgJUgxzZW5kZXJVc2VySWQSQgoM'
     'bWVzc2FnZV90eXBlGAQgASgOMh8ub250aGVibG9jay5jaGF0LnYxLk1lc3NhZ2VUeXBlUgttZX'
     'NzYWdlVHlwZRIfCgtzZXF1ZW5jZV9ubxgFIAEoA1IKc2VxdWVuY2VObxIYCgdjb250ZW50GAYg'
-    'ASgJUgdjb250ZW50EhsKCWltYWdlX3VybBgHIAEoCVIIaW1hZ2VVcmwSMwoIbWV0YWRhdGEYCC'
-    'ABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0UghtZXRhZGF0YRIdCgppc19kZWxldGVkGAkg'
-    'ASgIUglpc0RlbGV0ZWQSKwoSZGVsZXRlZF9ieV91c2VyX2lkGAogASgJUg9kZWxldGVkQnlVc2'
-    'VySWQSMwoHc2VudF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSBnNlbnRB'
-    'dBI5CgpkZWxldGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJZGVsZX'
-    'RlZEF0EjkKCnVwZGF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1'
-    'cGRhdGVkQXQ=');
+    'ASgJUgdjb250ZW50EhsKCWltYWdlX3VybBgHIAEoCVIIaW1hZ2VVcmwSGQoIZmlsZV91cmwYDi'
+    'ABKAlSB2ZpbGVVcmwSMwoIbWV0YWRhdGEYCCABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0'
+    'UghtZXRhZGF0YRIdCgppc19kZWxldGVkGAkgASgIUglpc0RlbGV0ZWQSKwoSZGVsZXRlZF9ieV'
+    '91c2VyX2lkGAogASgJUg9kZWxldGVkQnlVc2VySWQSMwoHc2VudF9hdBgLIAEoCzIaLmdvb2ds'
+    'ZS5wcm90b2J1Zi5UaW1lc3RhbXBSBnNlbnRBdBI5CgpkZWxldGVkX2F0GAwgASgLMhouZ29vZ2'
+    'xlLnByb3RvYnVmLlRpbWVzdGFtcFIJZGVsZXRlZEF0EjkKCnVwZGF0ZWRfYXQYDSABKAsyGi5n'
+    'b29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQ=');
 
 @$core.Deprecated('Use markAsReadRequestDescriptor instead')
 const MarkAsReadRequest$json = {
