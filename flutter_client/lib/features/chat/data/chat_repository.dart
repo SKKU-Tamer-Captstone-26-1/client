@@ -19,6 +19,7 @@ abstract class ChatRepository {
 
   Future<AttachmentUploadTarget> createAttachmentUploadURL({
     required String userId,
+    required String roomId,
     required String fileName,
     required String contentType,
   });
@@ -139,11 +140,13 @@ class GrpcChatRepository implements ChatRepository {
   @override
   Future<AttachmentUploadTarget> createAttachmentUploadURL({
     required String userId,
+    required String roomId,
     required String fileName,
     required String contentType,
   }) async {
     final response = await _remote.createAttachmentUploadURL(
       userId: userId,
+      roomId: roomId,
       fileName: fileName,
       contentType: contentType,
     );

@@ -496,6 +496,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       _logUploadMime(operation: 'send_image', createContentType: createContentType, putContentType: putContentType);
       final target = await repo.createAttachmentUploadURL(
         userId: userId,
+        roomId: widget.room.roomId,
         fileName: filename,
         contentType: createContentType,
       );
@@ -560,6 +561,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       _logUploadMime(operation: 'send_file', createContentType: createContentType, putContentType: putContentType);
       final target = await repo.createAttachmentUploadURL(
         userId: userId,
+        roomId: widget.room.roomId,
         fileName: filename,
         contentType: createContentType,
       );

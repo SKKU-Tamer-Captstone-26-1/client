@@ -429,6 +429,7 @@ const CreateAttachmentUploadURLRequest$json = {
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'file_name', '3': 2, '4': 1, '5': 9, '10': 'fileName'},
     {'1': 'content_type', '3': 3, '4': 1, '5': 9, '10': 'contentType'},
+    {'1': 'room_id', '3': 4, '4': 1, '5': 9, '10': 'roomId'},
   ],
 };
 
@@ -436,7 +437,7 @@ const CreateAttachmentUploadURLRequest$json = {
 final $typed_data.Uint8List createAttachmentUploadURLRequestDescriptor = $convert.base64Decode(
     'CiBDcmVhdGVBdHRhY2htZW50VXBsb2FkVVJMUmVxdWVzdBIXCgd1c2VyX2lkGAEgASgJUgZ1c2'
     'VySWQSGwoJZmlsZV9uYW1lGAIgASgJUghmaWxlTmFtZRIhCgxjb250ZW50X3R5cGUYAyABKAlS'
-    'C2NvbnRlbnRUeXBl');
+    'C2NvbnRlbnRUeXBlEhcKB3Jvb21faWQYBCABKAlSBnJvb21JZA==');
 
 @$core.Deprecated('Use createAttachmentUploadURLResponseDescriptor instead')
 const CreateAttachmentUploadURLResponse$json = {
@@ -463,6 +464,7 @@ const CreateImageUploadURLRequest$json = {
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'file_name', '3': 2, '4': 1, '5': 9, '10': 'fileName'},
     {'1': 'content_type', '3': 3, '4': 1, '5': 9, '10': 'contentType'},
+    {'1': 'room_id', '3': 4, '4': 1, '5': 9, '10': 'roomId'},
   ],
 };
 
@@ -470,7 +472,7 @@ const CreateImageUploadURLRequest$json = {
 final $typed_data.Uint8List createImageUploadURLRequestDescriptor = $convert.base64Decode(
     'ChtDcmVhdGVJbWFnZVVwbG9hZFVSTFJlcXVlc3QSFwoHdXNlcl9pZBgBIAEoCVIGdXNlcklkEh'
     'sKCWZpbGVfbmFtZRgCIAEoCVIIZmlsZU5hbWUSIQoMY29udGVudF90eXBlGAMgASgJUgtjb250'
-    'ZW50VHlwZQ==');
+    'ZW50VHlwZRIXCgdyb29tX2lkGAQgASgJUgZyb29tSWQ=');
 
 @$core.Deprecated('Use createImageUploadURLResponseDescriptor instead')
 const CreateImageUploadURLResponse$json = {

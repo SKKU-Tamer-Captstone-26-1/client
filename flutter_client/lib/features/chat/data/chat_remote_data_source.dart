@@ -27,6 +27,7 @@ abstract class ChatRemoteDataSource {
 
   Future<CreateAttachmentUploadURLResponse> createAttachmentUploadURL({
     required String userId,
+    required String roomId,
     required String fileName,
     required String contentType,
   });
@@ -159,12 +160,14 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
   @override
   Future<CreateAttachmentUploadURLResponse> createAttachmentUploadURL({
     required String userId,
+    required String roomId,
     required String fileName,
     required String contentType,
   }) {
     return _client.createAttachmentUploadURL(
       CreateAttachmentUploadURLRequest()
         ..userId = userId
+        ..roomId = roomId
         ..fileName = fileName
         ..contentType = contentType,
       options: CallOptions(timeout: const Duration(seconds: 10)),

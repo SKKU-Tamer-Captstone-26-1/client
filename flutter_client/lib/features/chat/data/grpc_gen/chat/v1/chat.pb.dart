@@ -1763,6 +1763,7 @@ class CreateAttachmentUploadURLRequest extends $pb.GeneratedMessage {
     $core.String? userId,
     $core.String? fileName,
     $core.String? contentType,
+    $core.String? roomId,
   }) {
     final $result = create();
     if (userId != null) {
@@ -1774,6 +1775,9 @@ class CreateAttachmentUploadURLRequest extends $pb.GeneratedMessage {
     if (contentType != null) {
       $result.contentType = contentType;
     }
+    if (roomId != null) {
+      $result.roomId = roomId;
+    }
     return $result;
   }
   CreateAttachmentUploadURLRequest._() : super();
@@ -1784,6 +1788,7 @@ class CreateAttachmentUploadURLRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'fileName')
     ..aOS(3, _omitFieldNames ? '' : 'contentType')
+    ..aOS(4, _omitFieldNames ? '' : 'roomId')
     ..hasRequiredFields = false
   ;
 
@@ -1836,6 +1841,15 @@ class CreateAttachmentUploadURLRequest extends $pb.GeneratedMessage {
   $core.bool hasContentType() => $_has(2);
   @$pb.TagNumber(3)
   void clearContentType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get roomId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set roomId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRoomId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRoomId() => clearField(4);
 }
 
 class CreateAttachmentUploadURLResponse extends $pb.GeneratedMessage {
@@ -1937,6 +1951,7 @@ class CreateImageUploadURLRequest extends $pb.GeneratedMessage {
     $core.String? userId,
     $core.String? fileName,
     $core.String? contentType,
+    $core.String? roomId,
   }) {
     final $result = create();
     if (userId != null) {
@@ -1948,6 +1963,9 @@ class CreateImageUploadURLRequest extends $pb.GeneratedMessage {
     if (contentType != null) {
       $result.contentType = contentType;
     }
+    if (roomId != null) {
+      $result.roomId = roomId;
+    }
     return $result;
   }
   CreateImageUploadURLRequest._() : super();
@@ -1958,6 +1976,7 @@ class CreateImageUploadURLRequest extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'userId')
     ..aOS(2, _omitFieldNames ? '' : 'fileName')
     ..aOS(3, _omitFieldNames ? '' : 'contentType')
+    ..aOS(4, _omitFieldNames ? '' : 'roomId')
     ..hasRequiredFields = false
   ;
 
@@ -2010,6 +2029,15 @@ class CreateImageUploadURLRequest extends $pb.GeneratedMessage {
   $core.bool hasContentType() => $_has(2);
   @$pb.TagNumber(3)
   void clearContentType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get roomId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set roomId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRoomId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRoomId() => clearField(4);
 }
 
 class CreateImageUploadURLResponse extends $pb.GeneratedMessage {
