@@ -1018,6 +1018,17 @@ class _IncomingMessage extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (message.timeLabel.trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      message.timeLabel,
+                      style: TextStyle(
+                        color: palette.secondary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -1072,15 +1083,34 @@ class _OutgoingMessage extends StatelessWidget {
                 ),
               ),
             ),
-            if (message.deliveryLabel != null) ...[
+            if (message.deliveryLabel != null ||
+                message.timeLabel.trim().isNotEmpty) ...[
               const SizedBox(height: 5),
-              Text(
-                message.deliveryLabel!,
-                style: TextStyle(
-                  color: palette.secondary,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (message.timeLabel.trim().isNotEmpty)
+                    Text(
+                      message.timeLabel,
+                      style: TextStyle(
+                        color: palette.secondary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  if (message.timeLabel.trim().isNotEmpty &&
+                      message.deliveryLabel != null)
+                    const SizedBox(width: 6),
+                  if (message.deliveryLabel != null)
+                    Text(
+                      message.deliveryLabel!,
+                      style: TextStyle(
+                        color: palette.secondary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                ],
               ),
             ],
           ],
@@ -1103,22 +1133,60 @@ class _MessageContent extends StatelessWidget {
         message.imageUrl.trim().isNotEmpty;
 
     if (shouldRenderImage) {
+      final caption = _imageCaption(message.text);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
+          InkWell(
+            onTap: () async {
+              final uri = Uri.tryParse(message.imageUrl);
+              if (uri == null) {
+                return;
+              }
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            },
             borderRadius: BorderRadius.circular(10),
-            child: AppNetworkImage(
-              url: message.imageUrl,
-              width: 220,
-              height: 160,
-              fit: BoxFit.cover,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 220,
+                height: 160,
+                child: Image.network(
+                  message.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.black12,
+                      alignment: Alignment.center,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.broken_image_outlined,
+                            color: textColor.withValues(alpha: 0.8),
+                            size: 28,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Tap to open image',
+                            style: TextStyle(
+                              color: textColor.withValues(alpha: 0.9),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
-          if (message.text.trim().isNotEmpty) ...[
+          if (caption.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              message.text,
+              caption,
               style: TextStyle(
                 color: textColor,
                 fontSize: 15,
@@ -1137,6 +1205,9 @@ class _MessageContent extends StatelessWidget {
       final filename = message.fileName.trim().isEmpty
           ? 'Attachment'
           : message.fileName.trim();
+      final extension = _fileExtension(filename).toUpperCase();
+      final badgeLabel = extension.isEmpty ? 'FILE' : extension;
+      final icon = _fileIcon(filename, message.fileContentType);
       return InkWell(
         onTap: () async {
           final uri = Uri.tryParse(message.fileUrl);
@@ -1147,28 +1218,50 @@ class _MessageContent extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.14),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.insert_drive_file_outlined, size: 18),
-              const SizedBox(width: 8),
-              Flexible(
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(999),
+                ),
                 child: Text(
-                  filename,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  badgeLabel,
                   style: TextStyle(
                     color: textColor,
-                    fontSize: 14,
-                    height: 1.3,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.6,
                   ),
                 ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 20, color: textColor),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      filename,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 14,
+                        height: 1.3,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1184,6 +1277,38 @@ class _MessageContent extends StatelessWidget {
         height: 1.4,
       ),
     );
+  }
+
+  String _imageCaption(String rawText) {
+    final trimmed = rawText.trim();
+    if (trimmed.isEmpty || trimmed == '[Image]') {
+      return '';
+    }
+    return trimmed;
+  }
+
+  String _fileExtension(String filename) {
+    final dot = filename.lastIndexOf('.');
+    if (dot < 0 || dot == filename.length - 1) {
+      return '';
+    }
+    return filename.substring(dot + 1);
+  }
+
+  IconData _fileIcon(String filename, String contentType) {
+    final lowerName = filename.toLowerCase();
+    final lowerType = contentType.toLowerCase();
+    if (lowerType.contains('pdf') || lowerName.endsWith('.pdf')) {
+      return Icons.picture_as_pdf_outlined;
+    }
+    if (lowerType.startsWith('image/') ||
+        lowerName.endsWith('.png') ||
+        lowerName.endsWith('.jpg') ||
+        lowerName.endsWith('.jpeg') ||
+        lowerName.endsWith('.webp')) {
+      return Icons.image_outlined;
+    }
+    return Icons.insert_drive_file_outlined;
   }
 }
 
