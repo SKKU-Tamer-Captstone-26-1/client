@@ -69,6 +69,10 @@ For chat specifically, the client now follows a stable integration pattern:
 - Stream events are incremental UI updates; do not infer extra business state client-side.
 - If server marks a message as deleted (`is_deleted`), render a placeholder text and never reconstruct deleted content.
 - Use conservative fallback rendering for unknown/empty payloads (`[Image]`, `[System message]`, etc.).
+- Treat optional/empty metadata as non-authoritative for content type.
+- Render image widgets only for `MESSAGE_TYPE_IMAGE` with non-empty `image_url`.
+- Keep `MESSAGE_TYPE_TEXT` rendering as text-only bubbles.
+- For missing sender avatar URLs, use a local placeholder avatar instead of network-image loading.
 
 ### Membership and Moderation Ownership
 

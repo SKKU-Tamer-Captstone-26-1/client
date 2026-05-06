@@ -1578,6 +1578,7 @@ class SendMessageRequest extends $pb.GeneratedMessage {
     $core.String? content,
     $core.String? imageUrl,
     $2.Struct? metadata,
+    $core.String? fileUrl,
   }) {
     final $result = create();
     if (roomId != null) {
@@ -1598,6 +1599,9 @@ class SendMessageRequest extends $pb.GeneratedMessage {
     if (metadata != null) {
       $result.metadata = metadata;
     }
+    if (fileUrl != null) {
+      $result.fileUrl = fileUrl;
+    }
     return $result;
   }
   SendMessageRequest._() : super();
@@ -1611,6 +1615,7 @@ class SendMessageRequest extends $pb.GeneratedMessage {
     ..aOS(4, _omitFieldNames ? '' : 'content')
     ..aOS(5, _omitFieldNames ? '' : 'imageUrl')
     ..aOM<$2.Struct>(6, _omitFieldNames ? '' : 'metadata', subBuilder: $2.Struct.create)
+    ..aOS(7, _omitFieldNames ? '' : 'fileUrl')
     ..hasRequiredFields = false
   ;
 
@@ -1690,6 +1695,15 @@ class SendMessageRequest extends $pb.GeneratedMessage {
   void clearMetadata() => clearField(6);
   @$pb.TagNumber(6)
   $2.Struct ensureMetadata() => $_ensure(5);
+
+  @$pb.TagNumber(7)
+  $core.String get fileUrl => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set fileUrl($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasFileUrl() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFileUrl() => clearField(7);
 }
 
 class SendMessageResponse extends $pb.GeneratedMessage {
@@ -1742,6 +1756,382 @@ class SendMessageResponse extends $pb.GeneratedMessage {
   void clearMessage() => clearField(1);
   @$pb.TagNumber(1)
   ChatMessage ensureMessage() => $_ensure(0);
+}
+
+class CreateAttachmentUploadURLRequest extends $pb.GeneratedMessage {
+  factory CreateAttachmentUploadURLRequest({
+    $core.String? userId,
+    $core.String? fileName,
+    $core.String? contentType,
+    $core.String? roomId,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (fileName != null) {
+      $result.fileName = fileName;
+    }
+    if (contentType != null) {
+      $result.contentType = contentType;
+    }
+    if (roomId != null) {
+      $result.roomId = roomId;
+    }
+    return $result;
+  }
+  CreateAttachmentUploadURLRequest._() : super();
+  factory CreateAttachmentUploadURLRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateAttachmentUploadURLRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateAttachmentUploadURLRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'fileName')
+    ..aOS(3, _omitFieldNames ? '' : 'contentType')
+    ..aOS(4, _omitFieldNames ? '' : 'roomId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateAttachmentUploadURLRequest clone() => CreateAttachmentUploadURLRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateAttachmentUploadURLRequest copyWith(void Function(CreateAttachmentUploadURLRequest) updates) => super.copyWith((message) => updates(message as CreateAttachmentUploadURLRequest)) as CreateAttachmentUploadURLRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateAttachmentUploadURLRequest create() => CreateAttachmentUploadURLRequest._();
+  CreateAttachmentUploadURLRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateAttachmentUploadURLRequest> createRepeated() => $pb.PbList<CreateAttachmentUploadURLRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateAttachmentUploadURLRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateAttachmentUploadURLRequest>(create);
+  static CreateAttachmentUploadURLRequest? _defaultInstance;
+
+  /// Temporary v1 field.
+  /// Real production identity should come from auth metadata/JWT.
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get fileName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set fileName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFileName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFileName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get contentType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set contentType($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasContentType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearContentType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get roomId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set roomId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRoomId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRoomId() => clearField(4);
+}
+
+class CreateAttachmentUploadURLResponse extends $pb.GeneratedMessage {
+  factory CreateAttachmentUploadURLResponse({
+    $core.String? objectName,
+    $core.String? uploadUrl,
+    $core.String? fileUrl,
+    $1.Timestamp? expiresAt,
+  }) {
+    final $result = create();
+    if (objectName != null) {
+      $result.objectName = objectName;
+    }
+    if (uploadUrl != null) {
+      $result.uploadUrl = uploadUrl;
+    }
+    if (fileUrl != null) {
+      $result.fileUrl = fileUrl;
+    }
+    if (expiresAt != null) {
+      $result.expiresAt = expiresAt;
+    }
+    return $result;
+  }
+  CreateAttachmentUploadURLResponse._() : super();
+  factory CreateAttachmentUploadURLResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateAttachmentUploadURLResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateAttachmentUploadURLResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'objectName')
+    ..aOS(2, _omitFieldNames ? '' : 'uploadUrl')
+    ..aOS(3, _omitFieldNames ? '' : 'fileUrl')
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateAttachmentUploadURLResponse clone() => CreateAttachmentUploadURLResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateAttachmentUploadURLResponse copyWith(void Function(CreateAttachmentUploadURLResponse) updates) => super.copyWith((message) => updates(message as CreateAttachmentUploadURLResponse)) as CreateAttachmentUploadURLResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateAttachmentUploadURLResponse create() => CreateAttachmentUploadURLResponse._();
+  CreateAttachmentUploadURLResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateAttachmentUploadURLResponse> createRepeated() => $pb.PbList<CreateAttachmentUploadURLResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateAttachmentUploadURLResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateAttachmentUploadURLResponse>(create);
+  static CreateAttachmentUploadURLResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get objectName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set objectName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasObjectName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearObjectName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get uploadUrl => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set uploadUrl($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUploadUrl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUploadUrl() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get fileUrl => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set fileUrl($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasFileUrl() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearFileUrl() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $1.Timestamp get expiresAt => $_getN(3);
+  @$pb.TagNumber(4)
+  set expiresAt($1.Timestamp v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasExpiresAt() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearExpiresAt() => clearField(4);
+  @$pb.TagNumber(4)
+  $1.Timestamp ensureExpiresAt() => $_ensure(3);
+}
+
+class CreateImageUploadURLRequest extends $pb.GeneratedMessage {
+  factory CreateImageUploadURLRequest({
+    $core.String? userId,
+    $core.String? fileName,
+    $core.String? contentType,
+    $core.String? roomId,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (fileName != null) {
+      $result.fileName = fileName;
+    }
+    if (contentType != null) {
+      $result.contentType = contentType;
+    }
+    if (roomId != null) {
+      $result.roomId = roomId;
+    }
+    return $result;
+  }
+  CreateImageUploadURLRequest._() : super();
+  factory CreateImageUploadURLRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateImageUploadURLRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateImageUploadURLRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'fileName')
+    ..aOS(3, _omitFieldNames ? '' : 'contentType')
+    ..aOS(4, _omitFieldNames ? '' : 'roomId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateImageUploadURLRequest clone() => CreateImageUploadURLRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateImageUploadURLRequest copyWith(void Function(CreateImageUploadURLRequest) updates) => super.copyWith((message) => updates(message as CreateImageUploadURLRequest)) as CreateImageUploadURLRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateImageUploadURLRequest create() => CreateImageUploadURLRequest._();
+  CreateImageUploadURLRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateImageUploadURLRequest> createRepeated() => $pb.PbList<CreateImageUploadURLRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateImageUploadURLRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateImageUploadURLRequest>(create);
+  static CreateImageUploadURLRequest? _defaultInstance;
+
+  /// Temporary v1 field.
+  /// Real production identity should come from auth metadata/JWT.
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get fileName => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set fileName($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFileName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFileName() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get contentType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set contentType($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasContentType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearContentType() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get roomId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set roomId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasRoomId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearRoomId() => clearField(4);
+}
+
+class CreateImageUploadURLResponse extends $pb.GeneratedMessage {
+  factory CreateImageUploadURLResponse({
+    $core.String? objectName,
+    $core.String? uploadUrl,
+    $core.String? imageUrl,
+    $1.Timestamp? expiresAt,
+  }) {
+    final $result = create();
+    if (objectName != null) {
+      $result.objectName = objectName;
+    }
+    if (uploadUrl != null) {
+      $result.uploadUrl = uploadUrl;
+    }
+    if (imageUrl != null) {
+      $result.imageUrl = imageUrl;
+    }
+    if (expiresAt != null) {
+      $result.expiresAt = expiresAt;
+    }
+    return $result;
+  }
+  CreateImageUploadURLResponse._() : super();
+  factory CreateImageUploadURLResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateImageUploadURLResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateImageUploadURLResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'objectName')
+    ..aOS(2, _omitFieldNames ? '' : 'uploadUrl')
+    ..aOS(3, _omitFieldNames ? '' : 'imageUrl')
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'expiresAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateImageUploadURLResponse clone() => CreateImageUploadURLResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateImageUploadURLResponse copyWith(void Function(CreateImageUploadURLResponse) updates) => super.copyWith((message) => updates(message as CreateImageUploadURLResponse)) as CreateImageUploadURLResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CreateImageUploadURLResponse create() => CreateImageUploadURLResponse._();
+  CreateImageUploadURLResponse createEmptyInstance() => create();
+  static $pb.PbList<CreateImageUploadURLResponse> createRepeated() => $pb.PbList<CreateImageUploadURLResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CreateImageUploadURLResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateImageUploadURLResponse>(create);
+  static CreateImageUploadURLResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get objectName => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set objectName($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasObjectName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearObjectName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get uploadUrl => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set uploadUrl($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUploadUrl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUploadUrl() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get imageUrl => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set imageUrl($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasImageUrl() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearImageUrl() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $1.Timestamp get expiresAt => $_getN(3);
+  @$pb.TagNumber(4)
+  set expiresAt($1.Timestamp v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasExpiresAt() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearExpiresAt() => clearField(4);
+  @$pb.TagNumber(4)
+  $1.Timestamp ensureExpiresAt() => $_ensure(3);
 }
 
 class DeleteMessageRequest extends $pb.GeneratedMessage {
@@ -1889,6 +2279,7 @@ class ChatMessage extends $pb.GeneratedMessage {
     $1.Timestamp? sentAt,
     $1.Timestamp? deletedAt,
     $1.Timestamp? updatedAt,
+    $core.String? fileUrl,
   }) {
     final $result = create();
     if (messageId != null) {
@@ -1930,6 +2321,9 @@ class ChatMessage extends $pb.GeneratedMessage {
     if (updatedAt != null) {
       $result.updatedAt = updatedAt;
     }
+    if (fileUrl != null) {
+      $result.fileUrl = fileUrl;
+    }
     return $result;
   }
   ChatMessage._() : super();
@@ -1950,6 +2344,7 @@ class ChatMessage extends $pb.GeneratedMessage {
     ..aOM<$1.Timestamp>(11, _omitFieldNames ? '' : 'sentAt', subBuilder: $1.Timestamp.create)
     ..aOM<$1.Timestamp>(12, _omitFieldNames ? '' : 'deletedAt', subBuilder: $1.Timestamp.create)
     ..aOM<$1.Timestamp>(13, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOS(14, _omitFieldNames ? '' : 'fileUrl')
     ..hasRequiredFields = false
   ;
 
@@ -2098,6 +2493,15 @@ class ChatMessage extends $pb.GeneratedMessage {
   void clearUpdatedAt() => clearField(13);
   @$pb.TagNumber(13)
   $1.Timestamp ensureUpdatedAt() => $_ensure(12);
+
+  @$pb.TagNumber(14)
+  $core.String get fileUrl => $_getSZ(13);
+  @$pb.TagNumber(14)
+  set fileUrl($core.String v) { $_setString(13, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasFileUrl() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearFileUrl() => clearField(14);
 }
 
 class MarkAsReadRequest extends $pb.GeneratedMessage {

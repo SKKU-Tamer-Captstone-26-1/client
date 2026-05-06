@@ -12,7 +12,7 @@ class ChatGrpcEndpoint {
   static ChatGrpcEndpoint fromEnvironment() {
     const host = String.fromEnvironment(
       'CHAT_GRPC_HOST',
-      defaultValue: 'localhost',
+      defaultValue: '127.0.0.1',
     );
     const portValue = String.fromEnvironment(
       'CHAT_GRPC_PORT',

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
 
@@ -11,7 +12,6 @@ import 'features/chat/data/chat_remote_data_source.dart';
 import 'features/chat/data/chat_repository.dart';
 import 'features/chat/presentation/groupchat_list_screen.dart';
 import 'features/chat/presentation/groupchat_room_screen.dart';
-import 'features/chat/data/mock_groupchat_data.dart';
 import 'features/chat/models/groupchat_models.dart';
 import 'features/collection/presentation/collection_screen.dart';
 import 'features/home/presentation/home_screen.dart';
@@ -38,24 +38,41 @@ class OnTheBlockApp extends StatefulWidget {
 }
 
 class _OnTheBlockAppState extends State<OnTheBlockApp> {
-  static const _demoUserId = '11111111-1111-1111-1111-111111111111';
+  static const _currentUserId = String.fromEnvironment(
+    'CHAT_USER_ID',
+    defaultValue: '11111111-1111-1111-1111-111111111111',
+  );
+
+  static const _emptyRoom = GroupchatRoomSummary(
+    roomId: '',
+    title: '',
+    memberSummary: '-/-',
+    location: '',
+    lastMessage: '',
+    timeLabel: '',
+    tags: <String>[],
+    avatarUrls: <String>[],
+  );
 
   ThemeMode _themeMode = ThemeMode.light;
   _AppStage _stage = _AppStage.login;
-  GroupchatRoomSummary _selectedGroupchatRoom = mockGroupchatRooms.first;
-  late final GrpcChatRemoteDataSource _chatRemoteDataSource;
-  late final GrpcChatRepository _chatRepository;
+  GroupchatRoomSummary _selectedGroupchatRoom = _emptyRoom;
+  GrpcChatRepository? _chatRepository;
+  final Set<String> _locallyHiddenRoomIds = <String>{};
 
   @override
   void initState() {
     super.initState();
-    _chatRemoteDataSource = GrpcChatRemoteDataSource();
-    _chatRepository = GrpcChatRepository(_chatRemoteDataSource);
+    _chatRepository = GrpcChatRepository(GrpcChatRemoteDataSource());
+    unawaited(_printDevErrorLogPathAtStartup());
   }
 
   @override
   void dispose() {
-    unawaited(_chatRepository.dispose());
+    final repo = _chatRepository;
+    if (repo != null) {
+      unawaited(repo.dispose());
+    }
     super.dispose();
   }
 
@@ -125,10 +142,12 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.board => BoardScreen(onBottomNavSelected: _selectBottomNavItem),
       _AppStage.chat => GroupchatListScreen(
         chatRepository: _chatRepository,
-        currentUserId: _demoUserId,
+        currentUserId: _currentUserId,
+        excludedRoomIds: _locallyHiddenRoomIds,
         onBottomNavSelected: _selectBottomNavItem,
         onRoomSelected: (room) {
           setState(() {
+            _locallyHiddenRoomIds.remove(room.roomId);
             _selectedGroupchatRoom = room;
             _stage = _AppStage.groupchatRoom;
           });
@@ -137,10 +156,15 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       _AppStage.groupchatRoom => GroupchatRoomScreen(
         room: _selectedGroupchatRoom,
         chatRepository: _chatRepository,
-        currentUserId: _demoUserId,
+        currentUserId: _currentUserId,
         onBack: () {
           setState(() {
             _stage = _AppStage.chat;
+          });
+        },
+        onRoomDeactivated: (roomId) {
+          setState(() {
+            _locallyHiddenRoomIds.add(roomId);
           });
         },
         onBottomNavSelected: _selectBottomNavItem,
@@ -161,6 +185,13 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
         AppBottomNavItem.collection => _AppStage.collection,
       };
     });
+  }
+
+  Future<void> _printDevErrorLogPathAtStartup() async {
+    if (!kDebugMode) {
+      return;
+    }
+    debugPrint('DEV_ERROR_JSONL_ENABLED');
   }
 }
 

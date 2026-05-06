@@ -49,6 +49,14 @@ class ChatServiceClient extends $grpc.Client {
       '/ontheblock.chat.v1.ChatService/SendMessage',
       ($0.SendMessageRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.SendMessageResponse.fromBuffer(value));
+  static final _$createAttachmentUploadURL = $grpc.ClientMethod<$0.CreateAttachmentUploadURLRequest, $0.CreateAttachmentUploadURLResponse>(
+      '/ontheblock.chat.v1.ChatService/CreateAttachmentUploadURL',
+      ($0.CreateAttachmentUploadURLRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreateAttachmentUploadURLResponse.fromBuffer(value));
+  static final _$createImageUploadURL = $grpc.ClientMethod<$0.CreateImageUploadURLRequest, $0.CreateImageUploadURLResponse>(
+      '/ontheblock.chat.v1.ChatService/CreateImageUploadURL',
+      ($0.CreateImageUploadURLRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CreateImageUploadURLResponse.fromBuffer(value));
   static final _$markAsRead = $grpc.ClientMethod<$0.MarkAsReadRequest, $0.MarkAsReadResponse>(
       '/ontheblock.chat.v1.ChatService/MarkAsRead',
       ($0.MarkAsReadRequest value) => value.writeToBuffer(),
@@ -102,6 +110,14 @@ class ChatServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.SendMessageResponse> sendMessage($0.SendMessageRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$sendMessage, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreateAttachmentUploadURLResponse> createAttachmentUploadURL($0.CreateAttachmentUploadURLRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createAttachmentUploadURL, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CreateImageUploadURLResponse> createImageUploadURL($0.CreateImageUploadURLRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$createImageUploadURL, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.MarkAsReadResponse> markAsRead($0.MarkAsReadRequest request, {$grpc.CallOptions? options}) {
@@ -179,6 +195,20 @@ abstract class ChatServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.SendMessageRequest.fromBuffer(value),
         ($0.SendMessageResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateAttachmentUploadURLRequest, $0.CreateAttachmentUploadURLResponse>(
+        'CreateAttachmentUploadURL',
+        createAttachmentUploadURL_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.CreateAttachmentUploadURLRequest.fromBuffer(value),
+        ($0.CreateAttachmentUploadURLResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.CreateImageUploadURLRequest, $0.CreateImageUploadURLResponse>(
+        'CreateImageUploadURL',
+        createImageUploadURL_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.CreateImageUploadURLRequest.fromBuffer(value),
+        ($0.CreateImageUploadURLResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.MarkAsReadRequest, $0.MarkAsReadResponse>(
         'MarkAsRead',
         markAsRead_Pre,
@@ -244,6 +274,14 @@ abstract class ChatServiceBase extends $grpc.Service {
     return sendMessage(call, await request);
   }
 
+  $async.Future<$0.CreateAttachmentUploadURLResponse> createAttachmentUploadURL_Pre($grpc.ServiceCall call, $async.Future<$0.CreateAttachmentUploadURLRequest> request) async {
+    return createAttachmentUploadURL(call, await request);
+  }
+
+  $async.Future<$0.CreateImageUploadURLResponse> createImageUploadURL_Pre($grpc.ServiceCall call, $async.Future<$0.CreateImageUploadURLRequest> request) async {
+    return createImageUploadURL(call, await request);
+  }
+
   $async.Future<$0.MarkAsReadResponse> markAsRead_Pre($grpc.ServiceCall call, $async.Future<$0.MarkAsReadRequest> request) async {
     return markAsRead(call, await request);
   }
@@ -271,6 +309,8 @@ abstract class ChatServiceBase extends $grpc.Service {
   $async.Future<$0.ListMyRoomsResponse> listMyRooms($grpc.ServiceCall call, $0.ListMyRoomsRequest request);
   $async.Future<$0.GetMessagesResponse> getMessages($grpc.ServiceCall call, $0.GetMessagesRequest request);
   $async.Future<$0.SendMessageResponse> sendMessage($grpc.ServiceCall call, $0.SendMessageRequest request);
+  $async.Future<$0.CreateAttachmentUploadURLResponse> createAttachmentUploadURL($grpc.ServiceCall call, $0.CreateAttachmentUploadURLRequest request);
+  $async.Future<$0.CreateImageUploadURLResponse> createImageUploadURL($grpc.ServiceCall call, $0.CreateImageUploadURLRequest request);
   $async.Future<$0.MarkAsReadResponse> markAsRead($grpc.ServiceCall call, $0.MarkAsReadRequest request);
   $async.Future<$0.RemoveMemberResponse> removeMember($grpc.ServiceCall call, $0.RemoveMemberRequest request);
   $async.Future<$0.DeleteMessageResponse> deleteMessage($grpc.ServiceCall call, $0.DeleteMessageRequest request);

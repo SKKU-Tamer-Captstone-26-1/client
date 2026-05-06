@@ -6,7 +6,6 @@ import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
 import '../data/chat_repository.dart';
-import '../data/mock_groupchat_data.dart';
 import '../models/groupchat_models.dart';
 
 class GroupchatListScreen extends StatefulWidget {
@@ -16,20 +15,26 @@ class GroupchatListScreen extends StatefulWidget {
     this.onRoomSelected,
     this.chatRepository,
     this.currentUserId,
+    this.excludedRoomIds = const <String>{},
   });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final ValueChanged<GroupchatRoomSummary>? onRoomSelected;
   final ChatRepository? chatRepository;
   final String? currentUserId;
+  final Set<String> excludedRoomIds;
 
   @override
   State<GroupchatListScreen> createState() => _GroupchatListScreenState();
 }
 
 class _GroupchatListScreenState extends State<GroupchatListScreen> {
-  List<GroupchatRoomSummary> _rooms = mockGroupchatRooms;
+  List<GroupchatRoomSummary> _rooms = const [];
+  final ScrollController _scrollController = ScrollController();
   bool _loading = false;
+  bool _loadingMore = false;
+  String _nextPageToken = '';
+  bool _hasMore = false;
 
   int get _unreadCount =>
       _rooms.fold<int>(0, (sum, room) => sum + room.unreadCount);
@@ -37,7 +42,24 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadRooms();
+  }
+
+  @override
+  void didUpdateWidget(covariant GroupchatListScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.excludedRoomIds != widget.excludedRoomIds) {
+      _applyExclusions();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
   }
 
   Future<void> _loadRooms() async {
@@ -52,15 +74,20 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
     });
 
     try {
-      final rooms = await repo.listMyRooms(userId: userId, pageSize: 20);
-      if (!mounted || rooms.isEmpty) {
+      final page = await repo.listMyRooms(userId: userId, pageSize: 20);
+      if (!mounted) {
         return;
       }
       setState(() {
-        _rooms = rooms;
+        _rooms = page.rooms
+            .where((room) => !widget.excludedRoomIds.contains(room.roomId))
+            .toList();
+        _nextPageToken = page.nextPageToken;
+        _hasMore = _nextPageToken.isNotEmpty;
       });
+      _scheduleAutoLoadIfUnderfilled();
     } catch (_) {
-      // Keep mock fallback on remote errors.
+      // Keep current list state on remote errors.
     } finally {
       if (mounted) {
         setState(() {
@@ -70,16 +97,97 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
     }
   }
 
+  Future<void> _loadMoreRooms() async {
+    if (_loading || _loadingMore || !_hasMore) {
+      return;
+    }
+    final repo = widget.chatRepository;
+    final userId = widget.currentUserId;
+    if (repo == null || userId == null || userId.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _loadingMore = true;
+    });
+
+    try {
+      final page = await repo.listMyRooms(
+        userId: userId,
+        pageSize: 20,
+        pageToken: _nextPageToken,
+      );
+      if (!mounted) {
+        return;
+      }
+      final existingRoomIds = _rooms.map((room) => room.roomId).toSet();
+      final merged = [
+        ..._rooms,
+        ...page.rooms.where(
+          (room) =>
+              !existingRoomIds.contains(room.roomId) &&
+              !widget.excludedRoomIds.contains(room.roomId),
+        ),
+      ];
+      setState(() {
+        _rooms = merged;
+        _nextPageToken = page.nextPageToken;
+        _hasMore = _nextPageToken.isNotEmpty;
+      });
+      _scheduleAutoLoadIfUnderfilled();
+    } catch (_) {
+      // Keep current list state on remote errors.
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loadingMore = false;
+        });
+      }
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 180) {
+      _loadMoreRooms();
+    }
+  }
+
+  void _scheduleAutoLoadIfUnderfilled() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _loading || _loadingMore || !_hasMore) {
+        return;
+      }
+      if (!_scrollController.hasClients) {
+        return;
+      }
+      final position = _scrollController.position;
+      final viewportNotFilled = position.maxScrollExtent <= 0;
+      if (viewportNotFilled) {
+        _loadMoreRooms();
+      }
+    });
+  }
+
+  void _applyExclusions() {
+    if (!mounted || widget.excludedRoomIds.isEmpty) {
+      return;
+    }
+    setState(() {
+      _rooms = _rooms
+          .where((room) => !widget.excludedRoomIds.contains(room.roomId))
+          .toList();
+    });
+  }
+
   Future<void> _createRoomFromFab() async {
     final repo = widget.chatRepository;
     final userId = widget.currentUserId;
     if (repo == null || userId == null || userId.isEmpty) {
-      final localRoom = _buildLocalRoom();
-      setState(() {
-        _rooms = [localRoom, ..._rooms];
-      });
-      widget.onRoomSelected?.call(localRoom);
-      _showInfo('Chat backend unavailable. Opened local preview room.');
+      _showInfo('Chat backend unavailable.');
       return;
     }
 
@@ -97,19 +205,15 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
         return;
       }
       setState(() {
-        _rooms = [created, ..._rooms];
+        _rooms = [
+          if (!widget.excludedRoomIds.contains(created.roomId)) created,
+          ..._rooms,
+        ];
       });
       widget.onRoomSelected?.call(created);
       _showInfo('Room created.');
-    } catch (error) {
-      final localRoom = _buildLocalRoom();
-      setState(() {
-        _rooms = [localRoom, ..._rooms];
-      });
-      widget.onRoomSelected?.call(localRoom);
-      _showInfo('Could not create server room. Opened local preview room.');
-      // ignore: avoid_print
-      print('create room failed: $error');
+    } catch (_) {
+      _showInfo('Could not create room on server.');
     } finally {
       if (mounted) {
         setState(() {
@@ -117,24 +221,6 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
         });
       }
     }
-  }
-
-  GroupchatRoomSummary _buildLocalRoom() {
-    final now = DateTime.now();
-    final hour = now.hour.toString().padLeft(2, '0');
-    final minute = now.minute.toString().padLeft(2, '0');
-    final title = 'New chat $hour:$minute';
-    return GroupchatRoomSummary(
-      roomId: 'mock-room-local-${now.microsecondsSinceEpoch}',
-      title: title,
-      memberSummary: '1/1',
-      location: 'Local Preview',
-      lastMessage: 'No messages yet',
-      timeLabel: '$hour:$minute',
-      tags: const [],
-      avatarUrls: const [],
-      unreadCount: 0,
-    );
   }
 
   void _showInfo(String message) {
@@ -177,11 +263,10 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
             child: RefreshIndicator(
               onRefresh: _loadRooms,
               child: ListView(
+                controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 96),
                 children: [
                   _MessagesHeader(unreadCount: _unreadCount),
-                  const SizedBox(height: 26),
-                  const _ActiveBoardSection(rooms: mockActiveBoardRooms),
                   const SizedBox(height: 24),
                   if (_loading)
                     const Padding(
@@ -189,9 +274,19 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
                       child: LinearProgressIndicator(minHeight: 2),
                     ),
                   _ChatRoomList(
-                    rooms: _rooms,
+                    rooms: _rooms
+                        .where(
+                          (room) =>
+                              !widget.excludedRoomIds.contains(room.roomId),
+                        )
+                        .toList(),
                     onRoomSelected: widget.onRoomSelected,
                   ),
+                  if (_loadingMore)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 12),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
                 ],
               ),
             ),
@@ -246,95 +341,6 @@ class _MessagesHeader extends StatelessWidget {
   }
 }
 
-class _ActiveBoardSection extends StatelessWidget {
-  const _ActiveBoardSection({required this.rooms});
-
-  final List<ActiveBoardRoom> rooms;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Active Board',
-          style: TextStyle(
-            color: palette.secondary.withValues(alpha: 0.72),
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.8,
-          ),
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: 94,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: rooms.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 16),
-            itemBuilder: (context, index) {
-              return _ActiveBoardCard(room: rooms[index]);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ActiveBoardCard extends StatelessWidget {
-  const _ActiveBoardCard({required this.room});
-
-  final ActiveBoardRoom room;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-    final accentColor = room.hasUnreadActivity
-        ? AppColors.primaryContainer
-        : Colors.transparent;
-
-    return SizedBox(
-      width: 74,
-      child: Column(
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: accentColor, width: 2),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: AppNetworkImage(url: room.imageUrl),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            room.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: room.hasUnreadActivity
-                  ? palette.onSurface
-                  : palette.secondary,
-              fontSize: 11,
-              fontWeight: room.hasUnreadActivity
-                  ? FontWeight.w800
-                  : FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _ChatRoomList extends StatelessWidget {
   const _ChatRoomList({required this.rooms, this.onRoomSelected});
 
@@ -344,6 +350,37 @@ class _ChatRoomList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+
+    if (rooms.isEmpty) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: palette.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: palette.outlineVariant.withValues(alpha: 0.5),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+          child: Row(
+            children: [
+              Icon(Icons.chat_bubble_outline, color: palette.secondary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'No chat rooms yet. Create your first room.',
+                  style: TextStyle(
+                    color: palette.secondary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return DecoratedBox(
       decoration: BoxDecoration(

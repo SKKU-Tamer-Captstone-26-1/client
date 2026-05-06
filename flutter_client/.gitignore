@@ -60,3 +60,10 @@ app.*.map.json
 
 # FVM local SDK link
 .fvm/flutter_sdk
+
+
+# Vscode
+.vscode
+
+# Local Flutter DevTools preferences
+devtools_options.yaml
