@@ -4,9 +4,10 @@ import '../../../core/config/app_config.dart';
 
 class AuthState {
   final String? accessToken;
+  final String? refreshToken;
   final String? userId;
 
-  const AuthState({this.accessToken, this.userId});
+  const AuthState({this.accessToken, this.refreshToken, this.userId});
 
   bool get isAuthenticated => accessToken != null && userId != null;
 }
@@ -14,8 +15,16 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier() : super(const AuthState());
 
-  void setTokens({required String accessToken, required String userId}) {
-    state = AuthState(accessToken: accessToken, userId: userId);
+  void setSession({
+    required String accessToken,
+    required String refreshToken,
+    required String userId,
+  }) {
+    state = AuthState(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      userId: userId,
+    );
   }
 
   void clear() {
