@@ -7,7 +7,6 @@ import 'grpc_gen/auth/v1/auth.pbgrpc.dart';
 abstract class AuthRemoteDataSource {
   Future<GoogleLoginResponse> googleLogin();
   Future<void> logout(String userId);
-  Future<void> updateSurveyData({required String userId, required String surveyData});
   Future<void> dispose();
 }
 
@@ -62,16 +61,6 @@ class GrpcAuthRemoteDataSource implements AuthRemoteDataSource {
   Future<void> logout(String userId) async {
     await _googleSignIn.signOut();
     await _client.logout(LogoutRequest()..userId = userId);
-  }
-
-  @override
-  Future<void> updateSurveyData({required String userId, required String surveyData}) async {
-    await _client.updateSurveyData(
-      UpdateSurveyDataRequest()
-        ..userId = userId
-        ..surveyData = surveyData
-        ..surveyCompleted = true,
-    );
   }
 
   @override
