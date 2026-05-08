@@ -5,9 +5,6 @@ class AuthUser {
     this.nickname,
     this.profileImageUrl,
     this.neighborhood,
-    this.alcoholScore = 5,
-    this.points = 0,
-    this.surveyData,
     this.surveyCompleted = false,
   });
 
@@ -16,9 +13,6 @@ class AuthUser {
   final String? nickname;
   final String? profileImageUrl;
   final String? neighborhood;
-  final int alcoholScore;
-  final int points;
-  final String? surveyData;
   final bool surveyCompleted;
 }
 
