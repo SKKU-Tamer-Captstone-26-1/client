@@ -4,7 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import 'widgets/google_sign_in_button.dart';
 import 'widgets/login_brand_header.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({
     super.key,
     this.onGoogleSignIn,
@@ -12,9 +12,29 @@ class LoginScreen extends StatelessWidget {
     required this.onThemeToggle,
   });
 
-  final VoidCallback? onGoogleSignIn;
+  final Future<void> Function()? onGoogleSignIn;
   final bool isDarkMode;
   final VoidCallback onThemeToggle;
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  bool _isSigningIn = false;
+  String? _error;
+
+  Future<void> _handleSignIn() async {
+    if (_isSigningIn) return;
+    setState(() { _isSigningIn = true; _error = null; });
+    try {
+      await widget.onGoogleSignIn?.call();
+    } catch (e) {
+      if (mounted) setState(() { _error = e.toString(); });
+    } finally {
+      if (mounted) setState(() { _isSigningIn = false; });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +51,8 @@ class LoginScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 child: _ThemeToggleButton(
-                  isDarkMode: isDarkMode,
-                  onPressed: onThemeToggle,
+                  isDarkMode: widget.isDarkMode,
+                  onPressed: widget.onThemeToggle,
                 ),
               ),
             ),
@@ -61,7 +81,18 @@ class LoginScreen extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 48),
-                      GoogleSignInButton(onPressed: onGoogleSignIn ?? () {}),
+                      GoogleSignInButton(
+                        onPressed: _isSigningIn ? () {} : _handleSignIn,
+                        isLoading: _isSigningIn,
+                      ),
+                      if (_error != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
+                        ),
+                      ],
                       const SizedBox(height: 48),
                       const _SecurityIndicator(),
                     ],
