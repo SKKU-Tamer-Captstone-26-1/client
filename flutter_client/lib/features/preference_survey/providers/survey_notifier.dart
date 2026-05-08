@@ -96,7 +96,15 @@ class SurveyNotifier extends StateNotifier<SurveyState> {
       final q1 = state.answers['q1']?.first;
       final q2 = state.answers['q2'];
       final refreshed = getVisibleQuestions(q1, q2);
-      state = state.copyWith(visibleQuestions: refreshed, currentIndex: nextIndex);
+      final visibleIds = refreshed.map((q) => q.id).toSet();
+      final cleanedAnswers = Map<String, List<String>?>.fromEntries(
+        state.answers.entries.where((e) => visibleIds.contains(e.key)),
+      );
+      state = state.copyWith(
+        visibleQuestions: refreshed,
+        currentIndex: nextIndex,
+        answers: cleanedAnswers,
+      );
     } else {
       state = state.copyWith(currentIndex: nextIndex);
     }
