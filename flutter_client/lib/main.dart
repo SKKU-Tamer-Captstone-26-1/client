@@ -7,10 +7,10 @@ import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_icons.dart';
-import 'features/auth/data/auth_remote_data_source.dart';
-import 'features/auth/data/auth_repository.dart';
+import 'core/config/app_config.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'features/auth/providers/auth_repository_provider.dart';
 import 'features/board/presentation/board_screen.dart';
 import 'features/chat/data/chat_remote_data_source.dart';
 import 'features/chat/data/chat_repository.dart';
@@ -26,6 +26,7 @@ import 'features/profile/user_page_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  assertSecureConfig();
   const kakaoMapApiKey = String.fromEnvironment('KAKAO_MAP_API_KEY');
   if (kakaoMapApiKey.isNotEmpty) {
     await KakaoMapsFlutter.init(kakaoMapApiKey);
@@ -65,14 +66,9 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   GrpcChatRepository? _chatRepository;
   final Set<String> _locallyHiddenRoomIds = <String>{};
 
-  late final GrpcAuthRemoteDataSource _authRemoteDataSource;
-  late final AuthRepository _authRepository;
-
   @override
   void initState() {
     super.initState();
-    _authRemoteDataSource = GrpcAuthRemoteDataSource();
-    _authRepository = AuthRepository(_authRemoteDataSource);
     _chatRepository = GrpcChatRepository(GrpcChatRemoteDataSource());
     unawaited(_printDevErrorLogPathAtStartup());
   }
@@ -95,10 +91,11 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   }
 
   Future<void> _handleGoogleSignIn() async {
-    final session = await _authRepository.googleLogin();
+    final session = await ref.read(authRepositoryProvider).googleLogin();
     if (!mounted) return;
-    ref.read(authProvider.notifier).setTokens(
+    ref.read(authProvider.notifier).setSession(
       accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
       userId: session.user.userId,
     );
     setState(() {
