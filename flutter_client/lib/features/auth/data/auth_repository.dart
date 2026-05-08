@@ -18,9 +18,6 @@ class AuthRepository {
         nickname: user.hasNickname() ? user.nickname : null,
         profileImageUrl: user.hasProfileImageUrl() ? user.profileImageUrl : null,
         neighborhood: user.hasNeighborhood() ? user.neighborhood : null,
-        alcoholScore: user.alcoholScore,
-        points: user.points,
-        surveyData: user.hasSurveyData() ? user.surveyData : null,
         surveyCompleted: user.surveyCompleted,
       ),
       isNewUser: response.isNewUser,
@@ -28,9 +25,6 @@ class AuthRepository {
   }
 
   Future<void> logout(String userId) => _dataSource.logout(userId);
-
-  Future<void> updateSurveyData({required String userId, required String surveyData}) =>
-      _dataSource.updateSurveyData(userId: userId, surveyData: surveyData);
 
   Future<void> dispose() => _dataSource.dispose();
 }
