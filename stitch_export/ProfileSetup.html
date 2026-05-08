@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Set Up Profile - ONTHEBLOCK</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f6faff",
+                        "secondary": "#5f5e5e",
+                        "primary": "#a04100",
+                        "inverse-primary": "#ffb693",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#ffdbcc",
+                        "on-primary": "#ffffff",
+                        "surface": "#f6faff",
+                        "on-surface-variant": "#584238",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "inverse-on-surface": "#eaf2fa",
+                        "on-error": "#ffffff",
+                        "outline-variant": "#dfc0b3",
+                        "on-secondary-fixed-variant": "#474746",
+                        "surface-dim": "#d3dbe4",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#636262",
+                        "outline": "#8b7266",
+                        "on-tertiary-fixed": "#2b1700",
+                        "tertiary-fixed-dim": "#f8bb73",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#351000",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#e2dfde",
+                        "on-background": "#151c23",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e1e9f2",
+                        "on-surface": "#151c23",
+                        "tertiary": "#825516",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#d09854",
+                        "surface-tint": "#a04100",
+                        "primary-container": "#ff7e36",
+                        "primary-fixed-dim": "#ffb693",
+                        "tertiary-fixed": "#ffddb9",
+                        "surface-container-highest": "#dbe3ec",
+                        "inverse-surface": "#293138",
+                        "on-tertiary-container": "#533200",
+                        "surface-container": "#e7eff8",
+                        "background": "#f6faff",
+                        "on-primary-fixed-variant": "#7a3000",
+                        "surface-variant": "#dbe3ec",
+                        "surface-container-low": "#edf4fd",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-primary-container": "#642600"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "input": "12px",
+                        "btn": "16px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-lowest text-on-surface h-screen flex flex-col font-body antialiased">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center px-4 h-16 bg-surface-container-lowest border-b border-surface-variant">
+<button aria-label="Go back" class="p-2 text-primary-container hover:bg-surface-variant transition-colors rounded-full flex items-center justify-center group active:scale-95 duration-150">
+<span class="material-symbols-outlined text-2xl group-hover:-translate-x-1 transition-transform" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="flex-1 text-center font-headline font-bold text-lg text-on-surface mr-10">Set Up Profile</h1>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col pt-16 px-6 pb-8 h-full justify-between">
+<!-- Center Content Container -->
+<div class="flex-1 flex flex-col items-center justify-center max-w-sm mx-auto w-full gap-10">
+<!-- Avatar Section -->
+<div class="relative group cursor-pointer">
+<div class="w-32 h-32 rounded-full bg-surface-variant flex items-center justify-center border-4 border-surface-container-lowest shadow-sm overflow-hidden">
+<span class="material-symbols-outlined text-6xl text-secondary" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<!-- Camera FAB Overlay -->
+<button class="absolute bottom-0 right-0 w-10 h-10 bg-primary-container text-white rounded-full flex items-center justify-center border-4 border-surface-container-lowest shadow-md hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-xl" data-icon="photo_camera" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+</button>
+</div>
+<!-- Nickname Input Section -->
+<div class="w-full flex flex-col gap-2">
+<label class="font-label text-sm font-medium text-on-surface-variant pl-1" for="nickname">Nickname</label>
+<div class="relative">
+<input class="w-full bg-surface text-on-surface px-4 py-4 rounded-input border border-outline-variant focus:border-primary-container focus:ring-1 focus:ring-primary-container placeholder:text-secondary outline-none transition-all" id="nickname" placeholder="Enter your nickname" type="text"/>
+</div>
+</div>
+</div>
+<!-- Bottom Action Area -->
+<div class="w-full max-w-sm mx-auto mt-auto pt-6">
+<button class="w-full bg-primary-container text-white font-headline font-semibold text-lg py-4 rounded-btn hover:opacity-90 active:scale-95 transition-all shadow-sm">
+                Complete
+            </button>
+</div>
+</main>
+</body></html>
