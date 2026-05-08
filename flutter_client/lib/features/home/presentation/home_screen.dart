@@ -10,9 +10,10 @@ import '../data/mock_home_data.dart';
 import '../models/home_models.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, this.onBottomNavSelected});
+  const HomeScreen({super.key, this.onBottomNavSelected, this.onProfileSelected});
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
+  final VoidCallback? onProfileSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +25,7 @@ class HomeScreen extends StatelessWidget {
         onNotificationBoardSelected: () {
           onBottomNavSelected?.call(AppBottomNavItem.board);
         },
+        onProfileSelected: onProfileSelected,
       ),
       bottomNavigationBar: AppBottomNavBar(onItemSelected: onBottomNavSelected),
       floatingActionButton: FloatingActionButton(

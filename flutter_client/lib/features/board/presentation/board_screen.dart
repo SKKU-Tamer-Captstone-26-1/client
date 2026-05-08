@@ -10,9 +10,10 @@ import '../data/mock_board_data.dart';
 import '../models/board_models.dart';
 
 class BoardScreen extends StatelessWidget {
-  const BoardScreen({super.key, this.onBottomNavSelected});
+  const BoardScreen({super.key, this.onBottomNavSelected, this.onProfileSelected});
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
+  final VoidCallback? onProfileSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +25,7 @@ class BoardScreen extends StatelessWidget {
         onNotificationBoardSelected: () {
           onBottomNavSelected?.call(AppBottomNavItem.board);
         },
+        onProfileSelected: onProfileSelected,
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.board,

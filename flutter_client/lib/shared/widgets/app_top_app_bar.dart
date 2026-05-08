@@ -7,9 +7,10 @@ import '../../features/notifications/presentation/notification_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 
 class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const AppTopAppBar({super.key, this.onNotificationBoardSelected});
+  const AppTopAppBar({super.key, this.onNotificationBoardSelected, this.onProfileSelected});
 
   final VoidCallback? onNotificationBoardSelected;
+  final VoidCallback? onProfileSelected;
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -108,13 +109,16 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(right: 12),
-          child: CircleAvatar(
-            radius: 16,
-            backgroundColor: palette.surfaceContainerLow,
-            child: Icon(
-              AppIcons.topAppBarProfile,
-              size: 22,
-              color: palette.secondary,
+          child: GestureDetector(
+            onTap: onProfileSelected,
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: palette.surfaceContainerLow,
+              child: Icon(
+                AppIcons.topAppBarProfile,
+                size: 22,
+                color: palette.secondary,
+              ),
             ),
           ),
         ),

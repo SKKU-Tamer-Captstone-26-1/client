@@ -11,9 +11,10 @@ import '../models/collection_models.dart';
 enum _CollectionTab { wishlist, cart }
 
 class CollectionScreen extends StatefulWidget {
-  const CollectionScreen({super.key, this.onBottomNavSelected});
+  const CollectionScreen({super.key, this.onBottomNavSelected, this.onProfileSelected});
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
+  final VoidCallback? onProfileSelected;
 
   @override
   State<CollectionScreen> createState() => _CollectionScreenState();
@@ -33,6 +34,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
         onNotificationBoardSelected: () {
           widget.onBottomNavSelected?.call(AppBottomNavItem.board);
         },
+        onProfileSelected: widget.onProfileSelected,
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.collection,
