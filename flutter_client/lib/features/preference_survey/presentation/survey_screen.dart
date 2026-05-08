@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../auth/data/auth_repository.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../providers/survey_encoder.dart';
 import '../providers/survey_notifier.dart';
 import '../widgets/option_card.dart';
 
 class SurveyScreen extends ConsumerWidget {
-  const SurveyScreen({super.key, this.onBack, this.onCompleted, this.authRepository});
+  const SurveyScreen({super.key, this.onBack, this.onCompleted});
 
   final VoidCallback? onBack;
   final VoidCallback? onCompleted;
-  final AuthRepository? authRepository;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -87,8 +84,9 @@ class SurveyScreen extends ConsumerWidget {
 
   Future<void> _submitSurvey(BuildContext context, WidgetRef ref, SurveyState state) async {
     final auth = ref.read(authProvider);
+    final client = ref.read(surveyApiClientProvider);
 
-    if (auth.userId == null) {
+    if (auth.userId == null || client == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('로그인이 필요합니다.')),
       );
@@ -96,10 +94,9 @@ class SurveyScreen extends ConsumerWidget {
     }
 
     try {
-      final encoded = encodeSurveyAnswers(state.answers);
-      await authRepository?.updateSurveyData(
+      await client.submit(
         userId: auth.userId!,
-        surveyData: encoded,
+        answers: state.answers,
       );
       if (context.mounted) onCompleted?.call();
     } catch (e) {
