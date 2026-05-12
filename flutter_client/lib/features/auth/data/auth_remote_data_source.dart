@@ -6,6 +6,7 @@ import 'grpc_gen/auth/v1/auth.pbgrpc.dart';
 
 abstract class AuthRemoteDataSource {
   Future<GoogleLoginResponse> googleLogin();
+  Future<RefreshTokenResponse> refreshToken(String token);
   Future<UpdateProfileResponse> updateProfile(String userId, String nickname, String profileImageUrl);
   Future<void> logout(String userId);
   Future<void> dispose();
@@ -56,6 +57,11 @@ class GrpcAuthRemoteDataSource implements AuthRemoteDataSource {
     return _client.googleLogin(
       GoogleLoginRequest()..idToken = idToken,
     );
+  }
+
+  @override
+  Future<RefreshTokenResponse> refreshToken(String token) {
+    return _client.refreshToken(RefreshTokenRequest()..refreshToken = token);
   }
 
   @override
