@@ -19,8 +19,25 @@ class AuthRepository {
         profileImageUrl: user.hasProfileImageUrl() ? user.profileImageUrl : null,
         neighborhood: user.hasNeighborhood() ? user.neighborhood : null,
         surveyCompleted: user.surveyCompleted,
+        alcoholScore: user.alcoholScore,
+        points: user.points,
       ),
       isNewUser: response.isNewUser,
+    );
+  }
+
+  Future<AuthUser> updateProfile(String userId, String nickname, String profileImageUrl) async {
+    final response = await _dataSource.updateProfile(userId, nickname, profileImageUrl);
+    final user = response.user;
+    return AuthUser(
+      userId: user.userId,
+      email: user.email,
+      nickname: user.hasNickname() ? user.nickname : null,
+      profileImageUrl: user.hasProfileImageUrl() ? user.profileImageUrl : null,
+      neighborhood: user.hasNeighborhood() ? user.neighborhood : null,
+      surveyCompleted: user.surveyCompleted,
+      alcoholScore: user.alcoholScore,
+      points: user.points,
     );
   }
 
