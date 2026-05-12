@@ -50,6 +50,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
+  void refreshSession({
+    required String accessToken,
+    required String refreshToken,
+    required AuthUser user,
+  }) {
+    state = AuthState(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      userId: user.userId,
+      user: user,
+      isNewUser: false,
+    );
+  }
+
   void clear() {
     state = const AuthState();
   }
