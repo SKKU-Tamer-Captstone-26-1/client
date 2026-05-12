@@ -37,6 +37,10 @@ class AuthServiceClient extends $grpc.Client {
       '/ontheblock.auth.v1.AuthService/UpdateSurveyData',
       ($0.UpdateSurveyDataRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.UpdateSurveyDataResponse.fromBuffer(value));
+  static final _$updateProfile = $grpc.ClientMethod<$0.UpdateProfileRequest, $0.UpdateProfileResponse>(
+      '/ontheblock.auth.v1.AuthService/UpdateProfile',
+      ($0.UpdateProfileRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateProfileResponse.fromBuffer(value));
 
   AuthServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -57,5 +61,9 @@ class AuthServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.UpdateSurveyDataResponse> updateSurveyData($0.UpdateSurveyDataRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateSurveyData, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateProfileResponse> updateProfile($0.UpdateProfileRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateProfile, request, options: options);
   }
 }
