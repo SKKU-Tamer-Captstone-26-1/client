@@ -22,6 +22,7 @@ import 'features/home/presentation/home_screen.dart';
 import 'features/map/presentation/map_screen.dart';
 import 'features/preference_survey/presentation/survey_intro_screen.dart';
 import 'features/preference_survey/presentation/survey_screen.dart';
+import 'features/profile/profile_setup_screen.dart';
 import 'features/profile/user_page_screen.dart';
 
 Future<void> main() async {
@@ -97,10 +98,17 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       accessToken: session.accessToken,
       refreshToken: session.refreshToken,
       userId: session.user.userId,
+      user: session.user,
+      isNewUser: session.isNewUser,
     );
     setState(() {
-      final needsSurvey = session.isNewUser || !session.user.surveyCompleted;
-      _stage = needsSurvey ? _AppStage.surveyIntro : _AppStage.home;
+      if (session.isNewUser) {
+        _stage = _AppStage.profileSetup;
+      } else if (!session.user.surveyCompleted) {
+        _stage = _AppStage.surveyIntro;
+      } else {
+        _stage = _AppStage.home;
+      }
     });
   }
 
@@ -118,6 +126,12 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
 
   Widget _buildStage() {
     return switch (_stage) {
+      _AppStage.profileSetup => ProfileSetupScreen(
+        defaultNickname: ref.read(authProvider).user?.nickname ?? '',
+        defaultProfileImageUrl: ref.read(authProvider).user?.profileImageUrl ?? '',
+        userId: ref.read(authProvider).userId ?? '',
+        onComplete: () => setState(() => _stage = _AppStage.surveyIntro),
+      ),
       _AppStage.login => LoginScreen(
         isDarkMode: _themeMode == ThemeMode.dark,
         onThemeToggle: _toggleThemeMode,
@@ -227,6 +241,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
 
 enum _AppStage {
   login,
+  profileSetup,
   surveyIntro,
   survey,
   home,
