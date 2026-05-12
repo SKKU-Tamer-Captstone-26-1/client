@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
+import '../auth/models/auth_models.dart';
+import '../auth/providers/auth_provider.dart';
+import '../auth/providers/auth_repository_provider.dart';
 import 'select_neighborhood_screen.dart';
 
-class UserPageScreen extends StatelessWidget {
+class UserPageScreen extends ConsumerWidget {
   const UserPageScreen({super.key, this.onBack, this.onBottomNavSelected, this.onRetakeSurvey});
 
   final VoidCallback? onBack;
@@ -13,7 +17,8 @@ class UserPageScreen extends StatelessWidget {
   final VoidCallback? onRetakeSurvey;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider).user;
     final palette = context.palette;
 
     return Scaffold(
@@ -44,9 +49,9 @@ class UserPageScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
           children: [
-            const _ProfileSection(),
+            _ProfileSection(user: user),
             const SizedBox(height: 24),
-            const _StatusBentoGrid(),
+            _StatusBentoGrid(user: user),
             const SizedBox(height: 24),
             _MySettingsSection(onRetakeSurvey: onRetakeSurvey),
           ],
@@ -56,12 +61,74 @@ class UserPageScreen extends StatelessWidget {
   }
 }
 
-class _ProfileSection extends StatelessWidget {
-  const _ProfileSection();
+class _ProfileSection extends ConsumerWidget {
+  const _ProfileSection({required this.user});
+
+  final AuthUser? user;
+
+  void _showEditNicknameDialog(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController(text: user?.nickname ?? '');
+    showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        var isSaving = false;
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            title: const Text('Edit Nickname'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(labelText: 'Nickname'),
+              onSubmitted: (_) {},
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSaving ? null : () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        final newNickname = controller.text.trim();
+                        if (newNickname.isEmpty) return;
+                        setDialogState(() => isSaving = true);
+                        try {
+                          final auth = ref.read(authProvider);
+                          final updated = await ref
+                              .read(authRepositoryProvider)
+                              .updateProfile(auth.userId!, newNickname, '');
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                            ref.read(authProvider.notifier).updateUser(updated);
+                          }
+                        } catch (_) {
+                          if (ctx.mounted) {
+                            setDialogState(() => isSaving = false);
+                          }
+                        }
+                      },
+                child: isSaving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Save'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.palette;
+    final nickname = user?.nickname ?? 'User';
+    final email = user?.email ?? '';
+    final profileImageUrl = user?.profileImageUrl;
 
     return Padding(
       padding: const EdgeInsets.only(top: 24, bottom: 8),
@@ -72,11 +139,12 @@ class _ProfileSection extends StatelessWidget {
               CircleAvatar(
                 radius: 56,
                 backgroundColor: palette.surfaceContainerLow,
-                child: Icon(
-                  Icons.person,
-                  size: 56,
-                  color: palette.secondary,
-                ),
+                backgroundImage: profileImageUrl != null && profileImageUrl.isNotEmpty
+                    ? NetworkImage(profileImageUrl)
+                    : null,
+                child: profileImageUrl == null || profileImageUrl.isEmpty
+                    ? Icon(Icons.person, size: 56, color: palette.secondary)
+                    : null,
               ),
               Positioned(
                 bottom: 0,
@@ -102,19 +170,22 @@ class _ProfileSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Alex Drinkwater',
+                nickname,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: palette.onSurface,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.edit, size: 20, color: palette.secondary),
+              GestureDetector(
+                onTap: () => _showEditNicknameDialog(context, ref),
+                child: Icon(Icons.edit, size: 20, color: palette.secondary),
+              ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
-            'alex.d@example.com',
+            email,
             style: TextStyle(fontSize: 14, color: palette.secondary),
           ),
         ],
@@ -124,27 +195,32 @@ class _ProfileSection extends StatelessWidget {
 }
 
 class _StatusBentoGrid extends StatelessWidget {
-  const _StatusBentoGrid();
+  const _StatusBentoGrid({required this.user});
+
+  final AuthUser? user;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: _AlcoholScoreCard()),
-        SizedBox(width: 16),
-        Expanded(child: _PointsCard()),
+        Expanded(child: _AlcoholScoreCard(alcoholScore: user?.alcoholScore ?? 0)),
+        const SizedBox(width: 16),
+        Expanded(child: _PointsCard(points: user?.points ?? 0)),
       ],
     );
   }
 }
 
 class _AlcoholScoreCard extends StatelessWidget {
-  const _AlcoholScoreCard();
+  const _AlcoholScoreCard({required this.alcoholScore});
+
+  final int alcoholScore;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final progress = (alcoholScore / 100.0).clamp(0.0, 1.0);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -189,7 +265,7 @@ class _AlcoholScoreCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '5',
+                '$alcoholScore',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w900,
@@ -215,7 +291,7 @@ class _AlcoholScoreCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: LinearProgressIndicator(
-              value: 0.05,
+              value: progress,
               minHeight: 10,
               backgroundColor: palette.surfaceContainerLow,
               color: AppColors.primaryContainer,
@@ -233,7 +309,19 @@ class _AlcoholScoreCard extends StatelessWidget {
 }
 
 class _PointsCard extends StatelessWidget {
-  const _PointsCard();
+  const _PointsCard({required this.points});
+
+  final int points;
+
+  String _formatPoints(int n) {
+    final s = n.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -262,7 +350,7 @@ class _PointsCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '1,250',
+                _formatPoints(points),
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w900,
@@ -445,7 +533,7 @@ class _SettingsCard extends StatelessWidget {
                 ),
                 child: Text(actionLabel!),
               ),
-            if (trailing case final t?) t,
+            if (trailing != null) trailing!,
           ],
         ),
       ),
