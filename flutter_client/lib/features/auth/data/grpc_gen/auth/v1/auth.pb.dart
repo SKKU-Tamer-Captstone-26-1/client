@@ -11,6 +11,7 @@
 
 import 'dart:core' as $core;
 
+import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import '../../google/protobuf/timestamp.pb.dart' as $1;
@@ -73,8 +74,8 @@ class UserResponse extends $pb.GeneratedMessage {
     $core.String? neighborhood,
     $core.int? alcoholScore,
     $core.int? points,
-    $core.String? surveyData,
     $core.bool? surveyCompleted,
+    $fixnum.Int64? surveyId,
   }) {
     final $result = create();
     if (userId != null) $result.userId = userId;
@@ -86,8 +87,8 @@ class UserResponse extends $pb.GeneratedMessage {
     if (neighborhood != null) $result.neighborhood = neighborhood;
     if (alcoholScore != null) $result.alcoholScore = alcoholScore;
     if (points != null) $result.points = points;
-    if (surveyData != null) $result.surveyData = surveyData;
     if (surveyCompleted != null) $result.surveyCompleted = surveyCompleted;
+    if (surveyId != null) $result.surveyId = surveyId;
     return $result;
   }
   UserResponse._() : super();
@@ -104,8 +105,8 @@ class UserResponse extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'neighborhood')
     ..a<$core.int>(8, _omitFieldNames ? '' : 'alcoholScore', $pb.PbFieldType.O3)
     ..a<$core.int>(9, _omitFieldNames ? '' : 'points', $pb.PbFieldType.O3)
-    ..aOS(10, _omitFieldNames ? '' : 'surveyData')
-    ..aOB(11, _omitFieldNames ? '' : 'surveyCompleted')
+    ..aOB(10, _omitFieldNames ? '' : 'surveyCompleted')
+    ..a<$fixnum.Int64>(11, _omitFieldNames ? '' : 'surveyId', $pb.PbFieldType.O6)
     ..hasRequiredFields = false
   ;
 
@@ -208,22 +209,22 @@ class UserResponse extends $pb.GeneratedMessage {
   void clearPoints() => clearField(9);
 
   @$pb.TagNumber(10)
-  $core.String get surveyData => $_getSZ(9);
+  $core.bool get surveyCompleted => $_getBF(9);
   @$pb.TagNumber(10)
-  set surveyData($core.String v) { $_setString(9, v); }
+  set surveyCompleted($core.bool v) { $_setBool(9, v); }
   @$pb.TagNumber(10)
-  $core.bool hasSurveyData() => $_has(9);
+  $core.bool hasSurveyCompleted() => $_has(9);
   @$pb.TagNumber(10)
-  void clearSurveyData() => clearField(10);
+  void clearSurveyCompleted() => clearField(10);
 
   @$pb.TagNumber(11)
-  $core.bool get surveyCompleted => $_getBF(10);
+  $fixnum.Int64 get surveyId => $_getI64(10);
   @$pb.TagNumber(11)
-  set surveyCompleted($core.bool v) { $_setBool(10, v); }
+  set surveyId($fixnum.Int64 v) { $_setInt64(10, v); }
   @$pb.TagNumber(11)
-  $core.bool hasSurveyCompleted() => $_has(10);
+  $core.bool hasSurveyId() => $_has(10);
   @$pb.TagNumber(11)
-  void clearSurveyCompleted() => clearField(11);
+  void clearSurveyId() => clearField(11);
 }
 
 class GoogleLoginResponse extends $pb.GeneratedMessage {
@@ -539,13 +540,13 @@ class LogoutResponse extends $pb.GeneratedMessage {
 class UpdateSurveyDataRequest extends $pb.GeneratedMessage {
   factory UpdateSurveyDataRequest({
     $core.String? userId,
-    $core.String? surveyData,
     $core.bool? surveyCompleted,
+    $fixnum.Int64? surveyId,
   }) {
     final $result = create();
     if (userId != null) $result.userId = userId;
-    if (surveyData != null) $result.surveyData = surveyData;
     if (surveyCompleted != null) $result.surveyCompleted = surveyCompleted;
+    if (surveyId != null) $result.surveyId = surveyId;
     return $result;
   }
   UpdateSurveyDataRequest._() : super();
@@ -554,8 +555,8 @@ class UpdateSurveyDataRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSurveyDataRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOS(2, _omitFieldNames ? '' : 'surveyData')
-    ..aOB(3, _omitFieldNames ? '' : 'surveyCompleted')
+    ..aOB(2, _omitFieldNames ? '' : 'surveyCompleted')
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'surveyId', $pb.PbFieldType.O6)
     ..hasRequiredFields = false
   ;
 
@@ -584,22 +585,22 @@ class UpdateSurveyDataRequest extends $pb.GeneratedMessage {
   void clearUserId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get surveyData => $_getSZ(1);
+  $core.bool get surveyCompleted => $_getBF(1);
   @$pb.TagNumber(2)
-  set surveyData($core.String v) { $_setString(1, v); }
+  set surveyCompleted($core.bool v) { $_setBool(1, v); }
   @$pb.TagNumber(2)
-  $core.bool hasSurveyData() => $_has(1);
+  $core.bool hasSurveyCompleted() => $_has(1);
   @$pb.TagNumber(2)
-  void clearSurveyData() => clearField(2);
+  void clearSurveyCompleted() => clearField(2);
 
   @$pb.TagNumber(3)
-  $core.bool get surveyCompleted => $_getBF(2);
+  $fixnum.Int64 get surveyId => $_getI64(2);
   @$pb.TagNumber(3)
-  set surveyCompleted($core.bool v) { $_setBool(2, v); }
+  set surveyId($fixnum.Int64 v) { $_setInt64(2, v); }
   @$pb.TagNumber(3)
-  $core.bool hasSurveyCompleted() => $_has(2);
+  $core.bool hasSurveyId() => $_has(2);
   @$pb.TagNumber(3)
-  void clearSurveyCompleted() => clearField(3);
+  void clearSurveyId() => clearField(3);
 }
 
 class UpdateSurveyDataResponse extends $pb.GeneratedMessage {
@@ -631,6 +632,114 @@ class UpdateSurveyDataResponse extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static UpdateSurveyDataResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateSurveyDataResponse>(create);
   static UpdateSurveyDataResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  UserResponse get user => $_getN(0);
+  @$pb.TagNumber(1)
+  set user(UserResponse v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUser() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUser() => clearField(1);
+  @$pb.TagNumber(1)
+  UserResponse ensureUser() => $_ensure(0);
+}
+
+class UpdateProfileRequest extends $pb.GeneratedMessage {
+  factory UpdateProfileRequest({
+    $core.String? userId,
+    $core.String? nickname,
+    $core.String? profileImageUrl,
+  }) {
+    final $result = create();
+    if (userId != null) $result.userId = userId;
+    if (nickname != null) $result.nickname = nickname;
+    if (profileImageUrl != null) $result.profileImageUrl = profileImageUrl;
+    return $result;
+  }
+  UpdateProfileRequest._() : super();
+  factory UpdateProfileRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateProfileRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateProfileRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'nickname')
+    ..aOS(3, _omitFieldNames ? '' : 'profileImageUrl')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.deepCopy] instead. Will be removed in next major version')
+  UpdateProfileRequest clone() => UpdateProfileRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.rebuild] instead. Will be removed in next major version')
+  UpdateProfileRequest copyWith(void Function(UpdateProfileRequest) updates) => super.copyWith((message) => updates(message as UpdateProfileRequest)) as UpdateProfileRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateProfileRequest create() => UpdateProfileRequest._();
+  UpdateProfileRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateProfileRequest> createRepeated() => $pb.PbList<UpdateProfileRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateProfileRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateProfileRequest>(create);
+  static UpdateProfileRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get nickname => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set nickname($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasNickname() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearNickname() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get profileImageUrl => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set profileImageUrl($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasProfileImageUrl() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearProfileImageUrl() => clearField(3);
+}
+
+class UpdateProfileResponse extends $pb.GeneratedMessage {
+  factory UpdateProfileResponse({UserResponse? user}) {
+    final $result = create();
+    if (user != null) $result.user = user;
+    return $result;
+  }
+  UpdateProfileResponse._() : super();
+  factory UpdateProfileResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateProfileResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateProfileResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
+    ..aOM<UserResponse>(1, _omitFieldNames ? '' : 'user', subBuilder: UserResponse.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.deepCopy] instead. Will be removed in next major version')
+  UpdateProfileResponse clone() => UpdateProfileResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.rebuild] instead. Will be removed in next major version')
+  UpdateProfileResponse copyWith(void Function(UpdateProfileResponse) updates) => super.copyWith((message) => updates(message as UpdateProfileResponse)) as UpdateProfileResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateProfileResponse create() => UpdateProfileResponse._();
+  UpdateProfileResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateProfileResponse> createRepeated() => $pb.PbList<UpdateProfileResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateProfileResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateProfileResponse>(create);
+  static UpdateProfileResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   UserResponse get user => $_getN(0);
