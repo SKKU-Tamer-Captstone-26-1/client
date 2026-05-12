@@ -375,8 +375,8 @@ class RefreshTokenRequest extends $pb.GeneratedMessage {
   void clearRefreshToken() => clearField(1);
 }
 
-class AuthTokenResponse extends $pb.GeneratedMessage {
-  factory AuthTokenResponse({
+class RefreshTokenResponse extends $pb.GeneratedMessage {
+  factory RefreshTokenResponse({
     $core.String? accessToken,
     $core.String? refreshToken,
     $1.Timestamp? accessTokenExpiresAt,
@@ -391,11 +391,11 @@ class AuthTokenResponse extends $pb.GeneratedMessage {
     if (user != null) $result.user = user;
     return $result;
   }
-  AuthTokenResponse._() : super();
-  factory AuthTokenResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory AuthTokenResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  RefreshTokenResponse._() : super();
+  factory RefreshTokenResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RefreshTokenResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AuthTokenResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RefreshTokenResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'accessToken')
     ..aOS(2, _omitFieldNames ? '' : 'refreshToken')
     ..aOM<$1.Timestamp>(3, _omitFieldNames ? '' : 'accessTokenExpiresAt', subBuilder: $1.Timestamp.create)
@@ -405,19 +405,19 @@ class AuthTokenResponse extends $pb.GeneratedMessage {
   ;
 
   @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.deepCopy] instead. Will be removed in next major version')
-  AuthTokenResponse clone() => AuthTokenResponse()..mergeFromMessage(this);
+  RefreshTokenResponse clone() => RefreshTokenResponse()..mergeFromMessage(this);
   @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.rebuild] instead. Will be removed in next major version')
-  AuthTokenResponse copyWith(void Function(AuthTokenResponse) updates) => super.copyWith((message) => updates(message as AuthTokenResponse)) as AuthTokenResponse;
+  RefreshTokenResponse copyWith(void Function(RefreshTokenResponse) updates) => super.copyWith((message) => updates(message as RefreshTokenResponse)) as RefreshTokenResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static AuthTokenResponse create() => AuthTokenResponse._();
-  AuthTokenResponse createEmptyInstance() => create();
-  static $pb.PbList<AuthTokenResponse> createRepeated() => $pb.PbList<AuthTokenResponse>();
+  static RefreshTokenResponse create() => RefreshTokenResponse._();
+  RefreshTokenResponse createEmptyInstance() => create();
+  static $pb.PbList<RefreshTokenResponse> createRepeated() => $pb.PbList<RefreshTokenResponse>();
   @$core.pragma('dart2js:noInline')
-  static AuthTokenResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AuthTokenResponse>(create);
-  static AuthTokenResponse? _defaultInstance;
+  static RefreshTokenResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RefreshTokenResponse>(create);
+  static RefreshTokenResponse? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get accessToken => $_getSZ(0);
