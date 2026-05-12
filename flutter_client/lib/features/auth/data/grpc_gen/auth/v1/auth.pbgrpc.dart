@@ -25,18 +25,14 @@ class AuthServiceClient extends $grpc.Client {
       '/ontheblock.auth.v1.AuthService/GoogleLogin',
       ($0.GoogleLoginRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GoogleLoginResponse.fromBuffer(value));
-  static final _$refreshToken = $grpc.ClientMethod<$0.RefreshTokenRequest, $0.AuthTokenResponse>(
+  static final _$refreshToken = $grpc.ClientMethod<$0.RefreshTokenRequest, $0.RefreshTokenResponse>(
       '/ontheblock.auth.v1.AuthService/RefreshToken',
       ($0.RefreshTokenRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.AuthTokenResponse.fromBuffer(value));
+      ($core.List<$core.int> value) => $0.RefreshTokenResponse.fromBuffer(value));
   static final _$logout = $grpc.ClientMethod<$0.LogoutRequest, $0.LogoutResponse>(
       '/ontheblock.auth.v1.AuthService/Logout',
       ($0.LogoutRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.LogoutResponse.fromBuffer(value));
-  static final _$updateSurveyData = $grpc.ClientMethod<$0.UpdateSurveyDataRequest, $0.UpdateSurveyDataResponse>(
-      '/ontheblock.auth.v1.AuthService/UpdateSurveyData',
-      ($0.UpdateSurveyDataRequest value) => value.writeToBuffer(),
-      ($core.List<$core.int> value) => $0.UpdateSurveyDataResponse.fromBuffer(value));
   static final _$updateProfile = $grpc.ClientMethod<$0.UpdateProfileRequest, $0.UpdateProfileResponse>(
       '/ontheblock.auth.v1.AuthService/UpdateProfile',
       ($0.UpdateProfileRequest value) => value.writeToBuffer(),
@@ -51,16 +47,12 @@ class AuthServiceClient extends $grpc.Client {
     return $createUnaryCall(_$googleLogin, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.AuthTokenResponse> refreshToken($0.RefreshTokenRequest request, {$grpc.CallOptions? options}) {
+  $grpc.ResponseFuture<$0.RefreshTokenResponse> refreshToken($0.RefreshTokenRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$refreshToken, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.LogoutResponse> logout($0.LogoutRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$logout, request, options: options);
-  }
-
-  $grpc.ResponseFuture<$0.UpdateSurveyDataResponse> updateSurveyData($0.UpdateSurveyDataRequest request, {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$updateSurveyData, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.UpdateProfileResponse> updateProfile($0.UpdateProfileRequest request, {$grpc.CallOptions? options}) {
