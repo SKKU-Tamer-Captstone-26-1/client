@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User My Page &amp; Settings - ON THE BLOCK</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700;900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+            background-color: #f6faff; /* surface */
+            color: #151c23; /* on-surface */
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#d09854",
+                    "on-primary-container": "#642600",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed": "#ffddb9",
+                    "surface-container": "#e7eff8",
+                    "error-container": "#ffdad6",
+                    "primary-fixed": "#ffdbcc",
+                    "primary": "#a04100",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#663e00",
+                    "on-background": "#151c23",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "primary-container": "#ff7e36",
+                    "secondary-fixed": "#e5e2e1",
+                    "tertiary-fixed-dim": "#f8bb73",
+                    "on-surface": "#151c23",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#dbe3ec",
+                    "surface-bright": "#f6faff",
+                    "surface-container-high": "#e1e9f2",
+                    "inverse-surface": "#293138",
+                    "on-secondary-fixed-variant": "#474746",
+                    "surface-container-low": "#edf4fd",
+                    "secondary-container": "#e2dfde",
+                    "on-tertiary-fixed": "#2b1700",
+                    "tertiary": "#825516",
+                    "outline": "#8b7266",
+                    "on-tertiary-container": "#533200",
+                    "primary-fixed-dim": "#ffb693",
+                    "inverse-on-surface": "#eaf2fa",
+                    "background": "#f6faff",
+                    "surface-container-highest": "#dbe3ec",
+                    "surface-tint": "#a04100",
+                    "surface-dim": "#d3dbe4",
+                    "secondary": "#5f5e5e",
+                    "surface-container-lowest": "#ffffff",
+                    "outline-variant": "#dfc0b3",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "on-secondary-container": "#636262",
+                    "on-primary-fixed": "#351000",
+                    "surface": "#f6faff",
+                    "on-primary-fixed-variant": "#7a3000",
+                    "error": "#ba1a1a",
+                    "on-surface-variant": "#584238",
+                    "inverse-primary": "#ffb693"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Public Sans"
+                    ],
+                    "body": [
+                            "Public Sans"
+                    ],
+                    "label": [
+                            "Public Sans"
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-stone-950 docked full-width top-0 border-b border-stone-200 dark:border-stone-800 flat no shadows flex justify-between items-center px-4 h-16 w-full sticky z-40 flex justify-between items-center"><button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors active:scale-95 transition-transform text-stone-500 dark:text-stone-400"><span class="material-symbols-outlined">arrow_back</span></button>
+<h1 class="font-['Public_Sans'] font-bold text-lg text-2xl font-black text-orange-500 tracking-tighter dark:text-orange-400">ON THE BLOCK</h1>
+<div class="w-10"></div></header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-2xl mx-auto px-4 py-8 flex flex-col gap-8">
+<!-- 1. Profile Section (Editable) -->
+<section class="flex flex-col items-center justify-center pt-4 pb-2">
+<div class="relative group cursor-pointer mb-4">
+<div class="w-28 h-28 rounded-full bg-surface-variant overflow-hidden border-4 border-surface shadow-sm">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="close up portrait of a young man smiling warmly against a neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPVcUXVpyUzXAaPMc_rZXi6O31x8Jt40Fes9-SBbdpWpS2sprv3luqnLlTfnZFOUuCZAF5hKFJnjbv3vw0Df1wY6VTXanbck1HUmNBLHH7UJ2enoxE4B7z8ubGcdrs6_7n0fVJZCnQlZa_eGaazpnkmCJunePXy8lZgYEBJg7NS7ikdXvqrhYG_mPzdyTNhNSFRlLbLbqfx6MrRHNdohgP5-c0e1j-OOiGHotS_PQ2v28jX7nwO6HjBUZ8yzpU7QBT1QekTX9_Z7M"/>
+</div>
+<button class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-md active:scale-90 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 18px;">photo_camera</span>
+</button>
+</div>
+<div class="flex items-center gap-2 group cursor-pointer">
+<h2 class="text-2xl font-bold text-on-surface">Alex Drinkwater</h2>
+<button class="text-neutral-500 group-hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+</div>
+<p class="text-sm text-neutral-500 mt-1">alex.d@example.com</p>
+</section>
+<!-- 2. User Status Area (Read-only Dashboard) Bento Grid -->
+<section class="grid grid-cols-2 gap-4">
+<!-- Alcohol Score Card -->
+<div class="bg-white rounded-[16px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-surface-variant flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-sm font-semibold text-neutral-600">Alcohol Score</h3>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-tertiary-fixed text-on-tertiary-fixed-variant">
+                        (Beer)
+                    </span>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-end gap-1">
+<span class="text-3xl font-black text-on-surface">5</span>
+<span class="text-lg font-bold text-neutral-500 mb-0.5">%</span>
+</div>
+<div class="w-full h-2.5 bg-surface-variant rounded-full overflow-hidden mt-1">
+<div class="h-full bg-primary-container rounded-full" style="width: 5%;"></div>
+</div>
+<p class="text-xs text-neutral-500 mt-1">Just getting started!</p>
+</div>
+</div>
+<!-- Points Card -->
+<div class="bg-white rounded-[16px] p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-surface-variant flex flex-col justify-between relative overflow-hidden">
+<!-- Decorative background blob -->
+<div class="absolute -right-6 -bottom-6 w-24 h-24 bg-tertiary-fixed-dim rounded-full opacity-20 blur-xl"></div>
+<h3 class="text-sm font-semibold text-neutral-600 mb-4">Available Points</h3>
+<div class="flex flex-col gap-1 z-10">
+<div class="flex items-end gap-1">
+<span class="text-3xl font-black text-on-surface">1,250</span>
+<span class="text-lg font-bold text-primary-container mb-0.5">P</span>
+</div>
+<p class="text-xs text-neutral-500 mt-2">Earn more by leaving reviews.</p>
+</div>
+</div>
+</section>
+<!-- 3. Information Management (Editable List/Cards) -->
+<section class="flex flex-col gap-4">
+<h3 class="text-lg font-bold text-on-surface px-1 mb-2">My Settings</h3>
+<!-- My Neighborhood Card -->
+<div class="bg-white rounded-[16px] p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-surface-variant/50 hover:border-primary-container/30 transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<h4 class="font-semibold text-on-surface">My Neighborhood</h4>
+<p class="text-sm text-neutral-500 mt-0.5">Downtown, Metro Area</p>
+</div>
+</div>
+<button class="px-4 py-2 rounded-full border border-surface-variant text-sm font-medium text-neutral-600 hover:bg-surface-variant transition-colors">
+                    Update
+                </button>
+</div>
+<!-- Survey Data Card -->
+<div class="bg-white rounded-[16px] p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-surface-variant/50 hover:border-primary-container/30 transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-tertiary group-hover:bg-tertiary-container group-hover:text-on-tertiary-container transition-colors">
+<span class="material-symbols-outlined">assignment</span>
+</div>
+<div>
+<h4 class="font-semibold text-on-surface">Taste Profile</h4>
+<p class="text-sm text-neutral-500 mt-0.5">Prefers Whiskey, Gin</p>
+</div>
+</div>
+<button class="px-4 py-2 rounded-full border border-surface-variant text-sm font-medium text-neutral-600 hover:bg-surface-variant transition-colors">
+                    Retake
+                </button>
+</div>
+<!-- Security & Privacy -->
+<!-- Help & Support -->
+<div class="bg-white rounded-[16px] p-4 flex items-center justify-between shadow-[0_2px_8px_rgba(0,0,0,0.02)] border border-surface-variant/50 hover:border-primary-container/30 transition-colors group cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-neutral-600">
+<span class="material-symbols-outlined">help</span>
+</div>
+<div>
+<h4 class="font-semibold text-on-surface">Help &amp; Support</h4>
+</div>
+</div>
+<span class="material-symbols-outlined text-neutral-400">chevron_right</span>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+</body></html>

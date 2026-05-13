@@ -2,11 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_icons.dart';
+import 'core/config/app_config.dart';
 import 'features/auth/presentation/login_screen.dart';
+import 'features/auth/providers/auth_provider.dart';
+import 'features/auth/providers/auth_repository_provider.dart';
 import 'features/board/presentation/board_screen.dart';
 import 'features/chat/data/chat_remote_data_source.dart';
 import 'features/chat/data/chat_repository.dart';
@@ -16,28 +20,30 @@ import 'features/chat/models/groupchat_models.dart';
 import 'features/collection/presentation/collection_screen.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/map/presentation/map_screen.dart';
-import 'features/preference_survey/data/placeholder_preference_survey.dart';
-import 'features/preference_survey/presentation/preference_survey_screen.dart';
 import 'features/preference_survey/presentation/survey_intro_screen.dart';
+import 'features/preference_survey/presentation/survey_screen.dart';
+import 'features/profile/profile_setup_screen.dart';
+import 'features/profile/user_page_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  assertSecureConfig();
   const kakaoMapApiKey = String.fromEnvironment('KAKAO_MAP_API_KEY');
   if (kakaoMapApiKey.isNotEmpty) {
     await KakaoMapsFlutter.init(kakaoMapApiKey);
   }
 
-  runApp(const OnTheBlockApp());
+  runApp(const ProviderScope(child: OnTheBlockApp()));
 }
 
-class OnTheBlockApp extends StatefulWidget {
+class OnTheBlockApp extends ConsumerStatefulWidget {
   const OnTheBlockApp({super.key});
 
   @override
-  State<OnTheBlockApp> createState() => _OnTheBlockAppState();
+  ConsumerState<OnTheBlockApp> createState() => _OnTheBlockAppState();
 }
 
-class _OnTheBlockAppState extends State<OnTheBlockApp> {
+class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   static const _currentUserId = String.fromEnvironment(
     'CHAT_USER_ID',
     defaultValue: '11111111-1111-1111-1111-111111111111',
@@ -56,6 +62,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
 
   ThemeMode _themeMode = ThemeMode.light;
   _AppStage _stage = _AppStage.login;
+  _AppStage _previousStage = _AppStage.home;
   GroupchatRoomSummary _selectedGroupchatRoom = _emptyRoom;
   GrpcChatRepository? _chatRepository;
   final Set<String> _locallyHiddenRoomIds = <String>{};
@@ -84,6 +91,27 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
     });
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    final session = await ref.read(authRepositoryProvider).googleLogin();
+    if (!mounted) return;
+    ref.read(authProvider.notifier).setSession(
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+      userId: session.user.userId,
+      user: session.user,
+      isNewUser: session.isNewUser,
+    );
+    setState(() {
+      if (session.isNewUser) {
+        _stage = _AppStage.profileSetup;
+      } else if (!session.user.surveyCompleted) {
+        _stage = _AppStage.surveyIntro;
+      } else {
+        _stage = _AppStage.home;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -98,14 +126,16 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
 
   Widget _buildStage() {
     return switch (_stage) {
+      _AppStage.profileSetup => ProfileSetupScreen(
+        defaultNickname: ref.read(authProvider).user?.nickname ?? '',
+        defaultProfileImageUrl: ref.read(authProvider).user?.profileImageUrl ?? '',
+        userId: ref.read(authProvider).userId ?? '',
+        onComplete: () => setState(() => _stage = _AppStage.surveyIntro),
+      ),
       _AppStage.login => LoginScreen(
         isDarkMode: _themeMode == ThemeMode.dark,
         onThemeToggle: _toggleThemeMode,
-        onGoogleSignIn: () {
-          setState(() {
-            _stage = _AppStage.surveyIntro;
-          });
-        },
+        onGoogleSignIn: _handleGoogleSignIn,
       ),
       _AppStage.surveyIntro => SurveyIntroScreen(
         onStartSurvey: () {
@@ -119,32 +149,31 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
           });
         },
       ),
-      _AppStage.survey => PreferenceSurveyScreen(
-        steps: placeholderPreferenceSurveySteps,
-        onBackToIntro: () {
-          setState(() {
-            _stage = _AppStage.surveyIntro;
-          });
-        },
-        onSkip: () {
-          setState(() {
-            _stage = _AppStage.home;
-          });
-        },
+      _AppStage.survey => SurveyScreen(
         onCompleted: () {
           setState(() {
             _stage = _AppStage.home;
           });
         },
       ),
-      _AppStage.home => HomeScreen(onBottomNavSelected: _selectBottomNavItem),
-      _AppStage.map => MapScreen(onBottomNavSelected: _selectBottomNavItem),
-      _AppStage.board => BoardScreen(onBottomNavSelected: _selectBottomNavItem),
+      _AppStage.home => HomeScreen(
+        onBottomNavSelected: _selectBottomNavItem,
+        onProfileSelected: _goToProfile,
+      ),
+      _AppStage.map => MapScreen(
+        onBottomNavSelected: _selectBottomNavItem,
+        onProfileSelected: _goToProfile,
+      ),
+      _AppStage.board => BoardScreen(
+        onBottomNavSelected: _selectBottomNavItem,
+        onProfileSelected: _goToProfile,
+      ),
       _AppStage.chat => GroupchatListScreen(
         chatRepository: _chatRepository,
         currentUserId: _currentUserId,
         excludedRoomIds: _locallyHiddenRoomIds,
         onBottomNavSelected: _selectBottomNavItem,
+        onProfileSelected: _goToProfile,
         onRoomSelected: (room) {
           setState(() {
             _locallyHiddenRoomIds.remove(room.roomId);
@@ -171,6 +200,14 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
       ),
       _AppStage.collection => CollectionScreen(
         onBottomNavSelected: _selectBottomNavItem,
+        onProfileSelected: _goToProfile,
+      ),
+      _AppStage.profile => UserPageScreen(
+        onBack: () {
+          setState(() {
+            _stage = _previousStage;
+          });
+        },
       ),
     };
   }
@@ -187,6 +224,13 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
     });
   }
 
+  void _goToProfile() {
+    setState(() {
+      _previousStage = _stage;
+      _stage = _AppStage.profile;
+    });
+  }
+
   Future<void> _printDevErrorLogPathAtStartup() async {
     if (!kDebugMode) {
       return;
@@ -197,6 +241,7 @@ class _OnTheBlockAppState extends State<OnTheBlockApp> {
 
 enum _AppStage {
   login,
+  profileSetup,
   surveyIntro,
   survey,
   home,
@@ -205,4 +250,5 @@ enum _AppStage {
   chat,
   groupchatRoom,
   collection,
+  profile,
 }

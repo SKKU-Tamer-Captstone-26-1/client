@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>동네 설정 - ON THE BLOCK</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-surface": "#151c23",
+                        "secondary-fixed": "#e5e2e1",
+                        "surface": "#f6faff",
+                        "outline-variant": "#dfc0b3",
+                        "inverse-surface": "#293138",
+                        "outline": "#8b7266",
+                        "tertiary-fixed-dim": "#f8bb73",
+                        "primary-fixed-dim": "#ffb693",
+                        "inverse-on-surface": "#eaf2fa",
+                        "on-background": "#151c23",
+                        "on-primary-fixed": "#351000",
+                        "surface-tint": "#a04100",
+                        "surface-container": "#e7eff8",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#edf4fd",
+                        "surface-container-high": "#e1e9f2",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#825516",
+                        "on-tertiary-fixed-variant": "#663e00",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "secondary-container": "#e2dfde",
+                        "inverse-primary": "#ffb693",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#474746",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#584238",
+                        "tertiary-fixed": "#ffddb9",
+                        "surface-variant": "#dbe3ec",
+                        "primary-fixed": "#ffdbcc",
+                        "on-primary-fixed-variant": "#7a3000",
+                        "surface-container-highest": "#dbe3ec",
+                        "on-error-container": "#93000a",
+                        "background": "#f6faff",
+                        "tertiary-container": "#d09854",
+                        "on-secondary-container": "#636262",
+                        "primary-container": "#ff7e36",
+                        "primary": "#a04100",
+                        "on-tertiary-container": "#533200",
+                        "surface-bright": "#f6faff",
+                        "on-primary-container": "#642600",
+                        "surface-dim": "#d3dbe4",
+                        "secondary": "#5f5e5e",
+                        "on-tertiary-fixed": "#2b1700",
+                        "on-primary": "#ffffff"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px",
+                        search: "12px"
+                    },
+                    fontFamily: {
+                        headline: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 flex items-center px-4 h-16 w-full docked full-width top-0 z-50">
+<button class="p-2 -ml-2 rounded-full hover:bg-stone-100 dark:hover:bg-stone-900 transition-colors active:scale-95 duration-150 text-[#FF7E36] dark:text-[#FF7E36]">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="flex-1 text-center font-['Public_Sans'] font-bold text-lg pr-8">Select Neighborhood</h1>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col pt-4 px-4 pb-20 max-w-md mx-auto w-full">
+<!-- Search Bar -->
+<div class="relative w-full mb-4">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+</span>
+<input class="w-full bg-surface-variant text-on-surface rounded-search py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary-container border-none font-body text-[14px] placeholder:text-on-surface-variant/60" placeholder="동(읍/면) 이름으로 검색 (예: 역삼동)" type="text"/>
+</div>
+<!-- Current Location Button -->
+<button class="w-full flex items-center justify-center gap-2 bg-primary-container/10 text-primary-container py-3 rounded-full font-label font-medium mb-8 hover:bg-primary-container/20 transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]" data-icon="my_location">my_location</span>
+            현재 위치로 찾기
+        </button>
+<!-- Empty State (Default view before search) -->
+<div class="flex-1 flex flex-col items-center justify-center text-center opacity-70 mt-10">
+<div class="w-16 h-16 rounded-full bg-surface-variant flex items-center justify-center mb-4 text-neutral">
+<span class="material-symbols-outlined text-3xl" data-icon="location_on">location_on</span>
+</div>
+<p class="font-body text-on-surface-variant text-[15px]">거주하시는 동네를 검색해 주세요.</p>
+</div>
+<!-- Results List (Hidden by default, shown when searching)
+        <ul class="w-full">
+            <li class="py-4 border-b border-surface-variant flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors px-2 rounded-lg -mx-2">
+                <span class="font-body text-[15px]">강남구 역삼동</span>
+            </li>
+            <li class="py-4 border-b border-surface-variant flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors px-2 rounded-lg -mx-2">
+                <span class="font-body text-[15px]">강남구 역삼1동</span>
+            </li>
+            <li class="py-4 flex items-center justify-between cursor-pointer hover:bg-surface-container-low transition-colors px-2 rounded-lg -mx-2">
+                <span class="font-body text-[15px]">강남구 역삼2동</span>
+            </li>
+        </ul>
+        -->
+</main>
+</body></html>

@@ -16,6 +16,7 @@ class GroupchatListScreen extends StatefulWidget {
     this.chatRepository,
     this.currentUserId,
     this.excludedRoomIds = const <String>{},
+    this.onProfileSelected,
   });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
@@ -23,6 +24,7 @@ class GroupchatListScreen extends StatefulWidget {
   final ChatRepository? chatRepository;
   final String? currentUserId;
   final Set<String> excludedRoomIds;
+  final VoidCallback? onProfileSelected;
 
   @override
   State<GroupchatListScreen> createState() => _GroupchatListScreenState();
@@ -242,6 +244,7 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
         onNotificationBoardSelected: () {
           widget.onBottomNavSelected?.call(AppBottomNavItem.board);
         },
+        onProfileSelected: widget.onProfileSelected,
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.chat,
