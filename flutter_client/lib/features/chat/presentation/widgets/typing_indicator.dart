@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 
+const _typingIndicatorMaxWidth = 768.0;
+
 class TypingIndicator extends StatefulWidget {
   const TypingIndicator({super.key, required this.typingNicknames});
 
@@ -57,7 +59,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 768),
+          constraints: const BoxConstraints(maxWidth: _typingIndicatorMaxWidth),
           child: Align(
             alignment: Alignment.centerLeft,
             child: DecoratedBox(

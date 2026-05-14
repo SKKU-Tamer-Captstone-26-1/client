@@ -12,8 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_icons.dart';
-import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../data/chat_repository.dart';
 import '../data/mock_groupchat_data.dart';
@@ -21,13 +19,16 @@ import '../models/groupchat_models.dart';
 import 'widgets/chat_input_bar.dart';
 import 'widgets/typing_indicator.dart';
 
+const _chatContentMaxWidth = 768.0;
+const _messageBubbleMaxWidth = 640.0;
+const _messageListPadding = EdgeInsets.fromLTRB(16, 22, 16, 22);
+
 class GroupchatRoomScreen extends StatefulWidget {
   const GroupchatRoomScreen({
     super.key,
     required this.room,
     this.onBack,
     this.onRoomDeactivated,
-    this.onBottomNavSelected,
     this.chatRepository,
     this.currentUserId,
   });
@@ -35,7 +36,6 @@ class GroupchatRoomScreen extends StatefulWidget {
   final GroupchatRoomSummary room;
   final VoidCallback? onBack;
   final ValueChanged<String>? onRoomDeactivated;
-  final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final ChatRepository? chatRepository;
   final String? currentUserId;
 
@@ -359,6 +359,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     final palette = context.palette;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: palette.surfaceContainerLow,
       appBar: _GroupchatRoomAppBar(
         room: widget.room,
@@ -367,21 +368,20 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
           _showRoomOptions();
         },
       ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentItem: AppBottomNavItem.chat,
-        onItemSelected: widget.onBottomNavSelected,
-      ),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: Column(
           children: [
             Expanded(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 768),
+                  constraints: const BoxConstraints(
+                    maxWidth: _chatContentMaxWidth,
+                  ),
                   child: ListView(
                     controller: _messageScrollController,
-                    padding: const EdgeInsets.fromLTRB(16, 22, 16, 22),
+                    padding: _messageListPadding,
                     children: [
                       if (_loading)
                         const Padding(
@@ -1038,7 +1038,7 @@ class _MessageList extends StatelessWidget {
             DateDivider(date: _messageDividerDate(messages[index])),
             const SizedBox(height: 16),
           ],
-          _MessageBubble(
+          MessageBubble(
             message: messages[index],
             onLongPress: onMessageLongPress,
           ),
@@ -1049,8 +1049,8 @@ class _MessageList extends StatelessWidget {
   }
 }
 
-class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message, this.onLongPress});
+class MessageBubble extends StatelessWidget {
+  const MessageBubble({super.key, required this.message, this.onLongPress});
 
   final GroupchatMessage message;
   final ValueChanged<GroupchatMessage>? onLongPress;
@@ -1078,7 +1078,7 @@ class _IncomingMessage extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 640),
+        constraints: const BoxConstraints(maxWidth: _messageBubbleMaxWidth),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -1161,7 +1161,7 @@ class _OutgoingMessage extends StatelessWidget {
     return Align(
       alignment: Alignment.centerRight,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 640),
+        constraints: const BoxConstraints(maxWidth: _messageBubbleMaxWidth),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [

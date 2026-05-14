@@ -212,7 +212,6 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
             _locallyHiddenRoomIds.add(roomId);
           });
         },
-        onBottomNavSelected: _selectBottomNavItem,
       ),
       _AppStage.collection => CollectionScreen(
         onBottomNavSelected: _selectBottomNavItem,

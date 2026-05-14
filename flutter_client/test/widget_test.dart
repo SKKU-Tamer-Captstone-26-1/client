@@ -164,7 +164,7 @@ void main() {
     expect(find.text('Downtown Whiskey Circle'), findsOneWidget);
   });
 
-  testWidgets('opens groupchat room as full screen with bottom nav', (
+  testWidgets('opens groupchat room as full screen detail', (
     WidgetTester tester,
   ) async {
     await _pumpApp(tester);
@@ -187,7 +187,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Type a message...'), findsOneWidget);
-    expect(find.text('Chat'), findsOneWidget);
+    expect(find.text('Chat'), findsNothing);
 
     await tester.tap(find.byTooltip('Back to messages'));
     await tester.pumpAndSettle();
