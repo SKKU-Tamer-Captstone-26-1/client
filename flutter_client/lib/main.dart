@@ -109,9 +109,12 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     setState(() {
       if (session.isNewUser) {
         _stage = _AppStage.profileSetup;
-      } else if (!session.user.surveyCompleted) {
+      } else if (!session.user.surveyCompleted && !kBypassSurvey) {
         _stage = _AppStage.surveyIntro;
       } else {
+        if (kBypassSurvey) {
+          ref.read(authProvider.notifier).markSurveyCompleted();
+        }
         _stage = _AppStage.home;
       }
     });
@@ -136,7 +139,14 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         defaultProfileImageUrl:
             ref.read(authProvider).user?.profileImageUrl ?? '',
         userId: ref.read(authProvider).userId ?? '',
-        onComplete: () => setState(() => _stage = _AppStage.surveyIntro),
+        onComplete: () {
+          if (kBypassSurvey) {
+            ref.read(authProvider.notifier).markSurveyCompleted();
+          }
+          setState(() {
+            _stage = kBypassSurvey ? _AppStage.home : _AppStage.surveyIntro;
+          });
+        },
       ),
       _AppStage.login => LoginScreen(
         isDarkMode: _themeMode == ThemeMode.dark,

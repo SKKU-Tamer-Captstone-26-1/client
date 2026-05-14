@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter_client/core/theme/app_theme.dart';
 import 'package:flutter_client/features/auth/data/auth_remote_data_source.dart';
 import 'package:flutter_client/features/auth/data/grpc_gen/auth/v1/auth.pbgrpc.dart';
 import 'package:flutter_client/features/auth/providers/auth_repository_provider.dart';
 import 'package:flutter_client/features/chat/data/chat_repository.dart';
 import 'package:flutter_client/features/chat/data/mock_groupchat_data.dart';
 import 'package:flutter_client/features/chat/models/groupchat_models.dart';
+import 'package:flutter_client/features/chat/presentation/widgets/chat_input_bar.dart';
+import 'package:flutter_client/features/chat/presentation/widgets/typing_indicator.dart';
 import 'package:flutter_client/main.dart';
 
 void main() {
@@ -357,6 +360,114 @@ void main() {
     expect(find.text('Search bottles, stores, boards'), findsNothing);
     expect(find.text('The Golden Old Fashioned'), findsOneWidget);
   });
+
+  testWidgets('typing indicator hides without typing users', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(_typingIndicatorApp(const <String?>[]));
+
+    expect(find.textContaining('typing'), findsNothing);
+  });
+
+  testWidgets('typing indicator shows one and multiple user labels', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(_typingIndicatorApp(const <String?>['Alex']));
+    expect(find.text('Alex is typing...'), findsOneWidget);
+
+    await tester.pumpWidget(_typingIndicatorApp(const <String?>[null]));
+    expect(find.text('Someone is typing...'), findsOneWidget);
+
+    await tester.pumpWidget(
+      _typingIndicatorApp(const <String?>['Alex', 'Sam', 'Taylor']),
+    );
+    expect(find.text('3 people are typing...'), findsOneWidget);
+  });
+
+  testWidgets('chat input bar disables blank sends and clears after send', (
+    WidgetTester tester,
+  ) async {
+    final controller = TextEditingController();
+    addTearDown(controller.dispose);
+    var sentCount = 0;
+
+    await tester.pumpWidget(
+      _chatInputBarApp(
+        controller: controller,
+        onSend: () async {
+          sentCount++;
+          controller.clear();
+        },
+      ),
+    );
+
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.send))
+          .onPressed,
+      isNull,
+    );
+
+    await tester.enterText(find.byType(TextField), '   ');
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.send))
+          .onPressed,
+      isNull,
+    );
+
+    await tester.enterText(find.byType(TextField), 'Hello');
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.send))
+          .onPressed,
+      isNotNull,
+    );
+
+    await tester.tap(find.byTooltip('Send message'));
+    await tester.pumpAndSettle();
+
+    expect(sentCount, 1);
+    expect(controller.text, isEmpty);
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.send))
+          .onPressed,
+      isNull,
+    );
+  });
+}
+
+Widget _typingIndicatorApp(List<String?> typingNicknames) {
+  return MaterialApp(
+    theme: AppTheme.light,
+    home: Scaffold(body: TypingIndicator(typingNicknames: typingNicknames)),
+  );
+}
+
+Widget _chatInputBarApp({
+  required TextEditingController controller,
+  required Future<void> Function() onSend,
+}) {
+  return MaterialApp(
+    theme: AppTheme.light,
+    home: Scaffold(
+      body: Column(
+        children: [
+          const Spacer(),
+          ChatInputBar(
+            controller: controller,
+            onSend: onSend,
+            onPickAttachment: () {},
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 Future<void> _pumpApp(WidgetTester tester) {

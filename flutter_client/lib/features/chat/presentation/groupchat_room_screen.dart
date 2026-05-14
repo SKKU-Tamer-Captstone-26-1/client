@@ -18,6 +18,8 @@ import '../../../shared/widgets/app_network_image.dart';
 import '../data/chat_repository.dart';
 import '../data/mock_groupchat_data.dart';
 import '../models/groupchat_models.dart';
+import 'widgets/chat_input_bar.dart';
+import 'widgets/typing_indicator.dart';
 
 class GroupchatRoomScreen extends StatefulWidget {
   const GroupchatRoomScreen({
@@ -45,9 +47,12 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     with WidgetsBindingObserver {
   late List<GroupchatMessage> _messages;
   final TextEditingController _composerController = TextEditingController();
+  final ScrollController _messageScrollController = ScrollController();
   bool _loading = false;
   StreamSubscription<GroupchatMessage>? _streamSub;
   int _latestSequenceNo = 0;
+
+  List<String?> get _typingNicknames => const <String?>[];
 
   bool get _canUseRemote {
     return widget.chatRepository != null &&
@@ -69,6 +74,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     WidgetsBinding.instance.removeObserver(this);
     _streamSub?.cancel();
     _composerController.dispose();
+    _messageScrollController.dispose();
     super.dispose();
   }
 
@@ -170,6 +176,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
             _messages = _normalizeMessages([..._messages, message]);
             _latestSequenceNo = _messages.last.sequenceNo;
           });
+          _scrollMessagesToBottom();
           unawaited(_persistLatestSequenceNo());
         });
   }
@@ -199,6 +206,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       );
       _composerController.clear();
       await _loadMessages();
+      _scrollMessagesToBottom();
     } catch (error, stackTrace) {
       _showError(
         'Could not send message.',
@@ -372,6 +380,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 768),
                   child: ListView(
+                    controller: _messageScrollController,
                     padding: const EdgeInsets.fromLTRB(16, 22, 16, 22),
                     children: [
                       if (_loading)
@@ -392,7 +401,8 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
                 ),
               ),
             ),
-            _MessageComposer(
+            TypingIndicator(typingNicknames: _typingNicknames),
+            ChatInputBar(
               controller: _composerController,
               onSend: _sendMessage,
               onPickAttachment: _showAttachmentOptions,
@@ -426,6 +436,19 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
   }
 
   int _maxSequenceNo(int a, int b) => a > b ? a : b;
+
+  void _scrollMessagesToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_messageScrollController.hasClients) {
+        return;
+      }
+      _messageScrollController.animateTo(
+        _messageScrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
 
   Future<void> _showAttachmentOptions() async {
     final option = await showModalBottomSheet<String>(
@@ -1514,7 +1537,7 @@ class _LiveDropPreview extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '3 people are typing...',
+                  'New bottle stock is live nearby.',
                   style: TextStyle(color: palette.secondary, fontSize: 11),
                 ),
               ],
@@ -1633,96 +1656,6 @@ class _SuggestionChips extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _MessageComposer extends StatelessWidget {
-  const _MessageComposer({
-    required this.controller,
-    required this.onSend,
-    required this.onPickAttachment,
-  });
-
-  final TextEditingController controller;
-  final VoidCallback onSend;
-  final VoidCallback onPickAttachment;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: palette.surfaceContainerLowest,
-        border: Border(top: BorderSide(color: palette.outlineVariant)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 768),
-            child: Row(
-              children: [
-                IconButton.filledTonal(
-                  onPressed: onPickAttachment,
-                  style: IconButton.styleFrom(
-                    backgroundColor: palette.surfaceContainerLow,
-                    foregroundColor: palette.onSurfaceVariant,
-                    shape: const CircleBorder(),
-                  ),
-                  icon: const Icon(Icons.add),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Container(
-                    constraints: const BoxConstraints(minHeight: 48),
-                    decoration: BoxDecoration(
-                      color: palette.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: palette.outlineVariant),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: TextField(
-                      controller: controller,
-                      minLines: 1,
-                      maxLines: 4,
-                      style: TextStyle(
-                        color: palette.onSurface,
-                        fontSize: 15,
-                        height: 1.3,
-                      ),
-                      cursorColor: AppColors.primaryContainer,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => onSend(),
-                      decoration: InputDecoration(
-                        hintText: 'Type a message...',
-                        hintStyle: TextStyle(
-                          color: palette.secondary,
-                          fontSize: 15,
-                        ),
-                        border: InputBorder.none,
-                        isCollapsed: true,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                IconButton.filled(
-                  onPressed: onSend,
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.primaryContainer,
-                    foregroundColor: Colors.white,
-                    shape: const CircleBorder(),
-                    fixedSize: const Size(48, 48),
-                  ),
-                  icon: const Icon(Icons.send),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
