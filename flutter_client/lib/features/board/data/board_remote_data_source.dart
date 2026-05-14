@@ -1,8 +1,8 @@
-import 'dart:convert';
+import 'package:grpc/grpc.dart';
 
-import 'package:http/http.dart' as http;
-
-import 'board_gateway_endpoint.dart';
+import 'board_grpc_endpoint.dart';
+import 'grpc_gen/board/v1/board.pbgrpc.dart';
+import 'grpc_gen/common/v1/common.pb.dart';
 import '../models/board_models.dart';
 
 abstract class BoardRemoteDataSource {
@@ -81,83 +81,168 @@ abstract class BoardRemoteDataSource {
     required String commentId,
     required String accessToken,
   });
+
+  Future<void> dispose();
 }
 
-class HttpBoardRemoteDataSource implements BoardRemoteDataSource {
-  HttpBoardRemoteDataSource({BoardGatewayEndpoint? endpoint})
-      : _endpoint = endpoint ?? BoardGatewayEndpoint.fromEnvironment(),
-        _client = http.Client();
-
-  final BoardGatewayEndpoint _endpoint;
-  final http.Client _client;
-
-  Uri _uri(String path, [Map<String, String>? params]) {
-    final base = Uri.parse('${_endpoint.baseUrl}/board$path');
-    if (params == null || params.isEmpty) return base;
-    return base.replace(queryParameters: {
-      ...base.queryParameters,
-      ...params,
-    });
+class GrpcBoardRemoteDataSource implements BoardRemoteDataSource {
+  factory GrpcBoardRemoteDataSource({BoardGrpcEndpoint? endpoint}) {
+    final e = endpoint ?? BoardGrpcEndpoint.fromEnvironment();
+    final channel = ClientChannel(
+      e.host,
+      port: e.port,
+      options: ChannelOptions(
+        credentials: e.useTls
+            ? const ChannelCredentials.secure()
+            : const ChannelCredentials.insecure(),
+      ),
+    );
+    return GrpcBoardRemoteDataSource._(e, channel, BoardServiceClient(channel));
   }
 
-  Map<String, String> _authHeaders(String accessToken) => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      };
+  GrpcBoardRemoteDataSource._(this._endpoint, this._channel, this._client);
 
-  static const _jsonHeaders = {'Content-Type': 'application/json'};
+  final BoardGrpcEndpoint _endpoint;
+  final ClientChannel _channel;
+  final BoardServiceClient _client;
 
-  Map<String, dynamic> _decode(http.Response response) {
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
-    }
-    final body = jsonDecode(response.body) as Map<String, dynamic>?;
-    throw BoardApiException(
-      statusCode: response.statusCode,
-      message: body?['error'] as String? ?? 'unknown error',
+  static const _timeout = Duration(seconds: 10);
+
+  CallOptions _authOptions(String accessToken) => CallOptions(
+        metadata: {'authorization': 'Bearer $accessToken'},
+        timeout: _timeout,
+      );
+
+  static final _defaultOptions = CallOptions(timeout: _timeout);
+
+  // --- conversion helpers ---
+
+  BoardPost _postFromProto(PostResponse p) {
+    return BoardPost(
+      postId: p.postId,
+      boardType: p.boardType.name,
+      authorId: p.authorId,
+      authorNickname: p.authorNickname,
+      authorProfileImageUrl: p.authorProfileImageUrl,
+      title: p.title,
+      content: p.content,
+      imageUrls: p.imageUrls.toList(),
+      likeCount: p.likeCount,
+      viewCount: p.viewCount,
+      commentCount: p.commentCount,
+      isNotice: p.isNotice,
+      isLiked: p.isLiked,
+      location: p.hasLocation()
+          ? BoardLocation(
+              name: p.location.name,
+              address: p.location.address,
+              latitude: p.location.latitude,
+              longitude: p.location.longitude,
+            )
+          : null,
+      createdAt: p.hasCreatedAt() ? p.createdAt.toDateTime() : DateTime.now(),
+      updatedAt: p.hasUpdatedAt() ? p.updatedAt.toDateTime() : DateTime.now(),
     );
   }
+
+  BoardComment _commentFromProto(CommentResponse c) {
+    return BoardComment(
+      commentId: c.commentId,
+      postId: c.postId,
+      parentCommentId: c.parentCommentId,
+      authorId: c.authorId,
+      authorNickname: c.authorNickname,
+      authorProfileImageUrl: c.authorProfileImageUrl,
+      content: c.content,
+      likeCount: c.likeCount,
+      isLiked: c.isLiked,
+      isDeleted: c.isDeleted,
+      replies: c.replies.map(_commentFromProto).toList(),
+      createdAt: c.hasCreatedAt() ? c.createdAt.toDateTime() : DateTime.now(),
+      updatedAt: c.hasUpdatedAt() ? c.updatedAt.toDateTime() : DateTime.now(),
+    );
+  }
+
+  BoardPagination _paginationFromProto(PaginationResponse p) {
+    return BoardPagination(
+      totalCount: p.totalCount,
+      page: p.page,
+      pageSize: p.pageSize,
+      hasNext: p.hasNext,
+    );
+  }
+
+  BoardType _boardTypeFromString(String s) {
+    switch (s) {
+      case 'BOARD_TYPE_FREE':
+      case 'free':
+        return BoardType.BOARD_TYPE_FREE;
+      case 'BOARD_TYPE_FLASH_MEETUP':
+      case 'flash_meetup':
+        return BoardType.BOARD_TYPE_FLASH_MEETUP;
+      case 'BOARD_TYPE_INFO':
+      case 'info':
+        return BoardType.BOARD_TYPE_INFO;
+      default:
+        return BoardType.BOARD_TYPE_UNSPECIFIED;
+    }
+  }
+
+  ReportReason _reportReasonFromString(String s) {
+    switch (s) {
+      case 'REPORT_REASON_SPAM':
+      case 'spam':
+        return ReportReason.REPORT_REASON_SPAM;
+      case 'REPORT_REASON_INAPPROPRIATE':
+      case 'inappropriate':
+        return ReportReason.REPORT_REASON_INAPPROPRIATE;
+      case 'REPORT_REASON_MISINFORMATION':
+      case 'misinformation':
+        return ReportReason.REPORT_REASON_MISINFORMATION;
+      default:
+        return ReportReason.REPORT_REASON_OTHER;
+    }
+  }
+
+  // --- BoardRemoteDataSource implementation ---
 
   @override
   Future<BoardPostPage> listPosts({
     String boardType = '',
     String query = '',
-    String userId = '',
+    String userId = '', // ignored; gateway injects from JWT
     int page = 1,
     int pageSize = 20,
   }) async {
-    final params = <String, String>{
-      'page': '$page',
-      'page_size': '$pageSize',
-    };
-    if (boardType.isNotEmpty) params['board_type'] = boardType;
-    if (query.isNotEmpty) params['q'] = query;
-
-    final response = await _client.get(
-      _uri('/posts', params),
-      headers: _jsonHeaders,
+    final resp = await _client.listPosts(
+      ListPostsRequest(
+        boardType: _boardTypeFromString(boardType),
+        query: query,
+        pagination: PaginationRequest(page: page, pageSize: pageSize),
+      ),
+      options: _defaultOptions,
     );
-    final json = _decode(response);
-    final posts = (json['posts'] as List<dynamic>)
-        .map((e) => BoardPost.fromJson(e as Map<String, dynamic>))
-        .toList();
-    final pagination = BoardPagination.fromJson(
-        json['pagination'] as Map<String, dynamic>? ?? {});
-    return BoardPostPage(posts: posts, pagination: pagination);
+    return BoardPostPage(
+      posts: resp.posts.map(_postFromProto).toList(),
+      pagination: _paginationFromProto(resp.pagination),
+    );
   }
 
   @override
-  Future<BoardPost> getPost({required String postId, String userId = ''}) async {
-    final response = await _client.get(
-      _uri('/posts/$postId'),
-      headers: _jsonHeaders,
+  Future<BoardPost> getPost({
+    required String postId,
+    String userId = '', // ignored; gateway injects from JWT
+  }) async {
+    final resp = await _client.getPost(
+      GetPostRequest(postId: postId),
+      options: _defaultOptions,
     );
-    return BoardPost.fromJson(_decode(response));
+    return _postFromProto(resp.post);
   }
 
   @override
   Future<BoardPost> createPost({
-    required String userId,
+    required String userId, // ignored; gateway injects from JWT
     required String boardType,
     required String title,
     required String content,
@@ -168,48 +253,45 @@ class HttpBoardRemoteDataSource implements BoardRemoteDataSource {
     double? longitude,
     required String accessToken,
   }) async {
-    final body = <String, dynamic>{
-      'board_type': boardType,
-      'title': title,
-      'content': content,
-      'image_urls': imageUrls,
-    };
+    final req = CreatePostRequest(
+      boardType: _boardTypeFromString(boardType),
+      title: title,
+      content: content,
+    )..imageUrls.addAll(imageUrls);
+
     if (locationName != null) {
-      body['location_name'] = locationName;
-      body['location_address'] = locationAddress ?? '';
-      body['latitude'] = latitude ?? 0.0;
-      body['longitude'] = longitude ?? 0.0;
+      req.location = Location(
+        name: locationName,
+        address: locationAddress ?? '',
+        latitude: latitude ?? 0.0,
+        longitude: longitude ?? 0.0,
+      );
     }
-    final response = await _client.post(
-      _uri('/posts'),
-      headers: _authHeaders(accessToken),
-      body: jsonEncode(body),
-    );
-    return BoardPost.fromJson(_decode(response));
+
+    final resp = await _client.createPost(req, options: _authOptions(accessToken));
+    return _postFromProto(resp.post);
   }
 
   @override
   Future<BoardPost> updatePost({
     required String postId,
-    required String userId,
+    required String userId, // ignored; gateway injects from JWT
     String? title,
     String? content,
     bool updateImages = false,
     List<String> imageUrls = const [],
     required String accessToken,
   }) async {
-    final body = <String, dynamic>{
-      if (title != null) 'title': title,
-      if (content != null) 'content': content,
-      if (updateImages) 'update_images': true,
-      if (updateImages) 'image_urls': imageUrls,
-    };
-    final response = await _client.put(
-      _uri('/posts/$postId'),
-      headers: _authHeaders(accessToken),
-      body: jsonEncode(body),
+    final req = UpdatePostRequest(
+      postId: postId,
+      updateImages: updateImages,
     );
-    return BoardPost.fromJson(_decode(response));
+    if (title != null) req.title = title;
+    if (content != null) req.content = content;
+    if (updateImages) req.imageUrls.addAll(imageUrls);
+
+    final resp = await _client.updatePost(req, options: _authOptions(accessToken));
+    return _postFromProto(resp.post);
   }
 
   @override
@@ -217,17 +299,10 @@ class HttpBoardRemoteDataSource implements BoardRemoteDataSource {
     required String postId,
     required String accessToken,
   }) async {
-    final response = await _client.delete(
-      _uri('/posts/$postId'),
-      headers: _authHeaders(accessToken),
+    await _client.deletePost(
+      DeletePostRequest(postId: postId),
+      options: _authOptions(accessToken),
     );
-    if (response.statusCode != 204) {
-      final body = jsonDecode(response.body) as Map<String, dynamic>?;
-      throw BoardApiException(
-        statusCode: response.statusCode,
-        message: body?['error'] as String? ?? 'unknown error',
-      );
-    }
   }
 
   @override
@@ -235,38 +310,31 @@ class HttpBoardRemoteDataSource implements BoardRemoteDataSource {
     required String postId,
     required String accessToken,
   }) async {
-    final response = await _client.post(
-      _uri('/posts/$postId/like'),
-      headers: _authHeaders(accessToken),
+    final resp = await _client.likePost(
+      LikePostRequest(postId: postId),
+      options: _authOptions(accessToken),
     );
-    final json = _decode(response);
-    return (
-      liked: json['liked'] as bool? ?? false,
-      likeCount: json['like_count'] as int? ?? 0,
-    );
+    return (liked: resp.liked, likeCount: resp.likeCount);
   }
 
   @override
   Future<BoardCommentPage> listComments({
     required String postId,
-    String userId = '',
+    String userId = '', // ignored; gateway injects from JWT
     int page = 1,
     int pageSize = 20,
   }) async {
-    final response = await _client.get(
-      _uri('/posts/$postId/comments', {
-        'page': '$page',
-        'page_size': '$pageSize',
-      }),
-      headers: _jsonHeaders,
+    final resp = await _client.listComments(
+      ListCommentsRequest(
+        postId: postId,
+        pagination: PaginationRequest(page: page, pageSize: pageSize),
+      ),
+      options: _defaultOptions,
     );
-    final json = _decode(response);
-    final comments = (json['comments'] as List<dynamic>)
-        .map((e) => BoardComment.fromJson(e as Map<String, dynamic>))
-        .toList();
-    final pagination = BoardPagination.fromJson(
-        json['pagination'] as Map<String, dynamic>? ?? {});
-    return BoardCommentPage(comments: comments, pagination: pagination);
+    return BoardCommentPage(
+      comments: resp.comments.map(_commentFromProto).toList(),
+      pagination: _paginationFromProto(resp.pagination),
+    );
   }
 
   @override
@@ -276,16 +344,15 @@ class HttpBoardRemoteDataSource implements BoardRemoteDataSource {
     String parentCommentId = '',
     required String accessToken,
   }) async {
-    final response = await _client.post(
-      _uri('/posts/$postId/comments'),
-      headers: _authHeaders(accessToken),
-      body: jsonEncode({
-        'content': content,
-        if (parentCommentId.isNotEmpty)
-          'parent_comment_id': parentCommentId,
-      }),
+    final resp = await _client.createComment(
+      CreateCommentRequest(
+        postId: postId,
+        content: content,
+        parentCommentId: parentCommentId,
+      ),
+      options: _authOptions(accessToken),
     );
-    return BoardComment.fromJson(_decode(response));
+    return _commentFromProto(resp.comment);
   }
 
   @override
@@ -294,12 +361,11 @@ class HttpBoardRemoteDataSource implements BoardRemoteDataSource {
     required String content,
     required String accessToken,
   }) async {
-    final response = await _client.put(
-      _uri('/comments/$commentId'),
-      headers: _authHeaders(accessToken),
-      body: jsonEncode({'content': content}),
+    final resp = await _client.updateComment(
+      UpdateCommentRequest(commentId: commentId, content: content),
+      options: _authOptions(accessToken),
     );
-    return BoardComment.fromJson(_decode(response));
+    return _commentFromProto(resp.comment);
   }
 
   @override
@@ -307,17 +373,10 @@ class HttpBoardRemoteDataSource implements BoardRemoteDataSource {
     required String commentId,
     required String accessToken,
   }) async {
-    final response = await _client.delete(
-      _uri('/comments/$commentId'),
-      headers: _authHeaders(accessToken),
+    await _client.deleteComment(
+      DeleteCommentRequest(commentId: commentId),
+      options: _authOptions(accessToken),
     );
-    if (response.statusCode != 204) {
-      final body = jsonDecode(response.body) as Map<String, dynamic>?;
-      throw BoardApiException(
-        statusCode: response.statusCode,
-        message: body?['error'] as String? ?? 'unknown error',
-      );
-    }
   }
 
   @override
@@ -325,26 +384,49 @@ class HttpBoardRemoteDataSource implements BoardRemoteDataSource {
     required String commentId,
     required String accessToken,
   }) async {
-    final response = await _client.post(
-      _uri('/comments/$commentId/like'),
-      headers: _authHeaders(accessToken),
+    final resp = await _client.likeComment(
+      LikeCommentRequest(commentId: commentId),
+      options: _authOptions(accessToken),
     );
-    final json = _decode(response);
-    return (
-      liked: json['liked'] as bool? ?? false,
-      likeCount: json['like_count'] as int? ?? 0,
+    return (liked: resp.liked, likeCount: resp.likeCount);
+  }
+
+  Future<void> reportPost({
+    required String postId,
+    required String reason,
+    String detail = '',
+    required String accessToken,
+  }) async {
+    await _client.reportPost(
+      ReportPostRequest(
+        postId: postId,
+        reason: _reportReasonFromString(reason),
+        detail: detail,
+      ),
+      options: _authOptions(accessToken),
     );
   }
 
-  void dispose() => _client.close();
-}
-
-class BoardApiException implements Exception {
-  const BoardApiException({required this.statusCode, required this.message});
-
-  final int statusCode;
-  final String message;
+  Future<void> reportComment({
+    required String commentId,
+    required String reason,
+    String detail = '',
+    required String accessToken,
+  }) async {
+    await _client.reportComment(
+      ReportCommentRequest(
+        commentId: commentId,
+        reason: _reportReasonFromString(reason),
+        detail: detail,
+      ),
+      options: _authOptions(accessToken),
+    );
+  }
 
   @override
-  String toString() => 'BoardApiException($statusCode): $message';
+  Future<void> dispose() => _channel.shutdown();
+
+  @override
+  String toString() =>
+      'GrpcBoardRemoteDataSource(${_endpoint.host}:${_endpoint.port}, tls=${_endpoint.useTls})';
 }

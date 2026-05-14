@@ -78,7 +78,7 @@ abstract class BoardRepository {
 
 class RemoteBoardRepository implements BoardRepository {
   RemoteBoardRepository({BoardRemoteDataSource? dataSource})
-      : _dataSource = dataSource ?? HttpBoardRemoteDataSource();
+      : _dataSource = dataSource ?? GrpcBoardRemoteDataSource();
 
   final BoardRemoteDataSource _dataSource;
 
@@ -211,4 +211,6 @@ class RemoteBoardRepository implements BoardRepository {
         commentId: commentId,
         accessToken: accessToken,
       );
+
+  Future<void> dispose() => _dataSource.dispose();
 }
