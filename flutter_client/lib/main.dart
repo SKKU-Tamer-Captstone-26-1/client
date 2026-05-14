@@ -37,7 +37,9 @@ Future<void> main() async {
 }
 
 class OnTheBlockApp extends ConsumerStatefulWidget {
-  const OnTheBlockApp({super.key});
+  const OnTheBlockApp({super.key, this.chatRepository});
+
+  final ChatRepository? chatRepository;
 
   @override
   ConsumerState<OnTheBlockApp> createState() => _OnTheBlockAppState();
@@ -64,13 +66,14 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   _AppStage _stage = _AppStage.login;
   _AppStage _previousStage = _AppStage.home;
   GroupchatRoomSummary _selectedGroupchatRoom = _emptyRoom;
-  GrpcChatRepository? _chatRepository;
+  ChatRepository? _chatRepository;
   final Set<String> _locallyHiddenRoomIds = <String>{};
 
   @override
   void initState() {
     super.initState();
-    _chatRepository = GrpcChatRepository(GrpcChatRemoteDataSource());
+    _chatRepository =
+        widget.chatRepository ?? GrpcChatRepository(GrpcChatRemoteDataSource());
     unawaited(_printDevErrorLogPathAtStartup());
   }
 
@@ -94,13 +97,15 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   Future<void> _handleGoogleSignIn() async {
     final session = await ref.read(authRepositoryProvider).googleLogin();
     if (!mounted) return;
-    ref.read(authProvider.notifier).setSession(
-      accessToken: session.accessToken,
-      refreshToken: session.refreshToken,
-      userId: session.user.userId,
-      user: session.user,
-      isNewUser: session.isNewUser,
-    );
+    ref
+        .read(authProvider.notifier)
+        .setSession(
+          accessToken: session.accessToken,
+          refreshToken: session.refreshToken,
+          userId: session.user.userId,
+          user: session.user,
+          isNewUser: session.isNewUser,
+        );
     setState(() {
       if (session.isNewUser) {
         _stage = _AppStage.profileSetup;
@@ -128,7 +133,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     return switch (_stage) {
       _AppStage.profileSetup => ProfileSetupScreen(
         defaultNickname: ref.read(authProvider).user?.nickname ?? '',
-        defaultProfileImageUrl: ref.read(authProvider).user?.profileImageUrl ?? '',
+        defaultProfileImageUrl:
+            ref.read(authProvider).user?.profileImageUrl ?? '',
         userId: ref.read(authProvider).userId ?? '',
         onComplete: () => setState(() => _stage = _AppStage.surveyIntro),
       ),

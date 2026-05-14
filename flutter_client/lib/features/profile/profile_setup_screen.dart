@@ -45,7 +45,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
     if (picked != null) {
       setState(() => _pickedImage = File(picked.path));
     }
@@ -54,26 +57,24 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   Future<void> _complete() async {
     final nickname = _nicknameController.text.trim();
     if (nickname.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a nickname')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter a nickname')));
       return;
     }
 
     setState(() => _isLoading = true);
     try {
-      final updatedUser = await ref.read(authRepositoryProvider).updateProfile(
-        widget.userId,
-        nickname,
-        '',
-      );
+      final updatedUser = await ref
+          .read(authRepositoryProvider)
+          .updateProfile(widget.userId, nickname, '');
       ref.read(authProvider.notifier).updateUser(updatedUser);
       widget.onComplete();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save profile: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save profile: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -160,19 +161,29 @@ class _AvatarPicker extends StatelessWidget {
             decoration: BoxDecoration(
               color: palette.surfaceContainerLow,
               shape: BoxShape.circle,
-              border: Border.all(color: palette.surfaceContainerLowest, width: 4),
+              border: Border.all(
+                color: palette.surfaceContainerLowest,
+                width: 4,
+              ),
             ),
             child: ClipOval(
               child: pickedImage != null
                   ? Image.file(pickedImage!, fit: BoxFit.cover)
                   : (defaultImageUrl.isNotEmpty
-                      ? Image.network(
-                          defaultImageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              Icon(Icons.person, size: 64, color: palette.secondary),
-                        )
-                      : Icon(Icons.person, size: 64, color: palette.secondary)),
+                        ? Image.network(
+                            defaultImageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.person,
+                              size: 64,
+                              color: palette.secondary,
+                            ),
+                          )
+                        : Icon(
+                            Icons.person,
+                            size: 64,
+                            color: palette.secondary,
+                          )),
             ),
           ),
           Positioned(
@@ -184,9 +195,16 @@ class _AvatarPicker extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.primaryContainer,
                 shape: BoxShape.circle,
-                border: Border.all(color: palette.surfaceContainerLowest, width: 4),
+                border: Border.all(
+                  color: palette.surfaceContainerLowest,
+                  width: 4,
+                ),
               ),
-              child: const Icon(Icons.photo_camera, size: 20, color: Colors.white),
+              child: const Icon(
+                Icons.photo_camera,
+                size: 20,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
@@ -223,7 +241,10 @@ class _NicknameField extends StatelessWidget {
             hintStyle: TextStyle(color: palette.secondary),
             filled: true,
             fillColor: palette.surfaceContainerLowest,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: palette.outlineVariant),
@@ -259,14 +280,19 @@ class _CompleteButton extends StatelessWidget {
           backgroundColor: AppColors.primaryContainer,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         child: isLoading
             ? const SizedBox(
                 width: 22,
                 height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               )
             : const Text('Complete'),
       ),
