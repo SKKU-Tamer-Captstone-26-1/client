@@ -14,10 +14,9 @@ abstract class AuthRemoteDataSource {
 
 class GrpcAuthRemoteDataSource implements AuthRemoteDataSource {
   factory GrpcAuthRemoteDataSource({AuthGrpcEndpoint? endpoint}) {
-    const serverClientId = String.fromEnvironment('GOOGLE_CLIENT_ID');
-    final googleSignIn = GoogleSignIn(
-      serverClientId: serverClientId.isNotEmpty ? serverClientId : null,
-    );
+    const serverClientId =
+        '44649239380-0cpootoct3i32mijqe4diq88u4ala684.apps.googleusercontent.com';
+    final googleSignIn = GoogleSignIn(serverClientId: serverClientId);
 
     final resolvedEndpoint = endpoint ?? AuthGrpcEndpoint.fromEnvironment();
     final channel = ClientChannel(
