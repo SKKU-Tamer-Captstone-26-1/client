@@ -218,10 +218,7 @@ class GrpcChatRepository implements ChatRepository {
     required String roomId,
     required String ownerUserId,
   }) {
-    return _remote.deactivateRoom(
-      roomId: roomId,
-      ownerUserId: ownerUserId,
-    );
+    return _remote.deactivateRoom(roomId: roomId, ownerUserId: ownerUserId);
   }
 
   @override
@@ -331,6 +328,7 @@ extension _ChatRoomSummaryMapper on ChatRoomSummary {
 extension _ChatMessageMapper on ChatMessage {
   GroupchatMessage toUiMessage({required String currentUserId}) {
     final isOutgoing = senderUserId == currentUserId;
+    final sentAtDateTime = hasSentAt() ? sentAt.toDateTime().toLocal() : null;
 
     return GroupchatMessage(
       messageId: messageId,
@@ -346,6 +344,7 @@ extension _ChatMessageMapper on ChatMessage {
       fileContentType: _metadataString('content_type'),
       text: _toPreviewText(),
       timeLabel: _formatTimestamp(hasSentAt() ? sentAt : null),
+      sentAt: sentAtDateTime,
       senderName: isOutgoing ? null : _shortUserLabel(senderUserId),
       senderAvatarUrl: null,
       deliveryLabel: isOutgoing ? 'Sent' : null,

@@ -47,6 +47,7 @@ class GroupchatRoomSummary {
 }
 
 enum GroupchatMessageKind { incoming, outgoing }
+
 enum GroupchatMessageContentType { text, image, file, system }
 
 @immutable
@@ -58,6 +59,7 @@ class GroupchatMessage {
     required this.kind,
     required this.text,
     required this.timeLabel,
+    this.sentAt,
     this.contentType = GroupchatMessageContentType.text,
     this.imageUrl = '',
     this.fileUrl = '',
@@ -74,6 +76,7 @@ class GroupchatMessage {
   final GroupchatMessageKind kind;
   final String text;
   final String timeLabel;
+  final DateTime? sentAt;
   final GroupchatMessageContentType contentType;
   final String imageUrl;
   final String fileUrl;

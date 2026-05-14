@@ -374,8 +374,6 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(16, 22, 16, 22),
                     children: [
-                      const _DateDivider(label: 'Today'),
-                      const SizedBox(height: 20),
                       if (_loading)
                         const Padding(
                           padding: EdgeInsets.only(bottom: 16),
@@ -493,7 +491,11 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     final putContentType = contentType;
 
     try {
-      _logUploadMime(operation: 'send_image', createContentType: createContentType, putContentType: putContentType);
+      _logUploadMime(
+        operation: 'send_image',
+        createContentType: createContentType,
+        putContentType: putContentType,
+      );
       final target = await repo.createAttachmentUploadURL(
         userId: userId,
         roomId: widget.room.roomId,
@@ -548,7 +550,10 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
 
     final file = result.files.first;
     final filename = file.name.trim().isEmpty ? 'attachment' : file.name.trim();
-    final contentType = _guessContentType(filename, fallback: 'application/pdf');
+    final contentType = _guessContentType(
+      filename,
+      fallback: 'application/pdf',
+    );
     final createContentType = contentType;
     final putContentType = contentType;
     final bytes = file.bytes ?? await _readBytesFromPath(file.path);
@@ -558,7 +563,11 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     }
 
     try {
-      _logUploadMime(operation: 'send_file', createContentType: createContentType, putContentType: putContentType);
+      _logUploadMime(
+        operation: 'send_file',
+        createContentType: createContentType,
+        putContentType: putContentType,
+      );
       final target = await repo.createAttachmentUploadURL(
         userId: userId,
         roomId: widget.room.roomId,
@@ -770,9 +779,9 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     if (error is GrpcError) {
       return 'grpc ${error.codeName}';
     }
-    final uploadStatus = RegExp(r'upload failed with status (\d{3})')
-        .firstMatch(technicalMessage)
-        ?.group(1);
+    final uploadStatus = RegExp(
+      r'upload failed with status (\d{3})',
+    ).firstMatch(technicalMessage)?.group(1);
     if (uploadStatus != null) {
       return 'upload failed with status $uploadStatus';
     }
@@ -797,13 +806,56 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       'DEV_UPLOAD_MIME: op=$operation create_content_type=$createContentType put_content_type=$putContentType',
     );
   }
-
 }
 
 List<GroupchatMessage> _normalizeMessages(List<GroupchatMessage> messages) {
   final cloned = [...messages];
   cloned.sort((a, b) => a.sequenceNo.compareTo(b.sequenceNo));
   return cloned;
+}
+
+bool isSameDay(DateTime a, DateTime b) {
+  final localA = a.toLocal();
+  final localB = b.toLocal();
+  return localA.year == localB.year &&
+      localA.month == localB.month &&
+      localA.day == localB.day;
+}
+
+String formatChatDate(DateTime date) {
+  final localDate = date.toLocal();
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final yesterday = today.subtract(const Duration(days: 1));
+  final messageDay = DateTime(localDate.year, localDate.month, localDate.day);
+
+  if (isSameDay(messageDay, today)) {
+    return 'Today';
+  }
+  if (isSameDay(messageDay, yesterday)) {
+    return 'Yesterday';
+  }
+
+  final month = localDate.month.toString().padLeft(2, '0');
+  final day = localDate.day.toString().padLeft(2, '0');
+  return '${localDate.year}.$month.$day';
+}
+
+bool shouldShowDateDivider(
+  GroupchatMessage currentMessage,
+  GroupchatMessage? previousMessage,
+) {
+  if (previousMessage == null) {
+    return true;
+  }
+  return !isSameDay(
+    _messageDividerDate(currentMessage),
+    _messageDividerDate(previousMessage),
+  );
+}
+
+DateTime _messageDividerDate(GroupchatMessage message) {
+  return (message.sentAt ?? DateTime.now()).toLocal();
 }
 
 class _GroupchatRoomAppBar extends StatelessWidget
@@ -885,33 +937,61 @@ class _GroupchatRoomAppBar extends StatelessWidget
   }
 }
 
-class _DateDivider extends StatelessWidget {
-  const _DateDivider({required this.label});
+class DateDivider extends StatelessWidget {
+  const DateDivider({super.key, required this.date});
 
-  final String label;
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final label = formatChatDate(date);
 
-    return Center(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: palette.surfaceContainerLowest.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          child: Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              color: palette.secondary,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Divider(
+              height: 1,
+              thickness: 1,
+              color: palette.outlineVariant.withValues(alpha: 0.55),
             ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: palette.surfaceContainerLowest.withValues(alpha: 0.78),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: palette.outlineVariant.withValues(alpha: 0.45),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: palette.secondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Divider(
+              height: 1,
+              thickness: 1,
+              color: palette.outlineVariant.withValues(alpha: 0.55),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -927,9 +1007,16 @@ class _MessageList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        for (final message in messages) ...[
+        for (var index = 0; index < messages.length; index++) ...[
+          if (shouldShowDateDivider(
+            messages[index],
+            index == 0 ? null : messages[index - 1],
+          )) ...[
+            DateDivider(date: _messageDividerDate(messages[index])),
+            const SizedBox(height: 16),
+          ],
           _MessageBubble(
-            message: message,
+            message: messages[index],
             onLongPress: onMessageLongPress,
           ),
           const SizedBox(height: 20),
@@ -1187,11 +1274,7 @@ class _MessageContent extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               caption,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 15,
-                height: 1.4,
-              ),
+              style: TextStyle(color: textColor, fontSize: 15, height: 1.4),
             ),
           ],
         ],
@@ -1271,11 +1354,7 @@ class _MessageContent extends StatelessWidget {
 
     return Text(
       message.text,
-      style: TextStyle(
-        color: textColor,
-        fontSize: 15,
-        height: 1.4,
-      ),
+      style: TextStyle(color: textColor, fontSize: 15, height: 1.4),
     );
   }
 
@@ -1325,11 +1404,7 @@ class _SenderAvatar extends StatelessWidget {
     if (url.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: AppNetworkImage(
-          url: url,
-          width: 40,
-          height: 40,
-        ),
+        child: AppNetworkImage(url: url, width: 40, height: 40),
       );
     }
 
