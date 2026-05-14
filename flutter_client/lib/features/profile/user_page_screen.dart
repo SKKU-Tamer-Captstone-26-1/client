@@ -97,7 +97,7 @@ class _ProfileSection extends ConsumerWidget {
                           final auth = ref.read(authProvider);
                           final updated = await ref
                               .read(authRepositoryProvider)
-                              .updateProfile(auth.userId!, newNickname, '');
+                              .updateProfile(auth.accessToken!, newNickname, '');
                           if (ctx.mounted) {
                             Navigator.pop(ctx);
                             ref.read(authProvider.notifier).updateUser(updated);
