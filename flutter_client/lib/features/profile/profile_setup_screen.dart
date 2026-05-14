@@ -236,6 +236,12 @@ class _NicknameField extends StatelessWidget {
         const SizedBox(height: 8),
         TextField(
           controller: controller,
+          cursorColor: AppColors.primaryContainer,
+          style: TextStyle(
+            color: palette.onSurface,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
           decoration: InputDecoration(
             hintText: 'Enter your nickname',
             hintStyle: TextStyle(color: palette.secondary),
