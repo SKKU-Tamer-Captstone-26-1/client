@@ -12,11 +12,12 @@ import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/providers/auth_repository_provider.dart';
 import 'features/board/presentation/board_screen.dart';
+import 'features/chat/data/chat_push_service.dart';
 import 'features/chat/data/chat_remote_data_source.dart';
 import 'features/chat/data/chat_repository.dart';
+import 'features/chat/models/groupchat_models.dart';
 import 'features/chat/presentation/groupchat_list_screen.dart';
 import 'features/chat/presentation/groupchat_room_screen.dart';
-import 'features/chat/models/groupchat_models.dart';
 import 'features/collection/presentation/collection_screen.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/map/presentation/map_screen.dart';
@@ -37,9 +38,10 @@ Future<void> main() async {
 }
 
 class OnTheBlockApp extends ConsumerStatefulWidget {
-  const OnTheBlockApp({super.key, this.chatRepository});
+  const OnTheBlockApp({super.key, this.chatRepository, this.chatPushService});
 
   final ChatRepository? chatRepository;
+  final ChatPushService? chatPushService;
 
   @override
   ConsumerState<OnTheBlockApp> createState() => _OnTheBlockAppState();
@@ -67,18 +69,32 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   _AppStage _previousStage = _AppStage.home;
   GroupchatRoomSummary _selectedGroupchatRoom = _emptyRoom;
   ChatRepository? _chatRepository;
+  ChatPushService? _chatPushService;
   final Set<String> _locallyHiddenRoomIds = <String>{};
+  String? _pendingChatPushRoomId;
+  int _chatUnreadCount = 0;
+
+  Map<AppBottomNavItem, int> get _bottomNavBadgeCounts {
+    return _chatUnreadCount > 0
+        ? <AppBottomNavItem, int>{AppBottomNavItem.chat: _chatUnreadCount}
+        : const <AppBottomNavItem, int>{};
+  }
 
   @override
   void initState() {
     super.initState();
     _chatRepository =
         widget.chatRepository ?? GrpcChatRepository(GrpcChatRemoteDataSource());
+    _chatPushService = widget.chatPushService ?? FirebaseChatPushService();
     unawaited(_printDevErrorLogPathAtStartup());
   }
 
   @override
   void dispose() {
+    final pushService = _chatPushService;
+    if (pushService != null) {
+      unawaited(pushService.dispose());
+    }
     final repo = _chatRepository;
     if (repo != null) {
       unawaited(repo.dispose());
@@ -118,6 +134,9 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         _stage = _AppStage.home;
       }
     });
+    unawaited(_startChatPush(session.accessToken));
+    unawaited(_refreshChatUnreadCount());
+    _openPendingChatPushIfReady();
   }
 
   @override
@@ -146,6 +165,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
           setState(() {
             _stage = kBypassSurvey ? _AppStage.home : _AppStage.surveyIntro;
           });
+          _openPendingChatPushIfReady();
         },
       ),
       _AppStage.login => LoginScreen(
@@ -163,6 +183,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
           setState(() {
             _stage = _AppStage.home;
           });
+          _openPendingChatPushIfReady();
         },
       ),
       _AppStage.survey => SurveyScreen(
@@ -170,24 +191,31 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
           setState(() {
             _stage = _AppStage.home;
           });
+          _openPendingChatPushIfReady();
         },
       ),
       _AppStage.home => HomeScreen(
         onBottomNavSelected: _selectBottomNavItem,
         onProfileSelected: _goToProfile,
+        bottomNavBadgeCounts: _bottomNavBadgeCounts,
       ),
       _AppStage.map => MapScreen(
         onBottomNavSelected: _selectBottomNavItem,
         onProfileSelected: _goToProfile,
+        bottomNavBadgeCounts: _bottomNavBadgeCounts,
       ),
       _AppStage.board => BoardScreen(
         onBottomNavSelected: _selectBottomNavItem,
         onProfileSelected: _goToProfile,
+        bottomNavBadgeCounts: _bottomNavBadgeCounts,
       ),
       _AppStage.chat => GroupchatListScreen(
         chatRepository: _chatRepository,
         currentUserId: _currentUserId,
+        authToken: ref.read(authProvider).accessToken ?? '',
         excludedRoomIds: _locallyHiddenRoomIds,
+        bottomNavBadgeCounts: _bottomNavBadgeCounts,
+        onUnreadCountChanged: _setChatUnreadCount,
         onBottomNavSelected: _selectBottomNavItem,
         onProfileSelected: _goToProfile,
         onRoomSelected: (room) {
@@ -202,6 +230,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         room: _selectedGroupchatRoom,
         chatRepository: _chatRepository,
         currentUserId: _currentUserId,
+        authToken: ref.read(authProvider).accessToken ?? '',
         onBack: () {
           setState(() {
             _stage = _AppStage.chat;
@@ -216,8 +245,11 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       _AppStage.collection => CollectionScreen(
         onBottomNavSelected: _selectBottomNavItem,
         onProfileSelected: _goToProfile,
+        bottomNavBadgeCounts: _bottomNavBadgeCounts,
       ),
       _AppStage.profile => UserPageScreen(
+        bottomNavBadgeCounts: _bottomNavBadgeCounts,
+        onLogout: () => unawaited(_handleLogout()),
         onBack: () {
           setState(() {
             _stage = _previousStage;
@@ -243,6 +275,238 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     setState(() {
       _previousStage = _stage;
       _stage = _AppStage.profile;
+    });
+  }
+
+  void _setChatUnreadCount(int count) {
+    if (_chatUnreadCount == count) {
+      return;
+    }
+    setState(() {
+      _chatUnreadCount = count;
+    });
+  }
+
+  Future<void> _refreshChatUnreadCount() async {
+    final repo = _chatRepository;
+    if (repo == null || _currentUserId.isEmpty) {
+      return;
+    }
+
+    try {
+      final page = await repo.listMyRooms(userId: _currentUserId, pageSize: 20);
+      if (!mounted) {
+        return;
+      }
+      _setChatUnreadCount(
+        page.rooms.fold<int>(0, (sum, room) => sum + room.unreadCount),
+      );
+    } catch (_) {
+      // Keep the existing badge state if chat unread refresh fails.
+    }
+  }
+
+  Future<void> _startChatPush(String authToken) async {
+    final repo = _chatRepository;
+    final pushService = _chatPushService;
+    if (repo == null || pushService == null || authToken.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      await pushService.start(
+        authToken: authToken,
+        chatRepository: repo,
+        onForegroundChatMessage: _handleForegroundChatPush,
+        onOpenedChatMessage: _handleOpenedChatPush,
+      );
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('CHAT_PUSH_START_FAILED: $error');
+      }
+    }
+  }
+
+  Future<void> _unregisterChatPush(String authToken) async {
+    final repo = _chatRepository;
+    final pushService = _chatPushService;
+    if (repo == null || pushService == null || authToken.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      await pushService.unregister(authToken: authToken, chatRepository: repo);
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('CHAT_PUSH_UNREGISTER_FAILED: $error');
+      }
+    }
+  }
+
+  Future<void> _handleForegroundChatPush(ChatPushMessage message) async {
+    if (message.roomId.isEmpty) {
+      return;
+    }
+
+    if (_stage == _AppStage.groupchatRoom &&
+        _selectedGroupchatRoom.roomId == message.roomId) {
+      await _markChatRoomRead(message.roomId);
+    }
+    await _refreshChatUnreadCount();
+  }
+
+  Future<void> _handleOpenedChatPush(ChatPushMessage message) async {
+    final roomId = message.roomId.trim();
+    if (roomId.isEmpty) {
+      return;
+    }
+
+    if (!_canOpenChatPushNow) {
+      _pendingChatPushRoomId = roomId;
+      return;
+    }
+
+    await _openChatRoomById(roomId, markRead: true);
+  }
+
+  bool get _canOpenChatPushNow {
+    final auth = ref.read(authProvider);
+    if (!auth.isAuthenticated) {
+      return false;
+    }
+    return switch (_stage) {
+      _AppStage.login ||
+      _AppStage.profileSetup ||
+      _AppStage.surveyIntro ||
+      _AppStage.survey => false,
+      _ => true,
+    };
+  }
+
+  void _openPendingChatPushIfReady() {
+    final roomId = _pendingChatPushRoomId;
+    if (roomId == null || !_canOpenChatPushNow) {
+      return;
+    }
+    _pendingChatPushRoomId = null;
+    unawaited(_openChatRoomById(roomId, markRead: true));
+  }
+
+  Future<void> _openChatRoomById(
+    String roomId, {
+    required bool markRead,
+  }) async {
+    final normalizedRoomId = roomId.trim();
+    if (normalizedRoomId.isEmpty) {
+      return;
+    }
+
+    if (_stage == _AppStage.groupchatRoom &&
+        _selectedGroupchatRoom.roomId == normalizedRoomId) {
+      if (markRead) {
+        await _markChatRoomRead(normalizedRoomId);
+      }
+      await _refreshChatUnreadCount();
+      return;
+    }
+
+    final room = await _findChatRoomById(normalizedRoomId);
+    if (markRead) {
+      await _markChatRoomRead(normalizedRoomId);
+    }
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _locallyHiddenRoomIds.remove(normalizedRoomId);
+      _selectedGroupchatRoom = (room ?? _fallbackChatRoom(normalizedRoomId))
+          .copyWith(unreadCount: 0);
+      _stage = _AppStage.groupchatRoom;
+    });
+    await _refreshChatUnreadCount();
+  }
+
+  Future<GroupchatRoomSummary?> _findChatRoomById(String roomId) async {
+    final repo = _chatRepository;
+    if (repo == null || _currentUserId.isEmpty) {
+      return null;
+    }
+
+    try {
+      final page = await repo.listMyRooms(userId: _currentUserId, pageSize: 50);
+      if (mounted) {
+        _setChatUnreadCount(
+          page.rooms.fold<int>(0, (sum, room) => sum + room.unreadCount),
+        );
+      }
+      for (final room in page.rooms) {
+        if (room.roomId == roomId) {
+          return room;
+        }
+      }
+    } catch (_) {
+      // Open with a minimal room shell if the room list refresh fails.
+    }
+    return null;
+  }
+
+  Future<void> _markChatRoomRead(String roomId) async {
+    final repo = _chatRepository;
+    final authToken = ref.read(authProvider).accessToken ?? '';
+    if (repo == null || roomId.isEmpty || authToken.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      await repo.markChatRoomRead(roomId: roomId, authToken: authToken);
+    } catch (_) {
+      // Keep notification navigation usable if read-state sync fails.
+    }
+  }
+
+  GroupchatRoomSummary _fallbackChatRoom(String roomId) {
+    return GroupchatRoomSummary(
+      roomId: roomId,
+      title: 'Chat',
+      memberSummary: '-/-',
+      location: '',
+      lastMessage: '',
+      timeLabel: '',
+      tags: const <String>[],
+      avatarUrls: const <String>[],
+    );
+  }
+
+  Future<void> _handleLogout() async {
+    final auth = ref.read(authProvider);
+    final authToken = auth.accessToken;
+    final userId = auth.userId;
+
+    if (authToken != null) {
+      await _unregisterChatPush(authToken);
+    }
+    if (userId != null) {
+      try {
+        await ref.read(authRepositoryProvider).logout(userId);
+      } catch (error) {
+        if (kDebugMode) {
+          debugPrint('AUTH_LOGOUT_FAILED: $error');
+        }
+      }
+    }
+    if (!mounted) {
+      return;
+    }
+
+    ref.read(authProvider.notifier).clear();
+    setState(() {
+      _stage = _AppStage.login;
+      _previousStage = _AppStage.home;
+      _selectedGroupchatRoom = _emptyRoom;
+      _locallyHiddenRoomIds.clear();
+      _chatUnreadCount = 0;
+      _pendingChatPushRoomId = null;
     });
   }
 
