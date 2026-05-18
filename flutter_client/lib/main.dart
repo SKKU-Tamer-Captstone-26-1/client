@@ -11,6 +11,7 @@ import 'core/config/app_config.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/providers/auth_repository_provider.dart';
+import 'features/board/models/board_models.dart';
 import 'features/board/presentation/board_screen.dart';
 import 'features/chat/data/chat_push_service.dart';
 import 'features/chat/data/chat_remote_data_source.dart';
@@ -48,7 +49,7 @@ class OnTheBlockApp extends ConsumerStatefulWidget {
 }
 
 class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
-  static const _currentUserId = String.fromEnvironment(
+  static const _fallbackChatUserId = String.fromEnvironment(
     'CHAT_USER_ID',
     defaultValue: '11111111-1111-1111-1111-111111111111',
   );
@@ -79,6 +80,11 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         ? <AppBottomNavItem, int>{AppBottomNavItem.chat: _chatUnreadCount}
         : const <AppBottomNavItem, int>{};
   }
+
+  String get _currentChatUserId =>
+      ref.read(authProvider).userId ?? _fallbackChatUserId;
+
+  String get _currentAuthToken => ref.read(authProvider).accessToken ?? '';
 
   @override
   void initState() {
@@ -207,12 +213,13 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       _AppStage.board => BoardScreen(
         onBottomNavSelected: _selectBottomNavItem,
         onProfileSelected: _goToProfile,
+        onBoardChatRequested: _openBoardChat,
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
       ),
       _AppStage.chat => GroupchatListScreen(
         chatRepository: _chatRepository,
-        currentUserId: _currentUserId,
-        authToken: ref.read(authProvider).accessToken ?? '',
+        currentUserId: _currentChatUserId,
+        authToken: _currentAuthToken,
         excludedRoomIds: _locallyHiddenRoomIds,
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
         onUnreadCountChanged: _setChatUnreadCount,
@@ -229,8 +236,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       _AppStage.groupchatRoom => GroupchatRoomScreen(
         room: _selectedGroupchatRoom,
         chatRepository: _chatRepository,
-        currentUserId: _currentUserId,
-        authToken: ref.read(authProvider).accessToken ?? '',
+        currentUserId: _currentChatUserId,
+        authToken: _currentAuthToken,
         onBack: () {
           setState(() {
             _stage = _AppStage.chat;
@@ -289,12 +296,18 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
 
   Future<void> _refreshChatUnreadCount() async {
     final repo = _chatRepository;
-    if (repo == null || _currentUserId.isEmpty) {
+    final userId = _currentChatUserId;
+    final authToken = _currentAuthToken;
+    if (repo == null || userId.isEmpty) {
       return;
     }
 
     try {
-      final page = await repo.listMyRooms(userId: _currentUserId, pageSize: 20);
+      final page = await repo.listMyRooms(
+        userId: userId,
+        authToken: authToken,
+        pageSize: 20,
+      );
       if (!mounted) {
         return;
       }
@@ -427,14 +440,47 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     await _refreshChatUnreadCount();
   }
 
+  Future<void> _openBoardChat(BoardPost post) async {
+    final repo = _chatRepository;
+    final authToken = _currentAuthToken;
+    final boardId = post.boardId.trim();
+    if (repo == null || authToken.trim().isEmpty || boardId.isEmpty) {
+      throw StateError('Missing chat repository, auth token, or board id.');
+    }
+
+    final room = await repo.getOrCreateBoardChatRoom(
+      boardId: boardId,
+      title: post.title,
+      boardOwnerUserId: post.boardOwnerUserId,
+      authToken: authToken,
+    );
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _locallyHiddenRoomIds.remove(room.roomId);
+      _selectedGroupchatRoom = room.copyWith(unreadCount: 0);
+      _stage = _AppStage.groupchatRoom;
+    });
+    await _markChatRoomRead(room.roomId);
+    await _refreshChatUnreadCount();
+  }
+
   Future<GroupchatRoomSummary?> _findChatRoomById(String roomId) async {
     final repo = _chatRepository;
-    if (repo == null || _currentUserId.isEmpty) {
+    final userId = _currentChatUserId;
+    final authToken = _currentAuthToken;
+    if (repo == null || userId.isEmpty) {
       return null;
     }
 
     try {
-      final page = await repo.listMyRooms(userId: _currentUserId, pageSize: 50);
+      final page = await repo.listMyRooms(
+        userId: userId,
+        authToken: authToken,
+        pageSize: 50,
+      );
       if (mounted) {
         _setChatUnreadCount(
           page.rooms.fold<int>(0, (sum, room) => sum + room.unreadCount),

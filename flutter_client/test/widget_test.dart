@@ -166,12 +166,36 @@ void main() {
     expect(find.text('3 Unread'), findsOneWidget);
     expect(find.text('Westside Bourbon Enthusiasts'), findsOneWidget);
     expect(find.text('Downtown Whiskey Circle'), findsOneWidget);
-    expect(find.byTooltip('Start chat'), findsNothing);
+    expect(find.byTooltip('New Chat'), findsOneWidget);
 
     await tester.tap(find.text('View Board'));
     await tester.pumpAndSettle();
 
     expect(find.text('#AllPosts'), findsOneWidget);
+  });
+
+  testWidgets('creates general chat from chat list', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Chat'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('New Chat'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Staging General Chat');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create'));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Back to messages'), findsOneWidget);
+    expect(find.text('Staging General Chat'), findsOneWidget);
   });
 
   testWidgets('opens groupchat room as full screen detail', (
@@ -327,11 +351,34 @@ void main() {
 
     expect(find.byTooltip('Write post'), findsOneWidget);
     expect(find.byTooltip('Chat with Neighborhood Guide'), findsOneWidget);
+    expect(find.byTooltip('Open board chat'), findsWidgets);
 
     await tester.tap(find.byTooltip('Chat with Neighborhood Guide'));
     await tester.pumpAndSettle();
 
     expect(find.text('Chat with Neighborhood Guide'), findsOneWidget);
+  });
+
+  testWidgets('opens board-linked chat from board post', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Board'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Open board chat').first);
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Back to messages'), findsOneWidget);
+    expect(
+      find.text('Hidden Gem: Old Soul Cask Strength Batch #4'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('opens notification screen and navigates to board target', (
@@ -605,22 +652,44 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
 
 class _FakeChatRepository implements ChatRepository {
   final Set<String> _readRoomIds = <String>{};
+  int _createdRoomCount = 0;
 
   @override
   Future<GroupchatRoomSummary> createRoom({
     required String creatorUserId,
     required String title,
+    String authToken = '',
   }) async {
-    return mockGroupchatRooms.first;
+    _createdRoomCount += 1;
+    return GroupchatRoomSummary(
+      roomId: 'created-room-$_createdRoomCount',
+      title: title,
+      memberSummary: '1 member',
+      location: 'General',
+      lastMessage: 'No messages yet',
+      timeLabel: '',
+      tags: const <String>['General'],
+      avatarUrls: const <String>[],
+    );
   }
 
   @override
   Future<GroupchatRoomSummary> getOrCreateBoardChatRoom({
     required String boardId,
     String? title,
+    String? boardOwnerUserId,
     required String authToken,
   }) async {
-    return mockGroupchatRooms.first;
+    return GroupchatRoomSummary(
+      roomId: 'board-room-$boardId',
+      title: title ?? 'Board Chat',
+      memberSummary: 'Board room',
+      location: 'Board',
+      lastMessage: 'No messages yet',
+      timeLabel: '',
+      tags: const <String>['Board'],
+      avatarUrls: const <String>[],
+    );
   }
 
   @override
@@ -634,6 +703,7 @@ class _FakeChatRepository implements ChatRepository {
     required String roomId,
     required String senderUserId,
     required String content,
+    String authToken = '',
   }) async {}
 
   @override
@@ -642,6 +712,7 @@ class _FakeChatRepository implements ChatRepository {
     required String roomId,
     required String fileName,
     required String contentType,
+    String authToken = '',
   }) async {
     return const AttachmentUploadTarget(
       objectName: 'test-object',
@@ -662,6 +733,7 @@ class _FakeChatRepository implements ChatRepository {
     required String roomId,
     required String senderUserId,
     required String imageUrl,
+    String authToken = '',
   }) async {}
 
   @override
@@ -671,6 +743,7 @@ class _FakeChatRepository implements ChatRepository {
     required String fileUrl,
     required String fileName,
     required String contentType,
+    String authToken = '',
   }) async {}
 
   @override
@@ -689,6 +762,7 @@ class _FakeChatRepository implements ChatRepository {
   @override
   Future<ChatRoomPage> listMyRooms({
     required String userId,
+    String authToken = '',
     int pageSize = 20,
     String pageToken = '',
   }) async {
@@ -707,6 +781,7 @@ class _FakeChatRepository implements ChatRepository {
   Future<List<GroupchatMessage>> getMessages({
     required String roomId,
     required String userId,
+    String authToken = '',
     int beforeSequenceNo = 0,
     int limit = 20,
   }) async {
@@ -746,6 +821,7 @@ class _FakeChatRepository implements ChatRepository {
   Stream<GroupchatMessage> streamMessages({
     required String roomId,
     required String userId,
+    String authToken = '',
     int afterSequenceNo = 0,
   }) {
     return const Stream<GroupchatMessage>.empty();
