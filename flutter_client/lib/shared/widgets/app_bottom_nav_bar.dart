@@ -8,10 +8,7 @@ class AppBottomNavBar extends StatelessWidget {
     super.key,
     this.currentItem = AppBottomNavItem.home,
     this.onItemSelected,
-    this.badgeCounts = const {
-      AppBottomNavItem.chat: 3,
-      AppBottomNavItem.collection: 7,
-    },
+    this.badgeCounts = const <AppBottomNavItem, int>{},
   });
 
   final AppBottomNavItem currentItem;

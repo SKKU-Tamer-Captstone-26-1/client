@@ -11,10 +11,16 @@ import '../models/collection_models.dart';
 enum _CollectionTab { wishlist, cart }
 
 class CollectionScreen extends StatefulWidget {
-  const CollectionScreen({super.key, this.onBottomNavSelected, this.onProfileSelected});
+  const CollectionScreen({
+    super.key,
+    this.onBottomNavSelected,
+    this.onProfileSelected,
+    this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
+  });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onProfileSelected;
+  final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
   State<CollectionScreen> createState() => _CollectionScreenState();
@@ -39,6 +45,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.collection,
         onItemSelected: widget.onBottomNavSelected,
+        badgeCounts: widget.bottomNavBadgeCounts,
       ),
       body: SafeArea(
         top: false,

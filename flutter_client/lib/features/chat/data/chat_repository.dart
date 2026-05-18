@@ -9,6 +9,12 @@ abstract class ChatRepository {
     required String title,
   });
 
+  Future<GroupchatRoomSummary> getOrCreateBoardChatRoom({
+    required String boardId,
+    String? title,
+    required String authToken,
+  });
+
   Future<void> joinRoom({required String roomId, required String userId});
 
   Future<void> sendTextMessage({
@@ -74,6 +80,23 @@ abstract class ChatRepository {
     required int lastReadSequenceNo,
   });
 
+  Future<void> markChatRoomRead({
+    required String roomId,
+    required String authToken,
+  });
+
+  Future<void> registerDeviceToken({
+    required String deviceId,
+    required String token,
+    required DevicePlatform platform,
+    required String authToken,
+  });
+
+  Future<void> unregisterDeviceToken({
+    required String deviceId,
+    required String authToken,
+  });
+
   Stream<GroupchatMessage> streamMessages({
     required String roomId,
     required String userId,
@@ -116,6 +139,23 @@ class GrpcChatRepository implements ChatRepository {
       creatorUserId: creatorUserId,
       title: title,
     );
+    return response.room.toUiRoomSummary();
+  }
+
+  @override
+  Future<GroupchatRoomSummary> getOrCreateBoardChatRoom({
+    required String boardId,
+    String? title,
+    required String authToken,
+  }) async {
+    final response = await _remote.getOrCreateBoardChatRoom(
+      boardId: boardId,
+      title: title,
+      authToken: authToken,
+    );
+    if (response.hasSummary()) {
+      return response.summary.toUiRoomSummary();
+    }
     return response.room.toUiRoomSummary();
   }
 
@@ -266,6 +306,40 @@ class GrpcChatRepository implements ChatRepository {
       roomId: roomId,
       userId: userId,
       lastReadSequenceNo: lastReadSequenceNo,
+    );
+  }
+
+  @override
+  Future<void> markChatRoomRead({
+    required String roomId,
+    required String authToken,
+  }) {
+    return _remote.markChatRoomRead(roomId: roomId, authToken: authToken);
+  }
+
+  @override
+  Future<void> registerDeviceToken({
+    required String deviceId,
+    required String token,
+    required DevicePlatform platform,
+    required String authToken,
+  }) {
+    return _remote.registerDeviceToken(
+      deviceId: deviceId,
+      token: token,
+      platform: platform,
+      authToken: authToken,
+    );
+  }
+
+  @override
+  Future<void> unregisterDeviceToken({
+    required String deviceId,
+    required String authToken,
+  }) {
+    return _remote.unregisterDeviceToken(
+      deviceId: deviceId,
+      authToken: authToken,
     );
   }
 

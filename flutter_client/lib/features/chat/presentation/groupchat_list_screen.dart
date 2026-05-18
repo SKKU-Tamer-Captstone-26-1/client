@@ -6,6 +6,7 @@ import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
 import '../data/chat_repository.dart';
+import '../data/mock_groupchat_data.dart';
 import '../models/groupchat_models.dart';
 
 class GroupchatListScreen extends StatefulWidget {
@@ -15,7 +16,10 @@ class GroupchatListScreen extends StatefulWidget {
     this.onRoomSelected,
     this.chatRepository,
     this.currentUserId,
+    this.authToken = '',
     this.excludedRoomIds = const <String>{},
+    this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
+    this.onUnreadCountChanged,
     this.onProfileSelected,
   });
 
@@ -23,7 +27,10 @@ class GroupchatListScreen extends StatefulWidget {
   final ValueChanged<GroupchatRoomSummary>? onRoomSelected;
   final ChatRepository? chatRepository;
   final String? currentUserId;
+  final String authToken;
   final Set<String> excludedRoomIds;
+  final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
+  final ValueChanged<int>? onUnreadCountChanged;
   final VoidCallback? onProfileSelected;
 
   @override
@@ -87,6 +94,7 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
         _nextPageToken = page.nextPageToken;
         _hasMore = _nextPageToken.isNotEmpty;
       });
+      _notifyUnreadCountChanged();
       _scheduleAutoLoadIfUnderfilled();
     } catch (_) {
       // Keep current list state on remote errors.
@@ -136,6 +144,7 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
         _nextPageToken = page.nextPageToken;
         _hasMore = _nextPageToken.isNotEmpty;
       });
+      _notifyUnreadCountChanged();
       _scheduleAutoLoadIfUnderfilled();
     } catch (_) {
       // Keep current list state on remote errors.
@@ -183,55 +192,37 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
           .where((room) => !widget.excludedRoomIds.contains(room.roomId))
           .toList();
     });
+    _notifyUnreadCountChanged();
   }
 
-  Future<void> _createRoomFromFab() async {
-    final repo = widget.chatRepository;
-    final userId = widget.currentUserId;
-    if (repo == null || userId == null || userId.isEmpty) {
-      _showInfo('Chat backend unavailable.');
-      return;
-    }
-
-    setState(() {
-      _loading = true;
-    });
-
-    try {
-      final created = await repo.createRoom(
-        creatorUserId: userId,
-        title:
-            'New chat ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}',
-      );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _rooms = [
-          if (!widget.excludedRoomIds.contains(created.roomId)) created,
-          ..._rooms,
-        ];
-      });
-      widget.onRoomSelected?.call(created);
-      _showInfo('Room created.');
-    } catch (_) {
-      _showInfo('Could not create room on server.');
-    } finally {
-      if (mounted) {
+  Future<void> _openRoom(GroupchatRoomSummary room) async {
+    var selectedRoom = room;
+    if (room.unreadCount > 0) {
+      try {
+        await widget.chatRepository?.markChatRoomRead(
+          roomId: room.roomId,
+          authToken: widget.authToken,
+        );
+        if (!mounted) {
+          return;
+        }
+        selectedRoom = room.copyWith(unreadCount: 0);
         setState(() {
-          _loading = false;
+          _rooms = [
+            for (final candidate in _rooms)
+              candidate.roomId == room.roomId ? selectedRoom : candidate,
+          ];
         });
+        _notifyUnreadCountChanged();
+      } catch (_) {
+        // Keep opening the room if read-state sync fails.
       }
     }
+    widget.onRoomSelected?.call(selectedRoom);
   }
 
-  void _showInfo(String message) {
-    if (!mounted) {
-      return;
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
-    );
+  void _notifyUnreadCountChanged() {
+    widget.onUnreadCountChanged?.call(_unreadCount);
   }
 
   @override
@@ -249,14 +240,7 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.chat,
         onItemSelected: widget.onBottomNavSelected,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _createRoomFromFab,
-        tooltip: 'Start chat',
-        backgroundColor: AppColors.primaryContainer,
-        foregroundColor: Colors.white,
-        shape: const CircleBorder(),
-        child: const Icon(AppIcons.chat),
+        badgeCounts: widget.bottomNavBadgeCounts,
       ),
       body: SafeArea(
         top: false,
@@ -271,6 +255,13 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
                 children: [
                   _MessagesHeader(unreadCount: _unreadCount),
                   const SizedBox(height: 24),
+                  _NearbyBoardPreview(
+                    boards: mockActiveBoardRooms,
+                    onBoardSelected: () {
+                      widget.onBottomNavSelected?.call(AppBottomNavItem.board);
+                    },
+                  ),
+                  const SizedBox(height: 24),
                   if (_loading)
                     const Padding(
                       padding: EdgeInsets.only(bottom: 16),
@@ -283,7 +274,7 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
                               !widget.excludedRoomIds.contains(room.roomId),
                         )
                         .toList(),
-                    onRoomSelected: widget.onRoomSelected,
+                    onRoomSelected: _openRoom,
                   ),
                   if (_loadingMore)
                     const Padding(
@@ -293,6 +284,134 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NearbyBoardPreview extends StatelessWidget {
+  const _NearbyBoardPreview({
+    required this.boards,
+    required this.onBoardSelected,
+  });
+
+  final List<ActiveBoardRoom> boards;
+  final VoidCallback onBoardSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    if (boards.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Nearby Board',
+                style: TextStyle(
+                  color: palette.onSurface,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: onBoardSelected,
+              child: const Text('View Board'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 112,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: boards.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              return _NearbyBoardCard(
+                board: boards[index],
+                onTap: onBoardSelected,
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _NearbyBoardCard extends StatelessWidget {
+  const _NearbyBoardCard({required this.board, required this.onTap});
+
+  final ActiveBoardRoom board;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return SizedBox(
+      width: 132,
+      child: Material(
+        color: palette.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(14),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              AppNetworkImage(url: board.imageUrl),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.05),
+                      Colors.black.withValues(alpha: 0.68),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 10,
+                right: 10,
+                bottom: 10,
+                child: Text(
+                  board.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    height: 1.12,
+                  ),
+                ),
+              ),
+              if (board.hasUnreadActivity)
+                const Positioned(
+                  top: 10,
+                  right: 10,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: SizedBox(width: 9, height: 9),
+                  ),
+                ),
+            ],
           ),
         ),
       ),
@@ -371,7 +490,7 @@ class _ChatRoomList extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'No chat rooms yet. Create your first room.',
+                  'No chat rooms yet. Join from a Board post to start a room.',
                   style: TextStyle(
                     color: palette.secondary,
                     fontSize: 14,
@@ -638,16 +757,18 @@ class _RoomTrailing extends StatelessWidget {
     final palette = context.palette;
 
     if (room.hasUnread) {
+      final unreadLabel = room.unreadCount > 99 ? '99+' : '${room.unreadCount}';
       return Container(
-        width: 22,
+        constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
         height: 22,
         alignment: Alignment.center,
         decoration: const BoxDecoration(
           color: AppColors.primaryContainer,
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.all(Radius.circular(999)),
         ),
         child: Text(
-          '${room.unreadCount}',
+          unreadLabel,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 10,

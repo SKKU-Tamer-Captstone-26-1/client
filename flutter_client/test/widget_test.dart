@@ -7,7 +7,9 @@ import 'package:flutter_client/core/theme/app_theme.dart';
 import 'package:flutter_client/features/auth/data/auth_remote_data_source.dart';
 import 'package:flutter_client/features/auth/data/grpc_gen/auth/v1/auth.pbgrpc.dart';
 import 'package:flutter_client/features/auth/providers/auth_repository_provider.dart';
+import 'package:flutter_client/features/chat/data/chat_push_service.dart';
 import 'package:flutter_client/features/chat/data/chat_repository.dart';
+import 'package:flutter_client/features/chat/data/grpc_gen/chat/v1/chat.pb.dart';
 import 'package:flutter_client/features/chat/data/mock_groupchat_data.dart';
 import 'package:flutter_client/features/chat/models/groupchat_models.dart';
 import 'package:flutter_client/features/chat/presentation/widgets/chat_input_bar.dart';
@@ -107,7 +109,7 @@ void main() {
     expect(find.byIcon(Icons.chat), findsNothing);
   });
 
-  testWidgets('shows chat and collection bottom nav count bubbles', (
+  testWidgets('shows chat bottom nav unread count bubble', (
     WidgetTester tester,
   ) async {
     await _pumpApp(tester);
@@ -118,7 +120,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('3'), findsOneWidget);
-    expect(find.text('7'), findsOneWidget);
+    expect(find.text('7'), findsNothing);
   });
 
   testWidgets('navigates from home to board screen', (
@@ -159,9 +161,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Messages'), findsOneWidget);
+    expect(find.text('Nearby Board'), findsOneWidget);
+    expect(find.text('View Board'), findsOneWidget);
     expect(find.text('3 Unread'), findsOneWidget);
     expect(find.text('Westside Bourbon Enthusiasts'), findsOneWidget);
     expect(find.text('Downtown Whiskey Circle'), findsOneWidget);
+    expect(find.byTooltip('Start chat'), findsNothing);
+
+    await tester.tap(find.text('View Board'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('#AllPosts'), findsOneWidget);
   });
 
   testWidgets('opens groupchat room as full screen detail', (
@@ -193,7 +203,30 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Messages'), findsOneWidget);
-    expect(find.text('3 Unread'), findsOneWidget);
+    expect(find.text('1 Unread'), findsOneWidget);
+  });
+
+  testWidgets('opens chat room from chat push after survey gate', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(
+      tester,
+      chatPushService: _FakeChatPushService(
+        openedMessageOnStart: const ChatPushMessage(roomId: 'mock-room-1'),
+      ),
+    );
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Start Survey'), findsOneWidget);
+    expect(find.text('Westside Bourbon Enthusiasts'), findsNothing);
+
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Back to messages'), findsOneWidget);
+    expect(find.text('Westside Bourbon Enthusiasts'), findsOneWidget);
   });
 
   testWidgets('navigates to collection wishlist and cart tabs', (
@@ -470,7 +503,7 @@ Widget _chatInputBarApp({
   );
 }
 
-Future<void> _pumpApp(WidgetTester tester) {
+Future<void> _pumpApp(WidgetTester tester, {ChatPushService? chatPushService}) {
   SharedPreferences.setMockInitialValues({});
   return tester.pumpWidget(
     ProviderScope(
@@ -479,9 +512,41 @@ Future<void> _pumpApp(WidgetTester tester) {
           _FakeAuthRemoteDataSource(),
         ),
       ],
-      child: OnTheBlockApp(chatRepository: _FakeChatRepository()),
+      child: OnTheBlockApp(
+        chatRepository: _FakeChatRepository(),
+        chatPushService: chatPushService ?? _FakeChatPushService(),
+      ),
     ),
   );
+}
+
+class _FakeChatPushService implements ChatPushService {
+  const _FakeChatPushService({this.openedMessageOnStart});
+
+  final ChatPushMessage? openedMessageOnStart;
+
+  @override
+  Future<void> start({
+    required String authToken,
+    required ChatRepository chatRepository,
+    required Future<void> Function(ChatPushMessage message)
+    onForegroundChatMessage,
+    required Future<void> Function(ChatPushMessage message) onOpenedChatMessage,
+  }) async {
+    final openedMessage = openedMessageOnStart;
+    if (openedMessage != null) {
+      await onOpenedChatMessage(openedMessage);
+    }
+  }
+
+  @override
+  Future<void> unregister({
+    required String authToken,
+    required ChatRepository chatRepository,
+  }) async {}
+
+  @override
+  Future<void> dispose() async {}
 }
 
 class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
@@ -539,10 +604,21 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
 }
 
 class _FakeChatRepository implements ChatRepository {
+  final Set<String> _readRoomIds = <String>{};
+
   @override
   Future<GroupchatRoomSummary> createRoom({
     required String creatorUserId,
     required String title,
+  }) async {
+    return mockGroupchatRooms.first;
+  }
+
+  @override
+  Future<GroupchatRoomSummary> getOrCreateBoardChatRoom({
+    required String boardId,
+    String? title,
+    required String authToken,
   }) async {
     return mockGroupchatRooms.first;
   }
@@ -616,7 +692,15 @@ class _FakeChatRepository implements ChatRepository {
     int pageSize = 20,
     String pageToken = '',
   }) async {
-    return const ChatRoomPage(rooms: mockGroupchatRooms, nextPageToken: '');
+    return ChatRoomPage(
+      rooms: [
+        for (final room in mockGroupchatRooms)
+          _readRoomIds.contains(room.roomId)
+              ? room.copyWith(unreadCount: 0)
+              : room,
+      ],
+      nextPageToken: '',
+    );
   }
 
   @override
@@ -634,6 +718,28 @@ class _FakeChatRepository implements ChatRepository {
     required String roomId,
     required String userId,
     required int lastReadSequenceNo,
+  }) async {}
+
+  @override
+  Future<void> markChatRoomRead({
+    required String roomId,
+    required String authToken,
+  }) async {
+    _readRoomIds.add(roomId);
+  }
+
+  @override
+  Future<void> registerDeviceToken({
+    required String deviceId,
+    required String token,
+    required DevicePlatform platform,
+    required String authToken,
+  }) async {}
+
+  @override
+  Future<void> unregisterDeviceToken({
+    required String deviceId,
+    required String authToken,
   }) async {}
 
   @override

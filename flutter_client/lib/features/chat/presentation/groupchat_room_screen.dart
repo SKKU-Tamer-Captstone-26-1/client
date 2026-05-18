@@ -31,6 +31,7 @@ class GroupchatRoomScreen extends StatefulWidget {
     this.onRoomDeactivated,
     this.chatRepository,
     this.currentUserId,
+    this.authToken = '',
   });
 
   final GroupchatRoomSummary room;
@@ -38,6 +39,7 @@ class GroupchatRoomScreen extends StatefulWidget {
   final ValueChanged<String>? onRoomDeactivated;
   final ChatRepository? chatRepository;
   final String? currentUserId;
+  final String authToken;
 
   @override
   State<GroupchatRoomScreen> createState() => _GroupchatRoomScreenState();
@@ -124,6 +126,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         _latestSequenceNo = _maxSequenceNo(_latestSequenceNo, fetchedLatest);
       });
       unawaited(_persistLatestSequenceNo());
+      unawaited(_markRoomRead());
       _restartMessageStream();
     } catch (error, stackTrace) {
       if (_messages.isEmpty) {
@@ -176,6 +179,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
             _messages = _normalizeMessages([..._messages, message]);
             _latestSequenceNo = _messages.last.sequenceNo;
           });
+          unawaited(_markRoomRead());
           _scrollMessagesToBottom();
           unawaited(_persistLatestSequenceNo());
         });
@@ -448,6 +452,19 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         curve: Curves.easeOutCubic,
       );
     });
+  }
+
+  Future<void> _markRoomRead() async {
+    final repo = widget.chatRepository;
+    final roomId = widget.room.roomId;
+    if (repo == null || roomId.isEmpty || widget.authToken.trim().isEmpty) {
+      return;
+    }
+    try {
+      await repo.markChatRoomRead(roomId: roomId, authToken: widget.authToken);
+    } catch (_) {
+      // Keep chat usable if read-state sync fails.
+    }
   }
 
   Future<void> _showAttachmentOptions() async {

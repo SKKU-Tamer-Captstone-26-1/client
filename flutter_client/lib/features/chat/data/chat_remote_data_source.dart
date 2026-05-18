@@ -14,6 +14,12 @@ abstract class ChatRemoteDataSource {
     required String title,
   });
 
+  Future<GetOrCreateBoardChatRoomResponse> getOrCreateBoardChatRoom({
+    required String boardId,
+    String? title,
+    required String authToken,
+  });
+
   Future<JoinRoomResponse> joinRoom({
     required String roomId,
     required String userId,
@@ -76,6 +82,23 @@ abstract class ChatRemoteDataSource {
     required int lastReadSequenceNo,
   });
 
+  Future<MarkChatRoomReadResponse> markChatRoomRead({
+    required String roomId,
+    required String authToken,
+  });
+
+  Future<RegisterDeviceTokenResponse> registerDeviceToken({
+    required String deviceId,
+    required String token,
+    required DevicePlatform platform,
+    required String authToken,
+  });
+
+  Future<UnregisterDeviceTokenResponse> unregisterDeviceToken({
+    required String deviceId,
+    required String authToken,
+  });
+
   Future<ListMyRoomsResponse> listMyRooms({
     required String userId,
     int pageSize = 20,
@@ -125,6 +148,24 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
         ..creatorUserId = creatorUserId
         ..title = title,
       options: CallOptions(timeout: const Duration(seconds: 10)),
+    );
+  }
+
+  @override
+  Future<GetOrCreateBoardChatRoomResponse> getOrCreateBoardChatRoom({
+    required String boardId,
+    String? title,
+    required String authToken,
+  }) {
+    final request = GetOrCreateBoardChatRoomRequest()..boardId = boardId;
+    final normalizedTitle = title?.trim();
+    if (normalizedTitle != null && normalizedTitle.isNotEmpty) {
+      request.title = normalizedTitle;
+    }
+
+    return _client.getOrCreateBoardChatRoom(
+      request,
+      options: _authenticatedOptions(authToken),
     );
   }
 
@@ -302,6 +343,44 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
   }
 
   @override
+  Future<MarkChatRoomReadResponse> markChatRoomRead({
+    required String roomId,
+    required String authToken,
+  }) {
+    return _client.markChatRoomRead(
+      MarkChatRoomReadRequest()..roomId = roomId,
+      options: _authenticatedOptions(authToken),
+    );
+  }
+
+  @override
+  Future<RegisterDeviceTokenResponse> registerDeviceToken({
+    required String deviceId,
+    required String token,
+    required DevicePlatform platform,
+    required String authToken,
+  }) {
+    return _client.registerDeviceToken(
+      RegisterDeviceTokenRequest()
+        ..deviceId = deviceId
+        ..token = token
+        ..platform = platform,
+      options: _authenticatedOptions(authToken),
+    );
+  }
+
+  @override
+  Future<UnregisterDeviceTokenResponse> unregisterDeviceToken({
+    required String deviceId,
+    required String authToken,
+  }) {
+    return _client.unregisterDeviceToken(
+      UnregisterDeviceTokenRequest()..deviceId = deviceId,
+      options: _authenticatedOptions(authToken),
+    );
+  }
+
+  @override
   Future<ListMyRoomsResponse> listMyRooms({
     required String userId,
     int pageSize = 20,
@@ -334,6 +413,16 @@ class GrpcChatRemoteDataSource implements ChatRemoteDataSource {
   @override
   Future<void> dispose() {
     return _channel.shutdown();
+  }
+
+  CallOptions _authenticatedOptions(String authToken) {
+    final token = authToken.trim();
+    return CallOptions(
+      timeout: const Duration(seconds: 10),
+      metadata: token.isEmpty
+          ? const <String, String>{}
+          : <String, String>{'authorization': 'Bearer $token'},
+    );
   }
 
   @override

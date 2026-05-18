@@ -10,10 +10,16 @@ import '../data/mock_board_data.dart';
 import '../models/board_models.dart';
 
 class BoardScreen extends StatelessWidget {
-  const BoardScreen({super.key, this.onBottomNavSelected, this.onProfileSelected});
+  const BoardScreen({
+    super.key,
+    this.onBottomNavSelected,
+    this.onProfileSelected,
+    this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
+  });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onProfileSelected;
+  final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +36,7 @@ class BoardScreen extends StatelessWidget {
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.board,
         onItemSelected: onBottomNavSelected,
+        badgeCounts: bottomNavBadgeCounts,
       ),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
@@ -96,6 +103,8 @@ class BoardScreen extends StatelessWidget {
   }
 }
 
+// TODO(chat): when Board detail is added, put the Chat action there and route it
+// through ChatRepository.getOrCreateBoardChatRoom with board_id plus auth metadata.
 class _BoardCategoryChips extends StatelessWidget {
   const _BoardCategoryChips({required this.categories});
 
