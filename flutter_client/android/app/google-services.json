@@ -1,37 +1,33 @@
 {
   "project_info": {
-    "project_number": "44649239380",
-    "project_id": "on-the-block-2026",
-    "storage_bucket": "on-the-block-2026.appspot.com"
+    "project_number": "363489736370",
+    "project_id": "skkutamercapstone261",
+    "storage_bucket": "skkutamercapstone261.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:44649239380:android:0000000000000000",
+        "mobilesdk_app_id": "1:363489736370:android:e11b29c962c3e9c80e3bab",
         "android_client_info": {
-          "package_name": "com.example.flutter_client"
+          "package_name": "com.ontheblock.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "44649239380-5mo3fu8gf523n91clash77umg8i719a0.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.flutter_client",
-            "certificate_hash": "53BF2E198FAF576C79E2CE45915DB6642636A51F"
-          }
-        },
-        {
-          "client_id": "44649239380-2pqbv44f0hb68vu90t7f7bl2vqltl5pq.apps.googleusercontent.com",
+          "client_id": "363489736370-5uv1gk66vcfmq3tkha05qek55a0p4fpr.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
-      "api_key": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbFTMiaER_S_Qu9S8t6i1BGS8IrXkqwDs"
+        }
+      ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "44649239380-2pqbv44f0hb68vu90t7f7bl2vqltl5pq.apps.googleusercontent.com",
+              "client_id": "363489736370-5uv1gk66vcfmq3tkha05qek55a0p4fpr.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
