@@ -12,12 +12,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_icons.dart';
-import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../data/chat_repository.dart';
 import '../data/mock_groupchat_data.dart';
 import '../models/groupchat_models.dart';
+import 'widgets/chat_input_bar.dart';
+import 'widgets/typing_indicator.dart';
+
+const _chatContentMaxWidth = 768.0;
+const _messageBubbleMaxWidth = 640.0;
+const _messageListPadding = EdgeInsets.fromLTRB(16, 22, 16, 22);
 
 class GroupchatRoomScreen extends StatefulWidget {
   const GroupchatRoomScreen({
@@ -25,17 +29,17 @@ class GroupchatRoomScreen extends StatefulWidget {
     required this.room,
     this.onBack,
     this.onRoomDeactivated,
-    this.onBottomNavSelected,
     this.chatRepository,
     this.currentUserId,
+    this.authToken = '',
   });
 
   final GroupchatRoomSummary room;
   final VoidCallback? onBack;
   final ValueChanged<String>? onRoomDeactivated;
-  final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final ChatRepository? chatRepository;
   final String? currentUserId;
+  final String authToken;
 
   @override
   State<GroupchatRoomScreen> createState() => _GroupchatRoomScreenState();
@@ -45,9 +49,12 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     with WidgetsBindingObserver {
   late List<GroupchatMessage> _messages;
   final TextEditingController _composerController = TextEditingController();
+  final ScrollController _messageScrollController = ScrollController();
   bool _loading = false;
   StreamSubscription<GroupchatMessage>? _streamSub;
   int _latestSequenceNo = 0;
+
+  List<String?> get _typingNicknames => const <String?>[];
 
   bool get _canUseRemote {
     return widget.chatRepository != null &&
@@ -69,6 +76,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     WidgetsBinding.instance.removeObserver(this);
     _streamSub?.cancel();
     _composerController.dispose();
+    _messageScrollController.dispose();
     super.dispose();
   }
 
@@ -103,10 +111,12 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     setState(() {
       _loading = true;
     });
+    var loadedMessages = false;
     try {
       final fetched = await widget.chatRepository!.getMessages(
         roomId: widget.room.roomId,
         userId: widget.currentUserId!,
+        authToken: widget.authToken,
         limit: 50,
       );
       if (!mounted) {
@@ -117,7 +127,9 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         final fetchedLatest = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
         _latestSequenceNo = _maxSequenceNo(_latestSequenceNo, fetchedLatest);
       });
+      loadedMessages = true;
       unawaited(_persistLatestSequenceNo());
+      unawaited(_markRoomRead());
       _restartMessageStream();
     } catch (error, stackTrace) {
       if (_messages.isEmpty) {
@@ -130,7 +142,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         );
       }
     } finally {
-      if (_streamSub == null) {
+      if (loadedMessages && _streamSub == null) {
         final currentLatest = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
         _latestSequenceNo = _maxSequenceNo(_latestSequenceNo, currentLatest);
         _restartMessageStream();
@@ -152,6 +164,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         .streamMessages(
           roomId: widget.room.roomId,
           userId: widget.currentUserId!,
+          authToken: widget.authToken,
           afterSequenceNo: _latestSequenceNo,
         )
         .listen((message) {
@@ -170,8 +183,10 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
             _messages = _normalizeMessages([..._messages, message]);
             _latestSequenceNo = _messages.last.sequenceNo;
           });
+          unawaited(_markRoomRead());
+          _scrollMessagesToBottom();
           unawaited(_persistLatestSequenceNo());
-        });
+        }, onError: _handleMessageStreamError);
   }
 
   void _restartMessageStream() {
@@ -179,6 +194,25 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       return;
     }
     _startMessageStream();
+  }
+
+  void _handleMessageStreamError(Object error, StackTrace stackTrace) {
+    _streamSub?.cancel();
+    _streamSub = null;
+    if (!mounted) {
+      return;
+    }
+    if (_messages.isEmpty) {
+      _showError(
+        'Room updates unavailable.',
+        operation: 'stream_messages',
+        technicalMessage: error.toString(),
+        error: error,
+        stackTrace: stackTrace,
+      );
+    } else if (kDebugMode) {
+      debugPrint('STREAM_MESSAGES_FAILED: $error');
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -196,9 +230,11 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         roomId: widget.room.roomId,
         senderUserId: widget.currentUserId!,
         content: text,
+        authToken: widget.authToken,
       );
       _composerController.clear();
       await _loadMessages();
+      _scrollMessagesToBottom();
     } catch (error, stackTrace) {
       _showError(
         'Could not send message.',
@@ -351,6 +387,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     final palette = context.palette;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: palette.surfaceContainerLow,
       appBar: _GroupchatRoomAppBar(
         room: widget.room,
@@ -359,23 +396,21 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
           _showRoomOptions();
         },
       ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentItem: AppBottomNavItem.chat,
-        onItemSelected: widget.onBottomNavSelected,
-      ),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: Column(
           children: [
             Expanded(
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 768),
+                  constraints: const BoxConstraints(
+                    maxWidth: _chatContentMaxWidth,
+                  ),
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 22, 16, 22),
+                    controller: _messageScrollController,
+                    padding: _messageListPadding,
                     children: [
-                      const _DateDivider(label: 'Today'),
-                      const SizedBox(height: 20),
                       if (_loading)
                         const Padding(
                           padding: EdgeInsets.only(bottom: 16),
@@ -394,7 +429,8 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
                 ),
               ),
             ),
-            _MessageComposer(
+            TypingIndicator(typingNicknames: _typingNicknames),
+            ChatInputBar(
               controller: _composerController,
               onSend: _sendMessage,
               onPickAttachment: _showAttachmentOptions,
@@ -428,6 +464,32 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
   }
 
   int _maxSequenceNo(int a, int b) => a > b ? a : b;
+
+  void _scrollMessagesToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_messageScrollController.hasClients) {
+        return;
+      }
+      _messageScrollController.animateTo(
+        _messageScrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  Future<void> _markRoomRead() async {
+    final repo = widget.chatRepository;
+    final roomId = widget.room.roomId;
+    if (repo == null || roomId.isEmpty || widget.authToken.trim().isEmpty) {
+      return;
+    }
+    try {
+      await repo.markChatRoomRead(roomId: roomId, authToken: widget.authToken);
+    } catch (_) {
+      // Keep chat usable if read-state sync fails.
+    }
+  }
 
   Future<void> _showAttachmentOptions() async {
     final option = await showModalBottomSheet<String>(
@@ -493,12 +555,17 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     final putContentType = contentType;
 
     try {
-      _logUploadMime(operation: 'send_image', createContentType: createContentType, putContentType: putContentType);
+      _logUploadMime(
+        operation: 'send_image',
+        createContentType: createContentType,
+        putContentType: putContentType,
+      );
       final target = await repo.createAttachmentUploadURL(
         userId: userId,
         roomId: widget.room.roomId,
         fileName: filename,
         contentType: createContentType,
+        authToken: widget.authToken,
       );
       await repo.uploadToSignedUrl(
         uploadUrl: target.uploadUrl,
@@ -548,7 +615,10 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
 
     final file = result.files.first;
     final filename = file.name.trim().isEmpty ? 'attachment' : file.name.trim();
-    final contentType = _guessContentType(filename, fallback: 'application/pdf');
+    final contentType = _guessContentType(
+      filename,
+      fallback: 'application/pdf',
+    );
     final createContentType = contentType;
     final putContentType = contentType;
     final bytes = file.bytes ?? await _readBytesFromPath(file.path);
@@ -558,12 +628,17 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     }
 
     try {
-      _logUploadMime(operation: 'send_file', createContentType: createContentType, putContentType: putContentType);
+      _logUploadMime(
+        operation: 'send_file',
+        createContentType: createContentType,
+        putContentType: putContentType,
+      );
       final target = await repo.createAttachmentUploadURL(
         userId: userId,
         roomId: widget.room.roomId,
         fileName: filename,
         contentType: createContentType,
+        authToken: widget.authToken,
       );
       await repo.uploadToSignedUrl(
         uploadUrl: target.uploadUrl,
@@ -602,12 +677,14 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         roomId: roomId,
         senderUserId: senderUserId,
         imageUrl: imageUrl,
+        authToken: widget.authToken,
       );
     } catch (_) {
       await widget.chatRepository!.sendImageMessage(
         roomId: roomId,
         senderUserId: senderUserId,
         imageUrl: imageUrl,
+        authToken: widget.authToken,
       );
     }
   }
@@ -626,6 +703,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         fileUrl: fileUrl,
         fileName: fileName,
         contentType: contentType,
+        authToken: widget.authToken,
       );
     } catch (_) {
       await widget.chatRepository!.sendFileMessage(
@@ -634,6 +712,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         fileUrl: fileUrl,
         fileName: fileName,
         contentType: contentType,
+        authToken: widget.authToken,
       );
     }
   }
@@ -770,9 +849,9 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     if (error is GrpcError) {
       return 'grpc ${error.codeName}';
     }
-    final uploadStatus = RegExp(r'upload failed with status (\d{3})')
-        .firstMatch(technicalMessage)
-        ?.group(1);
+    final uploadStatus = RegExp(
+      r'upload failed with status (\d{3})',
+    ).firstMatch(technicalMessage)?.group(1);
     if (uploadStatus != null) {
       return 'upload failed with status $uploadStatus';
     }
@@ -797,13 +876,56 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       'DEV_UPLOAD_MIME: op=$operation create_content_type=$createContentType put_content_type=$putContentType',
     );
   }
-
 }
 
 List<GroupchatMessage> _normalizeMessages(List<GroupchatMessage> messages) {
   final cloned = [...messages];
   cloned.sort((a, b) => a.sequenceNo.compareTo(b.sequenceNo));
   return cloned;
+}
+
+bool isSameDay(DateTime a, DateTime b) {
+  final localA = a.toLocal();
+  final localB = b.toLocal();
+  return localA.year == localB.year &&
+      localA.month == localB.month &&
+      localA.day == localB.day;
+}
+
+String formatChatDate(DateTime date) {
+  final localDate = date.toLocal();
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final yesterday = today.subtract(const Duration(days: 1));
+  final messageDay = DateTime(localDate.year, localDate.month, localDate.day);
+
+  if (isSameDay(messageDay, today)) {
+    return 'Today';
+  }
+  if (isSameDay(messageDay, yesterday)) {
+    return 'Yesterday';
+  }
+
+  final month = localDate.month.toString().padLeft(2, '0');
+  final day = localDate.day.toString().padLeft(2, '0');
+  return '${localDate.year}.$month.$day';
+}
+
+bool shouldShowDateDivider(
+  GroupchatMessage currentMessage,
+  GroupchatMessage? previousMessage,
+) {
+  if (previousMessage == null) {
+    return true;
+  }
+  return !isSameDay(
+    _messageDividerDate(currentMessage),
+    _messageDividerDate(previousMessage),
+  );
+}
+
+DateTime _messageDividerDate(GroupchatMessage message) {
+  return (message.sentAt ?? DateTime.now()).toLocal();
 }
 
 class _GroupchatRoomAppBar extends StatelessWidget
@@ -885,33 +1007,61 @@ class _GroupchatRoomAppBar extends StatelessWidget
   }
 }
 
-class _DateDivider extends StatelessWidget {
-  const _DateDivider({required this.label});
+class DateDivider extends StatelessWidget {
+  const DateDivider({super.key, required this.date});
 
-  final String label;
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final label = formatChatDate(date);
 
-    return Center(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: palette.surfaceContainerLowest.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          child: Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              color: palette.secondary,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Divider(
+              height: 1,
+              thickness: 1,
+              color: palette.outlineVariant.withValues(alpha: 0.55),
             ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: palette.surfaceContainerLowest.withValues(alpha: 0.78),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: palette.outlineVariant.withValues(alpha: 0.45),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: palette.secondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Divider(
+              height: 1,
+              thickness: 1,
+              color: palette.outlineVariant.withValues(alpha: 0.55),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -927,9 +1077,16 @@ class _MessageList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        for (final message in messages) ...[
-          _MessageBubble(
-            message: message,
+        for (var index = 0; index < messages.length; index++) ...[
+          if (shouldShowDateDivider(
+            messages[index],
+            index == 0 ? null : messages[index - 1],
+          )) ...[
+            DateDivider(date: _messageDividerDate(messages[index])),
+            const SizedBox(height: 16),
+          ],
+          MessageBubble(
+            message: messages[index],
             onLongPress: onMessageLongPress,
           ),
           const SizedBox(height: 20),
@@ -939,8 +1096,8 @@ class _MessageList extends StatelessWidget {
   }
 }
 
-class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message, this.onLongPress});
+class MessageBubble extends StatelessWidget {
+  const MessageBubble({super.key, required this.message, this.onLongPress});
 
   final GroupchatMessage message;
   final ValueChanged<GroupchatMessage>? onLongPress;
@@ -968,7 +1125,7 @@ class _IncomingMessage extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 640),
+        constraints: const BoxConstraints(maxWidth: _messageBubbleMaxWidth),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -1051,7 +1208,7 @@ class _OutgoingMessage extends StatelessWidget {
     return Align(
       alignment: Alignment.centerRight,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 640),
+        constraints: const BoxConstraints(maxWidth: _messageBubbleMaxWidth),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -1187,11 +1344,7 @@ class _MessageContent extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               caption,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 15,
-                height: 1.4,
-              ),
+              style: TextStyle(color: textColor, fontSize: 15, height: 1.4),
             ),
           ],
         ],
@@ -1271,11 +1424,7 @@ class _MessageContent extends StatelessWidget {
 
     return Text(
       message.text,
-      style: TextStyle(
-        color: textColor,
-        fontSize: 15,
-        height: 1.4,
-      ),
+      style: TextStyle(color: textColor, fontSize: 15, height: 1.4),
     );
   }
 
@@ -1325,11 +1474,7 @@ class _SenderAvatar extends StatelessWidget {
     if (url.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: AppNetworkImage(
-          url: url,
-          width: 40,
-          height: 40,
-        ),
+        child: AppNetworkImage(url: url, width: 40, height: 40),
       );
     }
 
@@ -1439,7 +1584,7 @@ class _LiveDropPreview extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  '3 people are typing...',
+                  'New bottle stock is live nearby.',
                   style: TextStyle(color: palette.secondary, fontSize: 11),
                 ),
               ],
@@ -1558,96 +1703,6 @@ class _SuggestionChips extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _MessageComposer extends StatelessWidget {
-  const _MessageComposer({
-    required this.controller,
-    required this.onSend,
-    required this.onPickAttachment,
-  });
-
-  final TextEditingController controller;
-  final VoidCallback onSend;
-  final VoidCallback onPickAttachment;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: palette.surfaceContainerLowest,
-        border: Border(top: BorderSide(color: palette.outlineVariant)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 768),
-            child: Row(
-              children: [
-                IconButton.filledTonal(
-                  onPressed: onPickAttachment,
-                  style: IconButton.styleFrom(
-                    backgroundColor: palette.surfaceContainerLow,
-                    foregroundColor: palette.onSurfaceVariant,
-                    shape: const CircleBorder(),
-                  ),
-                  icon: const Icon(Icons.add),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Container(
-                    constraints: const BoxConstraints(minHeight: 48),
-                    decoration: BoxDecoration(
-                      color: palette.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: palette.outlineVariant),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: TextField(
-                      controller: controller,
-                      minLines: 1,
-                      maxLines: 4,
-                      style: TextStyle(
-                        color: palette.onSurface,
-                        fontSize: 15,
-                        height: 1.3,
-                      ),
-                      cursorColor: AppColors.primaryContainer,
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (_) => onSend(),
-                      decoration: InputDecoration(
-                        hintText: 'Type a message...',
-                        hintStyle: TextStyle(
-                          color: palette.secondary,
-                          fontSize: 15,
-                        ),
-                        border: InputBorder.none,
-                        isCollapsed: true,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                IconButton.filled(
-                  onPressed: onSend,
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.primaryContainer,
-                    foregroundColor: Colors.white,
-                    shape: const CircleBorder(),
-                    fixedSize: const Size(48, 48),
-                  ),
-                  icon: const Icon(Icons.send),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

@@ -18,6 +18,28 @@ class AuthUser {
   final bool surveyCompleted;
   final int alcoholScore;
   final int points;
+
+  AuthUser copyWith({
+    String? userId,
+    String? email,
+    String? nickname,
+    String? profileImageUrl,
+    String? neighborhood,
+    bool? surveyCompleted,
+    int? alcoholScore,
+    int? points,
+  }) {
+    return AuthUser(
+      userId: userId ?? this.userId,
+      email: email ?? this.email,
+      nickname: nickname ?? this.nickname,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      neighborhood: neighborhood ?? this.neighborhood,
+      surveyCompleted: surveyCompleted ?? this.surveyCompleted,
+      alcoholScore: alcoholScore ?? this.alcoholScore,
+      points: points ?? this.points,
+    );
+  }
 }
 
 class AuthSession {

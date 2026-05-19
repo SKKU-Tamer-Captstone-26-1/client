@@ -22,8 +22,23 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.44649239380-0cpootoct3i32mijqe4diq88u4ala684</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>GIDClientID</key>
+	<string>44649239380-0cpootoct3i32mijqe4diq88u4ala684.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>44649239380-2pqbv44f0hb68vu90t7f7bl2vqltl5pq.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
@@ -49,16 +64,9 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>CFBundleURLTypes</key>
+	<key>UIBackgroundModes</key>
 	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.44649239380-0cpootoct3i32mijqe4diq88u4ala684</string>
-			</array>
-		</dict>
+		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

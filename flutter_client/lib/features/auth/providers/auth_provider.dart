@@ -50,6 +50,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
+  void markSurveyCompleted() {
+    final user = state.user;
+    if (user == null) return;
+    updateUser(user.copyWith(surveyCompleted: true));
+  }
+
   void refreshSession({
     required String accessToken,
     required String refreshToken,
@@ -76,8 +82,5 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
 final surveyApiClientProvider = Provider<SurveyApiClient?>((ref) {
   final auth = ref.watch(authProvider);
   if (!auth.isAuthenticated) return null;
-  return SurveyApiClient(
-    baseUrl: kSurveyBaseUrl,
-    authToken: auth.accessToken!,
-  );
+  return SurveyApiClient(baseUrl: kSurveyBaseUrl, authToken: auth.accessToken!);
 });

@@ -44,9 +44,40 @@ class GroupchatRoomSummary {
   final int extraMemberCount;
 
   bool get hasUnread => unreadCount > 0;
+
+  GroupchatRoomSummary copyWith({
+    String? roomId,
+    String? title,
+    String? memberSummary,
+    String? location,
+    String? lastMessage,
+    String? timeLabel,
+    List<String>? tags,
+    List<String>? avatarUrls,
+    int? unreadCount,
+    bool? isMuted,
+    IconData? trailingIcon,
+    int? extraMemberCount,
+  }) {
+    return GroupchatRoomSummary(
+      roomId: roomId ?? this.roomId,
+      title: title ?? this.title,
+      memberSummary: memberSummary ?? this.memberSummary,
+      location: location ?? this.location,
+      lastMessage: lastMessage ?? this.lastMessage,
+      timeLabel: timeLabel ?? this.timeLabel,
+      tags: tags ?? this.tags,
+      avatarUrls: avatarUrls ?? this.avatarUrls,
+      unreadCount: unreadCount ?? this.unreadCount,
+      isMuted: isMuted ?? this.isMuted,
+      trailingIcon: trailingIcon ?? this.trailingIcon,
+      extraMemberCount: extraMemberCount ?? this.extraMemberCount,
+    );
+  }
 }
 
 enum GroupchatMessageKind { incoming, outgoing }
+
 enum GroupchatMessageContentType { text, image, file, system }
 
 @immutable
@@ -58,6 +89,7 @@ class GroupchatMessage {
     required this.kind,
     required this.text,
     required this.timeLabel,
+    this.sentAt,
     this.contentType = GroupchatMessageContentType.text,
     this.imageUrl = '',
     this.fileUrl = '',
@@ -74,6 +106,7 @@ class GroupchatMessage {
   final GroupchatMessageKind kind;
   final String text;
   final String timeLabel;
+  final DateTime? sentAt;
   final GroupchatMessageContentType contentType;
   final String imageUrl;
   final String fileUrl;

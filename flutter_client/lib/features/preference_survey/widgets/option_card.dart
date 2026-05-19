@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_colors.dart';
+
 class OptionCard extends StatelessWidget {
   final String label;
   final String description;
@@ -19,6 +21,7 @@ class OptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    const selectedColor = AppColors.primaryContainer;
 
     return GestureDetector(
       onTap: onTap,
@@ -28,13 +31,22 @@ class OptionCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isSelected
-              ? colorScheme.primary.withValues(alpha: 0.05)
+              ? selectedColor.withValues(alpha: 0.18)
               : colorScheme.surface,
           border: Border.all(
-            color: isSelected ? colorScheme.primaryContainer : colorScheme.outlineVariant,
+            color: isSelected ? selectedColor : colorScheme.outlineVariant,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(16),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: selectedColor.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -44,12 +56,12 @@ class OptionCard extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected
-                    ? colorScheme.primaryContainer.withValues(alpha: 0.2)
+                    ? selectedColor
                     : colorScheme.surfaceContainerHigh,
               ),
               child: Icon(
                 _resolveIcon(iconName),
-                color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+                color: isSelected ? Colors.white : colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: 16),
@@ -60,15 +72,18 @@ class OptionCard extends StatelessWidget {
                   Text(
                     label,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? selectedColor : colorScheme.onSurface,
+                    ),
                   ),
                   if (description.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
                       description,
-                      style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ],
@@ -77,7 +92,7 @@ class OptionCard extends StatelessWidget {
             AnimatedOpacity(
               opacity: isSelected ? 1 : 0,
               duration: const Duration(milliseconds: 180),
-              child: Icon(Icons.check_circle, color: colorScheme.primaryContainer),
+              child: Icon(Icons.check_circle, color: selectedColor),
             ),
           ],
         ),
@@ -87,31 +102,31 @@ class OptionCard extends StatelessWidget {
 
   IconData _resolveIcon(String name) {
     const map = <String, IconData>{
-      'liquor':                Icons.liquor,
-      'local_bar':             Icons.local_bar,
-      'wine_bar':              Icons.wine_bar,
-      'sports_bar':            Icons.sports_bar,
-      'school':                Icons.school,
-      'sentiment_satisfied':   Icons.sentiment_satisfied,
-      'star':                  Icons.star,
-      'verified':              Icons.verified,
-      'agriculture':           Icons.agriculture,
-      'air':                   Icons.air,
-      'local_florist':         Icons.local_florist,
-      'forest':                Icons.forest,
-      'cake':                  Icons.cake,
+      'liquor': Icons.liquor,
+      'local_bar': Icons.local_bar,
+      'wine_bar': Icons.wine_bar,
+      'sports_bar': Icons.sports_bar,
+      'school': Icons.school,
+      'sentiment_satisfied': Icons.sentiment_satisfied,
+      'star': Icons.star,
+      'verified': Icons.verified,
+      'agriculture': Icons.agriculture,
+      'air': Icons.air,
+      'local_florist': Icons.local_florist,
+      'forest': Icons.forest,
+      'cake': Icons.cake,
       'local_fire_department': Icons.local_fire_department,
-      'spa':                   Icons.spa,
-      'whatshot':              Icons.whatshot,
-      'water_drop':            Icons.water_drop,
-      'eco':                   Icons.eco,
-      'grain':                 Icons.grain,
-      'coffee':                Icons.coffee,
-      'local_dining':          Icons.local_dining,
-      'celebration':           Icons.celebration,
-      'beach_access':          Icons.beach_access,
-      'savings':               Icons.savings,
-      'diamond':               Icons.diamond,
+      'spa': Icons.spa,
+      'whatshot': Icons.whatshot,
+      'water_drop': Icons.water_drop,
+      'eco': Icons.eco,
+      'grain': Icons.grain,
+      'coffee': Icons.coffee,
+      'local_dining': Icons.local_dining,
+      'celebration': Icons.celebration,
+      'beach_access': Icons.beach_access,
+      'savings': Icons.savings,
+      'diamond': Icons.diamond,
     };
     return map[name] ?? Icons.help_outline;
   }

@@ -284,6 +284,184 @@ class CreateBoardLinkedRoomResponse extends $pb.GeneratedMessage {
   void clearAlreadyExists() => clearField(2);
 }
 
+class GetOrCreateBoardChatRoomRequest extends $pb.GeneratedMessage {
+  factory GetOrCreateBoardChatRoomRequest({
+    $core.String? boardId,
+    $core.String? title,
+    $core.String? boardOwnerUserId,
+  }) {
+    final $result = create();
+    if (boardId != null) {
+      $result.boardId = boardId;
+    }
+    if (title != null) {
+      $result.title = title;
+    }
+    if (boardOwnerUserId != null) {
+      $result.boardOwnerUserId = boardOwnerUserId;
+    }
+    return $result;
+  }
+  GetOrCreateBoardChatRoomRequest._() : super();
+  factory GetOrCreateBoardChatRoomRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetOrCreateBoardChatRoomRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetOrCreateBoardChatRoomRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'boardId')
+    ..aOS(2, _omitFieldNames ? '' : 'title')
+    ..aOS(3, _omitFieldNames ? '' : 'boardOwnerUserId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetOrCreateBoardChatRoomRequest clone() => GetOrCreateBoardChatRoomRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetOrCreateBoardChatRoomRequest copyWith(void Function(GetOrCreateBoardChatRoomRequest) updates) => super.copyWith((message) => updates(message as GetOrCreateBoardChatRoomRequest)) as GetOrCreateBoardChatRoomRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetOrCreateBoardChatRoomRequest create() => GetOrCreateBoardChatRoomRequest._();
+  GetOrCreateBoardChatRoomRequest createEmptyInstance() => create();
+  static $pb.PbList<GetOrCreateBoardChatRoomRequest> createRepeated() => $pb.PbList<GetOrCreateBoardChatRoomRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GetOrCreateBoardChatRoomRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOrCreateBoardChatRoomRequest>(create);
+  static GetOrCreateBoardChatRoomRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get boardId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set boardId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBoardId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBoardId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get title => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set title($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTitle() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTitle() => clearField(2);
+
+  /// Optional until Board-service validation is available.
+  /// Chat-service must not use this as the authenticated user.
+  @$pb.TagNumber(3)
+  $core.String get boardOwnerUserId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set boardOwnerUserId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasBoardOwnerUserId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBoardOwnerUserId() => clearField(3);
+}
+
+class GetOrCreateBoardChatRoomResponse extends $pb.GeneratedMessage {
+  factory GetOrCreateBoardChatRoomResponse({
+    ChatRoom? room,
+    ChatRoomSummary? summary,
+    ChatRoomMember? member,
+    $core.bool? alreadyExists,
+  }) {
+    final $result = create();
+    if (room != null) {
+      $result.room = room;
+    }
+    if (summary != null) {
+      $result.summary = summary;
+    }
+    if (member != null) {
+      $result.member = member;
+    }
+    if (alreadyExists != null) {
+      $result.alreadyExists = alreadyExists;
+    }
+    return $result;
+  }
+  GetOrCreateBoardChatRoomResponse._() : super();
+  factory GetOrCreateBoardChatRoomResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GetOrCreateBoardChatRoomResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GetOrCreateBoardChatRoomResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOM<ChatRoom>(1, _omitFieldNames ? '' : 'room', subBuilder: ChatRoom.create)
+    ..aOM<ChatRoomSummary>(2, _omitFieldNames ? '' : 'summary', subBuilder: ChatRoomSummary.create)
+    ..aOM<ChatRoomMember>(3, _omitFieldNames ? '' : 'member', subBuilder: ChatRoomMember.create)
+    ..aOB(4, _omitFieldNames ? '' : 'alreadyExists')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GetOrCreateBoardChatRoomResponse clone() => GetOrCreateBoardChatRoomResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GetOrCreateBoardChatRoomResponse copyWith(void Function(GetOrCreateBoardChatRoomResponse) updates) => super.copyWith((message) => updates(message as GetOrCreateBoardChatRoomResponse)) as GetOrCreateBoardChatRoomResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GetOrCreateBoardChatRoomResponse create() => GetOrCreateBoardChatRoomResponse._();
+  GetOrCreateBoardChatRoomResponse createEmptyInstance() => create();
+  static $pb.PbList<GetOrCreateBoardChatRoomResponse> createRepeated() => $pb.PbList<GetOrCreateBoardChatRoomResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GetOrCreateBoardChatRoomResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GetOrCreateBoardChatRoomResponse>(create);
+  static GetOrCreateBoardChatRoomResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  ChatRoom get room => $_getN(0);
+  @$pb.TagNumber(1)
+  set room(ChatRoom v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRoom() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRoom() => clearField(1);
+  @$pb.TagNumber(1)
+  ChatRoom ensureRoom() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  ChatRoomSummary get summary => $_getN(1);
+  @$pb.TagNumber(2)
+  set summary(ChatRoomSummary v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSummary() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSummary() => clearField(2);
+  @$pb.TagNumber(2)
+  ChatRoomSummary ensureSummary() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  ChatRoomMember get member => $_getN(2);
+  @$pb.TagNumber(3)
+  set member(ChatRoomMember v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasMember() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMember() => clearField(3);
+  @$pb.TagNumber(3)
+  ChatRoomMember ensureMember() => $_ensure(2);
+
+  @$pb.TagNumber(4)
+  $core.bool get alreadyExists => $_getBF(3);
+  @$pb.TagNumber(4)
+  set alreadyExists($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAlreadyExists() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAlreadyExists() => clearField(4);
+}
+
 class JoinRoomRequest extends $pb.GeneratedMessage {
   factory JoinRoomRequest({
     $core.String? roomId,
@@ -2674,6 +2852,502 @@ class MarkAsReadResponse extends $pb.GeneratedMessage {
   void clearUpdatedAt() => clearField(4);
   @$pb.TagNumber(4)
   $1.Timestamp ensureUpdatedAt() => $_ensure(3);
+}
+
+class MarkChatRoomReadRequest extends $pb.GeneratedMessage {
+  factory MarkChatRoomReadRequest({
+    $core.String? roomId,
+  }) {
+    final $result = create();
+    if (roomId != null) {
+      $result.roomId = roomId;
+    }
+    return $result;
+  }
+  MarkChatRoomReadRequest._() : super();
+  factory MarkChatRoomReadRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MarkChatRoomReadRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MarkChatRoomReadRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'roomId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MarkChatRoomReadRequest clone() => MarkChatRoomReadRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MarkChatRoomReadRequest copyWith(void Function(MarkChatRoomReadRequest) updates) => super.copyWith((message) => updates(message as MarkChatRoomReadRequest)) as MarkChatRoomReadRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MarkChatRoomReadRequest create() => MarkChatRoomReadRequest._();
+  MarkChatRoomReadRequest createEmptyInstance() => create();
+  static $pb.PbList<MarkChatRoomReadRequest> createRepeated() => $pb.PbList<MarkChatRoomReadRequest>();
+  @$core.pragma('dart2js:noInline')
+  static MarkChatRoomReadRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MarkChatRoomReadRequest>(create);
+  static MarkChatRoomReadRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get roomId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set roomId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRoomId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRoomId() => clearField(1);
+}
+
+class MarkChatRoomReadResponse extends $pb.GeneratedMessage {
+  factory MarkChatRoomReadResponse({
+    $core.String? roomId,
+    $core.String? userId,
+    $fixnum.Int64? lastReadSequenceNo,
+    $1.Timestamp? updatedAt,
+  }) {
+    final $result = create();
+    if (roomId != null) {
+      $result.roomId = roomId;
+    }
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (lastReadSequenceNo != null) {
+      $result.lastReadSequenceNo = lastReadSequenceNo;
+    }
+    if (updatedAt != null) {
+      $result.updatedAt = updatedAt;
+    }
+    return $result;
+  }
+  MarkChatRoomReadResponse._() : super();
+  factory MarkChatRoomReadResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MarkChatRoomReadResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MarkChatRoomReadResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'roomId')
+    ..aOS(2, _omitFieldNames ? '' : 'userId')
+    ..aInt64(3, _omitFieldNames ? '' : 'lastReadSequenceNo')
+    ..aOM<$1.Timestamp>(4, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MarkChatRoomReadResponse clone() => MarkChatRoomReadResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MarkChatRoomReadResponse copyWith(void Function(MarkChatRoomReadResponse) updates) => super.copyWith((message) => updates(message as MarkChatRoomReadResponse)) as MarkChatRoomReadResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MarkChatRoomReadResponse create() => MarkChatRoomReadResponse._();
+  MarkChatRoomReadResponse createEmptyInstance() => create();
+  static $pb.PbList<MarkChatRoomReadResponse> createRepeated() => $pb.PbList<MarkChatRoomReadResponse>();
+  @$core.pragma('dart2js:noInline')
+  static MarkChatRoomReadResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MarkChatRoomReadResponse>(create);
+  static MarkChatRoomReadResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get roomId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set roomId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRoomId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRoomId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get userId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set userId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUserId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUserId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get lastReadSequenceNo => $_getI64(2);
+  @$pb.TagNumber(3)
+  set lastReadSequenceNo($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasLastReadSequenceNo() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLastReadSequenceNo() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $1.Timestamp get updatedAt => $_getN(3);
+  @$pb.TagNumber(4)
+  set updatedAt($1.Timestamp v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasUpdatedAt() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUpdatedAt() => clearField(4);
+  @$pb.TagNumber(4)
+  $1.Timestamp ensureUpdatedAt() => $_ensure(3);
+}
+
+class RegisterDeviceTokenRequest extends $pb.GeneratedMessage {
+  factory RegisterDeviceTokenRequest({
+    $core.String? deviceId,
+    $core.String? token,
+    DevicePlatform? platform,
+  }) {
+    final $result = create();
+    if (deviceId != null) {
+      $result.deviceId = deviceId;
+    }
+    if (token != null) {
+      $result.token = token;
+    }
+    if (platform != null) {
+      $result.platform = platform;
+    }
+    return $result;
+  }
+  RegisterDeviceTokenRequest._() : super();
+  factory RegisterDeviceTokenRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RegisterDeviceTokenRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RegisterDeviceTokenRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'deviceId')
+    ..aOS(2, _omitFieldNames ? '' : 'token')
+    ..e<DevicePlatform>(3, _omitFieldNames ? '' : 'platform', $pb.PbFieldType.OE, defaultOrMaker: DevicePlatform.DEVICE_PLATFORM_UNSPECIFIED, valueOf: DevicePlatform.valueOf, enumValues: DevicePlatform.values)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RegisterDeviceTokenRequest clone() => RegisterDeviceTokenRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RegisterDeviceTokenRequest copyWith(void Function(RegisterDeviceTokenRequest) updates) => super.copyWith((message) => updates(message as RegisterDeviceTokenRequest)) as RegisterDeviceTokenRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RegisterDeviceTokenRequest create() => RegisterDeviceTokenRequest._();
+  RegisterDeviceTokenRequest createEmptyInstance() => create();
+  static $pb.PbList<RegisterDeviceTokenRequest> createRepeated() => $pb.PbList<RegisterDeviceTokenRequest>();
+  @$core.pragma('dart2js:noInline')
+  static RegisterDeviceTokenRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegisterDeviceTokenRequest>(create);
+  static RegisterDeviceTokenRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get deviceId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set deviceId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDeviceId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDeviceId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get token => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set token($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasToken() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearToken() => clearField(2);
+
+  @$pb.TagNumber(3)
+  DevicePlatform get platform => $_getN(2);
+  @$pb.TagNumber(3)
+  set platform(DevicePlatform v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPlatform() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPlatform() => clearField(3);
+}
+
+class RegisterDeviceTokenResponse extends $pb.GeneratedMessage {
+  factory RegisterDeviceTokenResponse({
+    DeviceToken? deviceToken,
+  }) {
+    final $result = create();
+    if (deviceToken != null) {
+      $result.deviceToken = deviceToken;
+    }
+    return $result;
+  }
+  RegisterDeviceTokenResponse._() : super();
+  factory RegisterDeviceTokenResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory RegisterDeviceTokenResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'RegisterDeviceTokenResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOM<DeviceToken>(1, _omitFieldNames ? '' : 'deviceToken', subBuilder: DeviceToken.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  RegisterDeviceTokenResponse clone() => RegisterDeviceTokenResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  RegisterDeviceTokenResponse copyWith(void Function(RegisterDeviceTokenResponse) updates) => super.copyWith((message) => updates(message as RegisterDeviceTokenResponse)) as RegisterDeviceTokenResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static RegisterDeviceTokenResponse create() => RegisterDeviceTokenResponse._();
+  RegisterDeviceTokenResponse createEmptyInstance() => create();
+  static $pb.PbList<RegisterDeviceTokenResponse> createRepeated() => $pb.PbList<RegisterDeviceTokenResponse>();
+  @$core.pragma('dart2js:noInline')
+  static RegisterDeviceTokenResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<RegisterDeviceTokenResponse>(create);
+  static RegisterDeviceTokenResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  DeviceToken get deviceToken => $_getN(0);
+  @$pb.TagNumber(1)
+  set deviceToken(DeviceToken v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDeviceToken() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDeviceToken() => clearField(1);
+  @$pb.TagNumber(1)
+  DeviceToken ensureDeviceToken() => $_ensure(0);
+}
+
+class UnregisterDeviceTokenRequest extends $pb.GeneratedMessage {
+  factory UnregisterDeviceTokenRequest({
+    $core.String? deviceId,
+  }) {
+    final $result = create();
+    if (deviceId != null) {
+      $result.deviceId = deviceId;
+    }
+    return $result;
+  }
+  UnregisterDeviceTokenRequest._() : super();
+  factory UnregisterDeviceTokenRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UnregisterDeviceTokenRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnregisterDeviceTokenRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'deviceId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UnregisterDeviceTokenRequest clone() => UnregisterDeviceTokenRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UnregisterDeviceTokenRequest copyWith(void Function(UnregisterDeviceTokenRequest) updates) => super.copyWith((message) => updates(message as UnregisterDeviceTokenRequest)) as UnregisterDeviceTokenRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UnregisterDeviceTokenRequest create() => UnregisterDeviceTokenRequest._();
+  UnregisterDeviceTokenRequest createEmptyInstance() => create();
+  static $pb.PbList<UnregisterDeviceTokenRequest> createRepeated() => $pb.PbList<UnregisterDeviceTokenRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UnregisterDeviceTokenRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UnregisterDeviceTokenRequest>(create);
+  static UnregisterDeviceTokenRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get deviceId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set deviceId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDeviceId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDeviceId() => clearField(1);
+}
+
+class UnregisterDeviceTokenResponse extends $pb.GeneratedMessage {
+  factory UnregisterDeviceTokenResponse() => create();
+  UnregisterDeviceTokenResponse._() : super();
+  factory UnregisterDeviceTokenResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UnregisterDeviceTokenResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UnregisterDeviceTokenResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  UnregisterDeviceTokenResponse clone() => UnregisterDeviceTokenResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  UnregisterDeviceTokenResponse copyWith(void Function(UnregisterDeviceTokenResponse) updates) => super.copyWith((message) => updates(message as UnregisterDeviceTokenResponse)) as UnregisterDeviceTokenResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UnregisterDeviceTokenResponse create() => UnregisterDeviceTokenResponse._();
+  UnregisterDeviceTokenResponse createEmptyInstance() => create();
+  static $pb.PbList<UnregisterDeviceTokenResponse> createRepeated() => $pb.PbList<UnregisterDeviceTokenResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UnregisterDeviceTokenResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UnregisterDeviceTokenResponse>(create);
+  static UnregisterDeviceTokenResponse? _defaultInstance;
+}
+
+class DeviceToken extends $pb.GeneratedMessage {
+  factory DeviceToken({
+    $core.String? userId,
+    $core.String? deviceId,
+    $core.String? token,
+    DevicePlatform? platform,
+    $1.Timestamp? createdAt,
+    $1.Timestamp? updatedAt,
+    $1.Timestamp? lastSeenAt,
+  }) {
+    final $result = create();
+    if (userId != null) {
+      $result.userId = userId;
+    }
+    if (deviceId != null) {
+      $result.deviceId = deviceId;
+    }
+    if (token != null) {
+      $result.token = token;
+    }
+    if (platform != null) {
+      $result.platform = platform;
+    }
+    if (createdAt != null) {
+      $result.createdAt = createdAt;
+    }
+    if (updatedAt != null) {
+      $result.updatedAt = updatedAt;
+    }
+    if (lastSeenAt != null) {
+      $result.lastSeenAt = lastSeenAt;
+    }
+    return $result;
+  }
+  DeviceToken._() : super();
+  factory DeviceToken.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory DeviceToken.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'DeviceToken', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.chat.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'deviceId')
+    ..aOS(3, _omitFieldNames ? '' : 'token')
+    ..e<DevicePlatform>(4, _omitFieldNames ? '' : 'platform', $pb.PbFieldType.OE, defaultOrMaker: DevicePlatform.DEVICE_PLATFORM_UNSPECIFIED, valueOf: DevicePlatform.valueOf, enumValues: DevicePlatform.values)
+    ..aOM<$1.Timestamp>(5, _omitFieldNames ? '' : 'createdAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(6, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aOM<$1.Timestamp>(7, _omitFieldNames ? '' : 'lastSeenAt', subBuilder: $1.Timestamp.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  DeviceToken clone() => DeviceToken()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  DeviceToken copyWith(void Function(DeviceToken) updates) => super.copyWith((message) => updates(message as DeviceToken)) as DeviceToken;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static DeviceToken create() => DeviceToken._();
+  DeviceToken createEmptyInstance() => create();
+  static $pb.PbList<DeviceToken> createRepeated() => $pb.PbList<DeviceToken>();
+  @$core.pragma('dart2js:noInline')
+  static DeviceToken getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<DeviceToken>(create);
+  static DeviceToken? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get deviceId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set deviceId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDeviceId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDeviceId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get token => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set token($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasToken() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearToken() => clearField(3);
+
+  @$pb.TagNumber(4)
+  DevicePlatform get platform => $_getN(3);
+  @$pb.TagNumber(4)
+  set platform(DevicePlatform v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPlatform() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPlatform() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $1.Timestamp get createdAt => $_getN(4);
+  @$pb.TagNumber(5)
+  set createdAt($1.Timestamp v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasCreatedAt() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearCreatedAt() => clearField(5);
+  @$pb.TagNumber(5)
+  $1.Timestamp ensureCreatedAt() => $_ensure(4);
+
+  @$pb.TagNumber(6)
+  $1.Timestamp get updatedAt => $_getN(5);
+  @$pb.TagNumber(6)
+  set updatedAt($1.Timestamp v) { setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasUpdatedAt() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearUpdatedAt() => clearField(6);
+  @$pb.TagNumber(6)
+  $1.Timestamp ensureUpdatedAt() => $_ensure(5);
+
+  @$pb.TagNumber(7)
+  $1.Timestamp get lastSeenAt => $_getN(6);
+  @$pb.TagNumber(7)
+  set lastSeenAt($1.Timestamp v) { setField(7, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasLastSeenAt() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearLastSeenAt() => clearField(7);
+  @$pb.TagNumber(7)
+  $1.Timestamp ensureLastSeenAt() => $_ensure(6);
 }
 
 class DeactivateRoomRequest extends $pb.GeneratedMessage {

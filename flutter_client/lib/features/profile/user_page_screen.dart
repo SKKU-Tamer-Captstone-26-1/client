@@ -10,11 +10,20 @@ import '../auth/providers/auth_repository_provider.dart';
 import 'select_neighborhood_screen.dart';
 
 class UserPageScreen extends ConsumerWidget {
-  const UserPageScreen({super.key, this.onBack, this.onBottomNavSelected, this.onRetakeSurvey});
+  const UserPageScreen({
+    super.key,
+    this.onBack,
+    this.onBottomNavSelected,
+    this.onRetakeSurvey,
+    this.onLogout,
+    this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
+  });
 
   final VoidCallback? onBack;
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onRetakeSurvey;
+  final VoidCallback? onLogout;
+  final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,7 +52,10 @@ class UserPageScreen extends ConsumerWidget {
         ),
         centerTitle: true,
       ),
-      bottomNavigationBar: AppBottomNavBar(onItemSelected: onBottomNavSelected),
+      bottomNavigationBar: AppBottomNavBar(
+        onItemSelected: onBottomNavSelected,
+        badgeCounts: bottomNavBadgeCounts,
+      ),
       body: SafeArea(
         top: false,
         child: ListView(
@@ -53,7 +65,10 @@ class UserPageScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             _StatusBentoGrid(user: user),
             const SizedBox(height: 24),
-            _MySettingsSection(onRetakeSurvey: onRetakeSurvey),
+            _MySettingsSection(
+              onRetakeSurvey: onRetakeSurvey,
+              onLogout: onLogout,
+            ),
           ],
         ),
       ),
@@ -139,7 +154,8 @@ class _ProfileSection extends ConsumerWidget {
               CircleAvatar(
                 radius: 56,
                 backgroundColor: palette.surfaceContainerLow,
-                backgroundImage: profileImageUrl != null && profileImageUrl.isNotEmpty
+                backgroundImage:
+                    profileImageUrl != null && profileImageUrl.isNotEmpty
                     ? NetworkImage(profileImageUrl)
                     : null,
                 child: profileImageUrl == null || profileImageUrl.isEmpty
@@ -184,10 +200,7 @@ class _ProfileSection extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            email,
-            style: TextStyle(fontSize: 14, color: palette.secondary),
-          ),
+          Text(email, style: TextStyle(fontSize: 14, color: palette.secondary)),
         ],
       ),
     );
@@ -204,7 +217,9 @@ class _StatusBentoGrid extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: _AlcoholScoreCard(alcoholScore: user?.alcoholScore ?? 0)),
+        Expanded(
+          child: _AlcoholScoreCard(alcoholScore: user?.alcoholScore ?? 0),
+        ),
         const SizedBox(width: 16),
         Expanded(child: _PointsCard(points: user?.points ?? 0)),
       ],
@@ -384,9 +399,10 @@ class _PointsCard extends StatelessWidget {
 }
 
 class _MySettingsSection extends StatelessWidget {
-  const _MySettingsSection({this.onRetakeSurvey});
+  const _MySettingsSection({this.onRetakeSurvey, this.onLogout});
 
   final VoidCallback? onRetakeSurvey;
+  final VoidCallback? onLogout;
 
   @override
   Widget build(BuildContext context) {
@@ -432,11 +448,17 @@ class _MySettingsSection extends StatelessWidget {
           iconColor: const Color(0xFF5F5E5E),
           iconBgColor: const Color(0xFFE7EFF8),
           title: 'Help & Support',
-          trailing: Icon(
-            Icons.chevron_right,
-            color: context.palette.secondary,
-          ),
+          trailing: Icon(Icons.chevron_right, color: context.palette.secondary),
           onTap: () {},
+        ),
+        const SizedBox(height: 12),
+        _SettingsCard(
+          icon: Icons.logout,
+          iconColor: AppColors.primaryContainer,
+          iconBgColor: const Color(0xFFFFD8C7),
+          title: 'Log Out',
+          trailing: Icon(Icons.chevron_right, color: context.palette.secondary),
+          onTap: onLogout,
         ),
       ],
     );
@@ -533,7 +555,7 @@ class _SettingsCard extends StatelessWidget {
                 ),
                 child: Text(actionLabel!),
               ),
-            if (trailing != null) trailing!,
+            ?trailing,
           ],
         ),
       ),

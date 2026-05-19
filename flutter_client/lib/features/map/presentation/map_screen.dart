@@ -10,10 +10,16 @@ import '../models/map_place.dart';
 import 'widgets/kakao_map_view.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key, this.onBottomNavSelected, this.onProfileSelected});
+  const MapScreen({
+    super.key,
+    this.onBottomNavSelected,
+    this.onProfileSelected,
+    this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
+  });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onProfileSelected;
+  final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -37,6 +43,7 @@ class _MapScreenState extends State<MapScreen> {
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.map,
         onItemSelected: widget.onBottomNavSelected,
+        badgeCounts: widget.bottomNavBadgeCounts,
       ),
       body: Stack(
         children: [

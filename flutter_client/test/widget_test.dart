@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter_client/core/theme/app_theme.dart';
+import 'package:flutter_client/features/auth/data/auth_remote_data_source.dart';
+import 'package:flutter_client/features/auth/data/grpc_gen/auth/v1/auth.pbgrpc.dart';
+import 'package:flutter_client/features/auth/providers/auth_repository_provider.dart';
+import 'package:flutter_client/features/chat/data/chat_push_service.dart';
+import 'package:flutter_client/features/chat/data/chat_repository.dart';
+import 'package:flutter_client/features/chat/data/grpc_gen/chat/v1/chat.pb.dart';
+import 'package:flutter_client/features/chat/data/mock_groupchat_data.dart';
+import 'package:flutter_client/features/chat/models/groupchat_models.dart';
+import 'package:flutter_client/features/chat/presentation/widgets/chat_input_bar.dart';
+import 'package:flutter_client/features/chat/presentation/widgets/typing_indicator.dart';
 import 'package:flutter_client/main.dart';
 
 void main() {
   testWidgets('renders the login screen', (WidgetTester tester) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     expect(find.text('ON THE BLOCK'), findsOneWidget);
     expect(find.text('Welcome back'), findsOneWidget);
@@ -16,7 +29,7 @@ void main() {
   testWidgets('toggles between light and dark themes', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     expect(find.byTooltip('Switch to dark mode'), findsOneWidget);
 
@@ -29,7 +42,7 @@ void main() {
   testWidgets('moves from login to survey intro and survey steps', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -43,31 +56,25 @@ void main() {
     await tester.tap(find.text('Start Survey'));
     await tester.pumpAndSettle();
 
-    expect(find.text('STEP 1 OF 10'), findsOneWidget);
-    expect(
-      find.text('How familiar are you with premium liquor?'),
-      findsOneWidget,
-    );
-    expect(
-      find.text('Select at least one answer to continue.'),
-      findsOneWidget,
-    );
-    expect(find.text('Next'), findsNothing);
+    expect(find.text('STEP 1 / 4'), findsOneWidget);
+    expect(find.text('본인이 어느 정도로 술을 좋아하시나요?'), findsOneWidget);
+    expect(find.text('솔직하게 선택해 주세요. 맞춤 추천의 첫 번째 단계예요.'), findsOneWidget);
+    expect(find.text('다음'), findsOneWidget);
 
-    await tester.tap(find.text('Beginner'));
+    await tester.tap(find.text('입문자'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Next'));
+    await tester.tap(find.text('다음'));
     await tester.pumpAndSettle();
 
-    expect(find.text('STEP 2 OF 10'), findsOneWidget);
-    expect(find.text('Which categories interest you most?'), findsOneWidget);
+    expect(find.text('STEP 2 / 4'), findsOneWidget);
+    expect(find.text('가장 끌리는 주류 카테고리를 모두 선택해 주세요.'), findsOneWidget);
   });
 
   testWidgets('shows home screen after skipping survey', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -86,7 +93,7 @@ void main() {
   });
 
   testWidgets('navigates from home to map screen', (WidgetTester tester) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -102,10 +109,10 @@ void main() {
     expect(find.byIcon(Icons.chat), findsNothing);
   });
 
-  testWidgets('shows chat and collection bottom nav count bubbles', (
+  testWidgets('shows chat bottom nav unread count bubble', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -113,13 +120,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('3'), findsOneWidget);
-    expect(find.text('7'), findsOneWidget);
+    expect(find.text('7'), findsNothing);
   });
 
   testWidgets('navigates from home to board screen', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -143,7 +150,7 @@ void main() {
   testWidgets('navigates from home to groupchat list screen', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -154,15 +161,47 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Messages'), findsOneWidget);
-    expect(find.text('Active Board'), findsOneWidget);
+    expect(find.text('Nearby Board'), findsOneWidget);
+    expect(find.text('View Board'), findsOneWidget);
+    expect(find.text('3 Unread'), findsOneWidget);
     expect(find.text('Westside Bourbon Enthusiasts'), findsOneWidget);
     expect(find.text('Downtown Whiskey Circle'), findsOneWidget);
+    expect(find.byTooltip('New Chat'), findsOneWidget);
+
+    await tester.tap(find.text('View Board'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('#AllPosts'), findsOneWidget);
   });
 
-  testWidgets('opens groupchat room as full screen with bottom nav', (
+  testWidgets('creates general chat from chat list', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Chat'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('New Chat'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Staging General Chat');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Create'));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Back to messages'), findsOneWidget);
+    expect(find.text('Staging General Chat'), findsOneWidget);
+  });
+
+  testWidgets('opens groupchat room as full screen detail', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -173,6 +212,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Westside Bourbon Enthusiasts'));
     await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(find.byTooltip('Back to messages'), findsOneWidget);
     expect(find.text('18 members'), findsOneWidget);
@@ -181,19 +221,42 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Type a message...'), findsOneWidget);
-    expect(find.text('Chat'), findsOneWidget);
+    expect(find.text('Chat'), findsNothing);
 
     await tester.tap(find.byTooltip('Back to messages'));
     await tester.pumpAndSettle();
 
     expect(find.text('Messages'), findsOneWidget);
-    expect(find.text('Active Board'), findsOneWidget);
+    expect(find.text('1 Unread'), findsOneWidget);
+  });
+
+  testWidgets('opens chat room from chat push after survey gate', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(
+      tester,
+      chatPushService: _FakeChatPushService(
+        openedMessageOnStart: const ChatPushMessage(roomId: 'mock-room-1'),
+      ),
+    );
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Start Survey'), findsOneWidget);
+    expect(find.text('Westside Bourbon Enthusiasts'), findsNothing);
+
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Back to messages'), findsOneWidget);
+    expect(find.text('Westside Bourbon Enthusiasts'), findsOneWidget);
   });
 
   testWidgets('navigates to collection wishlist and cart tabs', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -247,7 +310,7 @@ void main() {
   testWidgets('opens chatbot modal from home but not map', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -277,7 +340,7 @@ void main() {
   testWidgets('board keeps plus for writing and has separate chatbot button', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -288,6 +351,7 @@ void main() {
 
     expect(find.byTooltip('Write post'), findsOneWidget);
     expect(find.byTooltip('Chat with Neighborhood Guide'), findsOneWidget);
+    expect(find.byTooltip('Open board chat'), findsWidgets);
 
     await tester.tap(find.byTooltip('Chat with Neighborhood Guide'));
     await tester.pumpAndSettle();
@@ -295,10 +359,32 @@ void main() {
     expect(find.text('Chat with Neighborhood Guide'), findsOneWidget);
   });
 
+  testWidgets('opens board-linked chat from board post', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(tester);
+
+    await tester.tap(find.text('Continue with Google'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('SKIP'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Board'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Open board chat').first);
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Back to messages'), findsOneWidget);
+    expect(
+      find.text('Hidden Gem: Old Soul Cask Strength Batch #4'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('opens notification screen and navigates to board target', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -332,7 +418,7 @@ void main() {
   testWidgets('opens search as a full screen from top app bar', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const OnTheBlockApp());
+    await _pumpApp(tester);
 
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
@@ -354,4 +440,393 @@ void main() {
     expect(find.text('Search bottles, stores, boards'), findsNothing);
     expect(find.text('The Golden Old Fashioned'), findsOneWidget);
   });
+
+  testWidgets('typing indicator hides without typing users', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(_typingIndicatorApp(const <String?>[]));
+
+    expect(find.textContaining('typing'), findsNothing);
+  });
+
+  testWidgets('typing indicator shows one and multiple user labels', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(_typingIndicatorApp(const <String?>['Alex']));
+    expect(find.text('Alex is typing...'), findsOneWidget);
+
+    await tester.pumpWidget(_typingIndicatorApp(const <String?>[null]));
+    expect(find.text('Someone is typing...'), findsOneWidget);
+
+    await tester.pumpWidget(
+      _typingIndicatorApp(const <String?>['Alex', 'Sam', 'Taylor']),
+    );
+    expect(find.text('3 people are typing...'), findsOneWidget);
+  });
+
+  testWidgets('chat input bar disables blank sends and clears after send', (
+    WidgetTester tester,
+  ) async {
+    final controller = TextEditingController();
+    addTearDown(controller.dispose);
+    var sentCount = 0;
+
+    await tester.pumpWidget(
+      _chatInputBarApp(
+        controller: controller,
+        onSend: () async {
+          sentCount++;
+          controller.clear();
+        },
+      ),
+    );
+
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.send))
+          .onPressed,
+      isNull,
+    );
+
+    await tester.enterText(find.byType(TextField), '   ');
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.send))
+          .onPressed,
+      isNull,
+    );
+
+    await tester.enterText(find.byType(TextField), 'Hello');
+    await tester.pump();
+
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.send))
+          .onPressed,
+      isNotNull,
+    );
+
+    await tester.tap(find.byTooltip('Send message'));
+    await tester.pumpAndSettle();
+
+    expect(sentCount, 1);
+    expect(controller.text, isEmpty);
+    expect(
+      tester
+          .widget<IconButton>(find.widgetWithIcon(IconButton, Icons.send))
+          .onPressed,
+      isNull,
+    );
+  });
+}
+
+Widget _typingIndicatorApp(List<String?> typingNicknames) {
+  return MaterialApp(
+    theme: AppTheme.light,
+    home: Scaffold(body: TypingIndicator(typingNicknames: typingNicknames)),
+  );
+}
+
+Widget _chatInputBarApp({
+  required TextEditingController controller,
+  required Future<void> Function() onSend,
+}) {
+  return MaterialApp(
+    theme: AppTheme.light,
+    home: Scaffold(
+      body: Column(
+        children: [
+          const Spacer(),
+          ChatInputBar(
+            controller: controller,
+            onSend: onSend,
+            onPickAttachment: () {},
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Future<void> _pumpApp(WidgetTester tester, {ChatPushService? chatPushService}) {
+  SharedPreferences.setMockInitialValues({});
+  return tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        authRemoteDataSourceProvider.overrideWithValue(
+          _FakeAuthRemoteDataSource(),
+        ),
+      ],
+      child: OnTheBlockApp(
+        chatRepository: _FakeChatRepository(),
+        chatPushService: chatPushService ?? _FakeChatPushService(),
+      ),
+    ),
+  );
+}
+
+class _FakeChatPushService implements ChatPushService {
+  const _FakeChatPushService({this.openedMessageOnStart});
+
+  final ChatPushMessage? openedMessageOnStart;
+
+  @override
+  Future<void> start({
+    required String authToken,
+    required ChatRepository chatRepository,
+    required Future<void> Function(ChatPushMessage message)
+    onForegroundChatMessage,
+    required Future<void> Function(ChatPushMessage message) onOpenedChatMessage,
+  }) async {
+    final openedMessage = openedMessageOnStart;
+    if (openedMessage != null) {
+      await onOpenedChatMessage(openedMessage);
+    }
+  }
+
+  @override
+  Future<void> unregister({
+    required String authToken,
+    required ChatRepository chatRepository,
+  }) async {}
+
+  @override
+  Future<void> dispose() async {}
+}
+
+class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
+  @override
+  Future<GoogleLoginResponse> googleLogin() async {
+    return GoogleLoginResponse()
+      ..accessToken = 'access-token'
+      ..refreshToken = 'refresh-token'
+      ..isNewUser = false
+      ..user = _fakeUser(surveyCompleted: false);
+  }
+
+  @override
+  Future<RefreshTokenResponse> refreshToken(String token) async {
+    return RefreshTokenResponse()
+      ..accessToken = 'refreshed-access-token'
+      ..refreshToken = 'refreshed-refresh-token'
+      ..user = _fakeUser(surveyCompleted: false);
+  }
+
+  @override
+  Future<UpdateProfileResponse> updateProfile(
+    String userId,
+    String nickname,
+    String profileImageUrl,
+  ) async {
+    return UpdateProfileResponse()
+      ..user = _fakeUser(
+        nickname: nickname,
+        profileImageUrl: profileImageUrl,
+        surveyCompleted: false,
+      );
+  }
+
+  @override
+  Future<void> logout(String userId) async {}
+
+  @override
+  Future<void> dispose() async {}
+
+  UserResponse _fakeUser({
+    String nickname = 'Alex Drinkwater',
+    String profileImageUrl = '',
+    required bool surveyCompleted,
+  }) {
+    return UserResponse()
+      ..userId = '11111111-1111-1111-1111-111111111111'
+      ..email = 'alex.d@example.com'
+      ..nickname = nickname
+      ..profileImageUrl = profileImageUrl
+      ..surveyCompleted = surveyCompleted
+      ..alcoholScore = 5
+      ..points = 1250;
+  }
+}
+
+class _FakeChatRepository implements ChatRepository {
+  final Set<String> _readRoomIds = <String>{};
+  int _createdRoomCount = 0;
+
+  @override
+  Future<GroupchatRoomSummary> createRoom({
+    required String creatorUserId,
+    required String title,
+    String authToken = '',
+  }) async {
+    _createdRoomCount += 1;
+    return GroupchatRoomSummary(
+      roomId: 'created-room-$_createdRoomCount',
+      title: title,
+      memberSummary: '1 member',
+      location: 'General',
+      lastMessage: 'No messages yet',
+      timeLabel: '',
+      tags: const <String>['General'],
+      avatarUrls: const <String>[],
+    );
+  }
+
+  @override
+  Future<GroupchatRoomSummary> getOrCreateBoardChatRoom({
+    required String boardId,
+    String? title,
+    String? boardOwnerUserId,
+    required String authToken,
+  }) async {
+    return GroupchatRoomSummary(
+      roomId: 'board-room-$boardId',
+      title: title ?? 'Board Chat',
+      memberSummary: 'Board room',
+      location: 'Board',
+      lastMessage: 'No messages yet',
+      timeLabel: '',
+      tags: const <String>['Board'],
+      avatarUrls: const <String>[],
+    );
+  }
+
+  @override
+  Future<void> joinRoom({
+    required String roomId,
+    required String userId,
+  }) async {}
+
+  @override
+  Future<void> sendTextMessage({
+    required String roomId,
+    required String senderUserId,
+    required String content,
+    String authToken = '',
+  }) async {}
+
+  @override
+  Future<AttachmentUploadTarget> createAttachmentUploadURL({
+    required String userId,
+    required String roomId,
+    required String fileName,
+    required String contentType,
+    String authToken = '',
+  }) async {
+    return const AttachmentUploadTarget(
+      objectName: 'test-object',
+      uploadUrl: 'https://example.com/upload',
+      fileUrl: 'https://example.com/file',
+    );
+  }
+
+  @override
+  Future<void> uploadToSignedUrl({
+    required String uploadUrl,
+    required String contentType,
+    required List<int> bytes,
+  }) async {}
+
+  @override
+  Future<void> sendImageMessage({
+    required String roomId,
+    required String senderUserId,
+    required String imageUrl,
+    String authToken = '',
+  }) async {}
+
+  @override
+  Future<void> sendFileMessage({
+    required String roomId,
+    required String senderUserId,
+    required String fileUrl,
+    required String fileName,
+    required String contentType,
+    String authToken = '',
+  }) async {}
+
+  @override
+  Future<void> deleteMessage({
+    required String roomId,
+    required String messageId,
+    required String ownerUserId,
+  }) async {}
+
+  @override
+  Future<void> deactivateRoom({
+    required String roomId,
+    required String ownerUserId,
+  }) async {}
+
+  @override
+  Future<ChatRoomPage> listMyRooms({
+    required String userId,
+    String authToken = '',
+    int pageSize = 20,
+    String pageToken = '',
+  }) async {
+    return ChatRoomPage(
+      rooms: [
+        for (final room in mockGroupchatRooms)
+          _readRoomIds.contains(room.roomId)
+              ? room.copyWith(unreadCount: 0)
+              : room,
+      ],
+      nextPageToken: '',
+    );
+  }
+
+  @override
+  Future<List<GroupchatMessage>> getMessages({
+    required String roomId,
+    required String userId,
+    String authToken = '',
+    int beforeSequenceNo = 0,
+    int limit = 20,
+  }) async {
+    return mockGroupchatMessages;
+  }
+
+  @override
+  Future<void> markAsRead({
+    required String roomId,
+    required String userId,
+    required int lastReadSequenceNo,
+  }) async {}
+
+  @override
+  Future<void> markChatRoomRead({
+    required String roomId,
+    required String authToken,
+  }) async {
+    _readRoomIds.add(roomId);
+  }
+
+  @override
+  Future<void> registerDeviceToken({
+    required String deviceId,
+    required String token,
+    required DevicePlatform platform,
+    required String authToken,
+  }) async {}
+
+  @override
+  Future<void> unregisterDeviceToken({
+    required String deviceId,
+    required String authToken,
+  }) async {}
+
+  @override
+  Stream<GroupchatMessage> streamMessages({
+    required String roomId,
+    required String userId,
+    String authToken = '',
+    int afterSequenceNo = 0,
+  }) {
+    return const Stream<GroupchatMessage>.empty();
+  }
+
+  @override
+  Future<void> dispose() async {}
 }

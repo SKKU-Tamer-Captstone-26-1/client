@@ -29,6 +29,10 @@ class ChatServiceClient extends $grpc.Client {
       '/ontheblock.chat.v1.ChatService/CreateBoardLinkedRoom',
       ($0.CreateBoardLinkedRoomRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.CreateBoardLinkedRoomResponse.fromBuffer(value));
+  static final _$getOrCreateBoardChatRoom = $grpc.ClientMethod<$0.GetOrCreateBoardChatRoomRequest, $0.GetOrCreateBoardChatRoomResponse>(
+      '/ontheblock.chat.v1.ChatService/GetOrCreateBoardChatRoom',
+      ($0.GetOrCreateBoardChatRoomRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GetOrCreateBoardChatRoomResponse.fromBuffer(value));
   static final _$joinRoom = $grpc.ClientMethod<$0.JoinRoomRequest, $0.JoinRoomResponse>(
       '/ontheblock.chat.v1.ChatService/JoinRoom',
       ($0.JoinRoomRequest value) => value.writeToBuffer(),
@@ -61,6 +65,18 @@ class ChatServiceClient extends $grpc.Client {
       '/ontheblock.chat.v1.ChatService/MarkAsRead',
       ($0.MarkAsReadRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.MarkAsReadResponse.fromBuffer(value));
+  static final _$markChatRoomRead = $grpc.ClientMethod<$0.MarkChatRoomReadRequest, $0.MarkChatRoomReadResponse>(
+      '/ontheblock.chat.v1.ChatService/MarkChatRoomRead',
+      ($0.MarkChatRoomReadRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.MarkChatRoomReadResponse.fromBuffer(value));
+  static final _$registerDeviceToken = $grpc.ClientMethod<$0.RegisterDeviceTokenRequest, $0.RegisterDeviceTokenResponse>(
+      '/ontheblock.chat.v1.ChatService/RegisterDeviceToken',
+      ($0.RegisterDeviceTokenRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.RegisterDeviceTokenResponse.fromBuffer(value));
+  static final _$unregisterDeviceToken = $grpc.ClientMethod<$0.UnregisterDeviceTokenRequest, $0.UnregisterDeviceTokenResponse>(
+      '/ontheblock.chat.v1.ChatService/UnregisterDeviceToken',
+      ($0.UnregisterDeviceTokenRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UnregisterDeviceTokenResponse.fromBuffer(value));
   static final _$removeMember = $grpc.ClientMethod<$0.RemoveMemberRequest, $0.RemoveMemberResponse>(
       '/ontheblock.chat.v1.ChatService/RemoveMember',
       ($0.RemoveMemberRequest value) => value.writeToBuffer(),
@@ -90,6 +106,10 @@ class ChatServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.CreateBoardLinkedRoomResponse> createBoardLinkedRoom($0.CreateBoardLinkedRoomRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createBoardLinkedRoom, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GetOrCreateBoardChatRoomResponse> getOrCreateBoardChatRoom($0.GetOrCreateBoardChatRoomRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$getOrCreateBoardChatRoom, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.JoinRoomResponse> joinRoom($0.JoinRoomRequest request, {$grpc.CallOptions? options}) {
@@ -122,6 +142,18 @@ class ChatServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.MarkAsReadResponse> markAsRead($0.MarkAsReadRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$markAsRead, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.MarkChatRoomReadResponse> markChatRoomRead($0.MarkChatRoomReadRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$markChatRoomRead, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.RegisterDeviceTokenResponse> registerDeviceToken($0.RegisterDeviceTokenRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$registerDeviceToken, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UnregisterDeviceTokenResponse> unregisterDeviceToken($0.UnregisterDeviceTokenRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$unregisterDeviceToken, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.RemoveMemberResponse> removeMember($0.RemoveMemberRequest request, {$grpc.CallOptions? options}) {
@@ -160,6 +192,13 @@ abstract class ChatServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.CreateBoardLinkedRoomRequest.fromBuffer(value),
         ($0.CreateBoardLinkedRoomResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GetOrCreateBoardChatRoomRequest, $0.GetOrCreateBoardChatRoomResponse>(
+        'GetOrCreateBoardChatRoom',
+        getOrCreateBoardChatRoom_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GetOrCreateBoardChatRoomRequest.fromBuffer(value),
+        ($0.GetOrCreateBoardChatRoomResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.JoinRoomRequest, $0.JoinRoomResponse>(
         'JoinRoom',
         joinRoom_Pre,
@@ -216,6 +255,27 @@ abstract class ChatServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.MarkAsReadRequest.fromBuffer(value),
         ($0.MarkAsReadResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.MarkChatRoomReadRequest, $0.MarkChatRoomReadResponse>(
+        'MarkChatRoomRead',
+        markChatRoomRead_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.MarkChatRoomReadRequest.fromBuffer(value),
+        ($0.MarkChatRoomReadResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RegisterDeviceTokenRequest, $0.RegisterDeviceTokenResponse>(
+        'RegisterDeviceToken',
+        registerDeviceToken_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.RegisterDeviceTokenRequest.fromBuffer(value),
+        ($0.RegisterDeviceTokenResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UnregisterDeviceTokenRequest, $0.UnregisterDeviceTokenResponse>(
+        'UnregisterDeviceToken',
+        unregisterDeviceToken_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UnregisterDeviceTokenRequest.fromBuffer(value),
+        ($0.UnregisterDeviceTokenResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.RemoveMemberRequest, $0.RemoveMemberResponse>(
         'RemoveMember',
         removeMember_Pre,
@@ -254,6 +314,10 @@ abstract class ChatServiceBase extends $grpc.Service {
     return createBoardLinkedRoom(call, await request);
   }
 
+  $async.Future<$0.GetOrCreateBoardChatRoomResponse> getOrCreateBoardChatRoom_Pre($grpc.ServiceCall call, $async.Future<$0.GetOrCreateBoardChatRoomRequest> request) async {
+    return getOrCreateBoardChatRoom(call, await request);
+  }
+
   $async.Future<$0.JoinRoomResponse> joinRoom_Pre($grpc.ServiceCall call, $async.Future<$0.JoinRoomRequest> request) async {
     return joinRoom(call, await request);
   }
@@ -286,6 +350,18 @@ abstract class ChatServiceBase extends $grpc.Service {
     return markAsRead(call, await request);
   }
 
+  $async.Future<$0.MarkChatRoomReadResponse> markChatRoomRead_Pre($grpc.ServiceCall call, $async.Future<$0.MarkChatRoomReadRequest> request) async {
+    return markChatRoomRead(call, await request);
+  }
+
+  $async.Future<$0.RegisterDeviceTokenResponse> registerDeviceToken_Pre($grpc.ServiceCall call, $async.Future<$0.RegisterDeviceTokenRequest> request) async {
+    return registerDeviceToken(call, await request);
+  }
+
+  $async.Future<$0.UnregisterDeviceTokenResponse> unregisterDeviceToken_Pre($grpc.ServiceCall call, $async.Future<$0.UnregisterDeviceTokenRequest> request) async {
+    return unregisterDeviceToken(call, await request);
+  }
+
   $async.Future<$0.RemoveMemberResponse> removeMember_Pre($grpc.ServiceCall call, $async.Future<$0.RemoveMemberRequest> request) async {
     return removeMember(call, await request);
   }
@@ -304,6 +380,7 @@ abstract class ChatServiceBase extends $grpc.Service {
 
   $async.Future<$0.CreateRoomResponse> createRoom($grpc.ServiceCall call, $0.CreateRoomRequest request);
   $async.Future<$0.CreateBoardLinkedRoomResponse> createBoardLinkedRoom($grpc.ServiceCall call, $0.CreateBoardLinkedRoomRequest request);
+  $async.Future<$0.GetOrCreateBoardChatRoomResponse> getOrCreateBoardChatRoom($grpc.ServiceCall call, $0.GetOrCreateBoardChatRoomRequest request);
   $async.Future<$0.JoinRoomResponse> joinRoom($grpc.ServiceCall call, $0.JoinRoomRequest request);
   $async.Future<$0.LeaveRoomResponse> leaveRoom($grpc.ServiceCall call, $0.LeaveRoomRequest request);
   $async.Future<$0.ListMyRoomsResponse> listMyRooms($grpc.ServiceCall call, $0.ListMyRoomsRequest request);
@@ -312,6 +389,9 @@ abstract class ChatServiceBase extends $grpc.Service {
   $async.Future<$0.CreateAttachmentUploadURLResponse> createAttachmentUploadURL($grpc.ServiceCall call, $0.CreateAttachmentUploadURLRequest request);
   $async.Future<$0.CreateImageUploadURLResponse> createImageUploadURL($grpc.ServiceCall call, $0.CreateImageUploadURLRequest request);
   $async.Future<$0.MarkAsReadResponse> markAsRead($grpc.ServiceCall call, $0.MarkAsReadRequest request);
+  $async.Future<$0.MarkChatRoomReadResponse> markChatRoomRead($grpc.ServiceCall call, $0.MarkChatRoomReadRequest request);
+  $async.Future<$0.RegisterDeviceTokenResponse> registerDeviceToken($grpc.ServiceCall call, $0.RegisterDeviceTokenRequest request);
+  $async.Future<$0.UnregisterDeviceTokenResponse> unregisterDeviceToken($grpc.ServiceCall call, $0.UnregisterDeviceTokenRequest request);
   $async.Future<$0.RemoveMemberResponse> removeMember($grpc.ServiceCall call, $0.RemoveMemberRequest request);
   $async.Future<$0.DeleteMessageResponse> deleteMessage($grpc.ServiceCall call, $0.DeleteMessageRequest request);
   $async.Future<$0.DeactivateRoomResponse> deactivateRoom($grpc.ServiceCall call, $0.DeactivateRoomRequest request);
