@@ -23,7 +23,7 @@ class HttpAuthRemoteDataSource implements AuthRemoteDataSource {
       : _config = config ?? AuthHttpConfig.fromEnvironment(),
         _googleSignIn = GoogleSignIn(
           serverClientId:
-              '363489736370-5uv1gk66vcfmq3tkha05qek55a0p4fpr.apps.googleusercontent.com',
+              '363489736370-gco7h5pfol76a85j0hqghnlims211rac.apps.googleusercontent.com',
         );
 
   final AuthHttpConfig _config;
