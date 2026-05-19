@@ -114,8 +114,8 @@ class SurveyScreen extends ConsumerWidget {
     }
 
     try {
-      await client.submit(userId: auth.userId!, answers: state.answers);
-      ref.read(authProvider.notifier).markSurveyCompleted();
+      final surveyId = await client.submit(userId: auth.userId!, answers: state.answers);
+      ref.read(authProvider.notifier).markSurveyCompleted(surveyId: surveyId);
       if (context.mounted) onCompleted?.call();
     } catch (e) {
       if (context.mounted) {
