@@ -14,7 +14,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "363489736370-5uv1gk66vcfmq3tkha05qek55a0p4fpr.apps.googleusercontent.com",
+          "client_id": "363489736370-aa802qd3isef1ntr6600vqs2i8j8m1gc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ontheblock.app",
+            "certificate_hash": "53bf2e198faf576c79e2ce45915db6642636a51f"
+          }
+        },
+        {
+          "client_id": "363489736370-gco7h5pfol76a85j0hqghnlims211rac.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -29,6 +37,13 @@
             {
               "client_id": "363489736370-5uv1gk66vcfmq3tkha05qek55a0p4fpr.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "363489736370-g42bpmd1egdmuopac6kpv3o2tt3k3er7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ontheblock.app"
+              }
             }
           ]
         }
