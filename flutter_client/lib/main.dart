@@ -443,7 +443,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   Future<void> _openBoardChat(BoardPost post) async {
     final repo = _chatRepository;
     final authToken = _currentAuthToken;
-    final boardId = post.boardId.trim();
+    final boardId = post.postId.trim();
     if (repo == null || authToken.trim().isEmpty || boardId.isEmpty) {
       throw StateError('Missing chat repository, auth token, or board id.');
     }
@@ -451,7 +451,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     final room = await repo.getOrCreateBoardChatRoom(
       boardId: boardId,
       title: post.title,
-      boardOwnerUserId: post.boardOwnerUserId,
+      boardOwnerUserId: post.authorId,
       authToken: authToken,
     );
     if (!mounted) {

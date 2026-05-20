@@ -14,11 +14,13 @@ class BoardScreen extends StatelessWidget {
     super.key,
     this.onBottomNavSelected,
     this.onProfileSelected,
+    this.onBoardChatRequested,
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onProfileSelected;
+  final ValueChanged<BoardPost>? onBoardChatRequested;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
