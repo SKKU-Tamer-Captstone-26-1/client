@@ -78,6 +78,21 @@ final $typed_data.Uint8List messageTypeDescriptor = $convert.base64Decode(
     'RZUEVfVEVYVBABEhcKE01FU1NBR0VfVFlQRV9TWVNURU0QAhIWChJNRVNTQUdFX1RZUEVfSU1B'
     'R0UQAxIVChFNRVNTQUdFX1RZUEVfRklMRRAE');
 
+@$core.Deprecated('Use devicePlatformDescriptor instead')
+const DevicePlatform$json = {
+  '1': 'DevicePlatform',
+  '2': [
+    {'1': 'DEVICE_PLATFORM_UNSPECIFIED', '2': 0},
+    {'1': 'DEVICE_PLATFORM_IOS', '2': 1},
+    {'1': 'DEVICE_PLATFORM_ANDROID', '2': 2},
+  ],
+};
+
+/// Descriptor for `DevicePlatform`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List devicePlatformDescriptor = $convert.base64Decode(
+    'Cg5EZXZpY2VQbGF0Zm9ybRIfChtERVZJQ0VfUExBVEZPUk1fVU5TUEVDSUZJRUQQABIXChNERV'
+    'ZJQ0VfUExBVEZPUk1fSU9TEAESGwoXREVWSUNFX1BMQVRGT1JNX0FORFJPSUQQAg==');
+
 @$core.Deprecated('Use createRoomRequestDescriptor instead')
 const CreateRoomRequest$json = {
   '1': 'CreateRoomRequest',
@@ -135,6 +150,41 @@ final $typed_data.Uint8List createBoardLinkedRoomResponseDescriptor = $convert.b
     'Ch1DcmVhdGVCb2FyZExpbmtlZFJvb21SZXNwb25zZRIwCgRyb29tGAEgASgLMhwub250aGVibG'
     '9jay5jaGF0LnYxLkNoYXRSb29tUgRyb29tEiUKDmFscmVhZHlfZXhpc3RzGAIgASgIUg1hbHJl'
     'YWR5RXhpc3Rz');
+
+@$core.Deprecated('Use getOrCreateBoardChatRoomRequestDescriptor instead')
+const GetOrCreateBoardChatRoomRequest$json = {
+  '1': 'GetOrCreateBoardChatRoomRequest',
+  '2': [
+    {'1': 'board_id', '3': 1, '4': 1, '5': 9, '10': 'boardId'},
+    {'1': 'title', '3': 2, '4': 1, '5': 9, '10': 'title'},
+    {'1': 'board_owner_user_id', '3': 3, '4': 1, '5': 9, '10': 'boardOwnerUserId'},
+  ],
+};
+
+/// Descriptor for `GetOrCreateBoardChatRoomRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getOrCreateBoardChatRoomRequestDescriptor = $convert.base64Decode(
+    'Ch9HZXRPckNyZWF0ZUJvYXJkQ2hhdFJvb21SZXF1ZXN0EhkKCGJvYXJkX2lkGAEgASgJUgdib2'
+    'FyZElkEhQKBXRpdGxlGAIgASgJUgV0aXRsZRItChNib2FyZF9vd25lcl91c2VyX2lkGAMgASgJ'
+    'UhBib2FyZE93bmVyVXNlcklk');
+
+@$core.Deprecated('Use getOrCreateBoardChatRoomResponseDescriptor instead')
+const GetOrCreateBoardChatRoomResponse$json = {
+  '1': 'GetOrCreateBoardChatRoomResponse',
+  '2': [
+    {'1': 'room', '3': 1, '4': 1, '5': 11, '6': '.ontheblock.chat.v1.ChatRoom', '10': 'room'},
+    {'1': 'summary', '3': 2, '4': 1, '5': 11, '6': '.ontheblock.chat.v1.ChatRoomSummary', '10': 'summary'},
+    {'1': 'member', '3': 3, '4': 1, '5': 11, '6': '.ontheblock.chat.v1.ChatRoomMember', '10': 'member'},
+    {'1': 'already_exists', '3': 4, '4': 1, '5': 8, '10': 'alreadyExists'},
+  ],
+};
+
+/// Descriptor for `GetOrCreateBoardChatRoomResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List getOrCreateBoardChatRoomResponseDescriptor = $convert.base64Decode(
+    'CiBHZXRPckNyZWF0ZUJvYXJkQ2hhdFJvb21SZXNwb25zZRIwCgRyb29tGAEgASgLMhwub250aG'
+    'VibG9jay5jaGF0LnYxLkNoYXRSb29tUgRyb29tEj0KB3N1bW1hcnkYAiABKAsyIy5vbnRoZWJs'
+    'b2NrLmNoYXQudjEuQ2hhdFJvb21TdW1tYXJ5UgdzdW1tYXJ5EjoKBm1lbWJlchgDIAEoCzIiLm'
+    '9udGhlYmxvY2suY2hhdC52MS5DaGF0Um9vbU1lbWJlclIGbWVtYmVyEiUKDmFscmVhZHlfZXhp'
+    'c3RzGAQgASgIUg1hbHJlYWR5RXhpc3Rz');
 
 @$core.Deprecated('Use joinRoomRequestDescriptor instead')
 const JoinRoomRequest$json = {
@@ -589,6 +639,110 @@ final $typed_data.Uint8List markAsReadResponseDescriptor = $convert.base64Decode
     'QYAiABKAlSBnVzZXJJZBIxChVsYXN0X3JlYWRfc2VxdWVuY2Vfbm8YAyABKANSEmxhc3RSZWFk'
     'U2VxdWVuY2VObxI5Cgp1cGRhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdG'
     'FtcFIJdXBkYXRlZEF0');
+
+@$core.Deprecated('Use markChatRoomReadRequestDescriptor instead')
+const MarkChatRoomReadRequest$json = {
+  '1': 'MarkChatRoomReadRequest',
+  '2': [
+    {'1': 'room_id', '3': 1, '4': 1, '5': 9, '10': 'roomId'},
+  ],
+};
+
+/// Descriptor for `MarkChatRoomReadRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List markChatRoomReadRequestDescriptor = $convert.base64Decode(
+    'ChdNYXJrQ2hhdFJvb21SZWFkUmVxdWVzdBIXCgdyb29tX2lkGAEgASgJUgZyb29tSWQ=');
+
+@$core.Deprecated('Use markChatRoomReadResponseDescriptor instead')
+const MarkChatRoomReadResponse$json = {
+  '1': 'MarkChatRoomReadResponse',
+  '2': [
+    {'1': 'room_id', '3': 1, '4': 1, '5': 9, '10': 'roomId'},
+    {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'last_read_sequence_no', '3': 3, '4': 1, '5': 3, '10': 'lastReadSequenceNo'},
+    {'1': 'updated_at', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+  ],
+};
+
+/// Descriptor for `MarkChatRoomReadResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List markChatRoomReadResponseDescriptor = $convert.base64Decode(
+    'ChhNYXJrQ2hhdFJvb21SZWFkUmVzcG9uc2USFwoHcm9vbV9pZBgBIAEoCVIGcm9vbUlkEhcKB3'
+    'VzZXJfaWQYAiABKAlSBnVzZXJJZBIxChVsYXN0X3JlYWRfc2VxdWVuY2Vfbm8YAyABKANSEmxh'
+    'c3RSZWFkU2VxdWVuY2VObxI5Cgp1cGRhdGVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLl'
+    'RpbWVzdGFtcFIJdXBkYXRlZEF0');
+
+@$core.Deprecated('Use registerDeviceTokenRequestDescriptor instead')
+const RegisterDeviceTokenRequest$json = {
+  '1': 'RegisterDeviceTokenRequest',
+  '2': [
+    {'1': 'device_id', '3': 1, '4': 1, '5': 9, '10': 'deviceId'},
+    {'1': 'token', '3': 2, '4': 1, '5': 9, '10': 'token'},
+    {'1': 'platform', '3': 3, '4': 1, '5': 14, '6': '.ontheblock.chat.v1.DevicePlatform', '10': 'platform'},
+  ],
+};
+
+/// Descriptor for `RegisterDeviceTokenRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List registerDeviceTokenRequestDescriptor = $convert.base64Decode(
+    'ChpSZWdpc3RlckRldmljZVRva2VuUmVxdWVzdBIbCglkZXZpY2VfaWQYASABKAlSCGRldmljZU'
+    'lkEhQKBXRva2VuGAIgASgJUgV0b2tlbhI+CghwbGF0Zm9ybRgDIAEoDjIiLm9udGhlYmxvY2su'
+    'Y2hhdC52MS5EZXZpY2VQbGF0Zm9ybVIIcGxhdGZvcm0=');
+
+@$core.Deprecated('Use registerDeviceTokenResponseDescriptor instead')
+const RegisterDeviceTokenResponse$json = {
+  '1': 'RegisterDeviceTokenResponse',
+  '2': [
+    {'1': 'device_token', '3': 1, '4': 1, '5': 11, '6': '.ontheblock.chat.v1.DeviceToken', '10': 'deviceToken'},
+  ],
+};
+
+/// Descriptor for `RegisterDeviceTokenResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List registerDeviceTokenResponseDescriptor = $convert.base64Decode(
+    'ChtSZWdpc3RlckRldmljZVRva2VuUmVzcG9uc2USQgoMZGV2aWNlX3Rva2VuGAEgASgLMh8ub2'
+    '50aGVibG9jay5jaGF0LnYxLkRldmljZVRva2VuUgtkZXZpY2VUb2tlbg==');
+
+@$core.Deprecated('Use unregisterDeviceTokenRequestDescriptor instead')
+const UnregisterDeviceTokenRequest$json = {
+  '1': 'UnregisterDeviceTokenRequest',
+  '2': [
+    {'1': 'device_id', '3': 1, '4': 1, '5': 9, '10': 'deviceId'},
+  ],
+};
+
+/// Descriptor for `UnregisterDeviceTokenRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List unregisterDeviceTokenRequestDescriptor = $convert.base64Decode(
+    'ChxVbnJlZ2lzdGVyRGV2aWNlVG9rZW5SZXF1ZXN0EhsKCWRldmljZV9pZBgBIAEoCVIIZGV2aW'
+    'NlSWQ=');
+
+@$core.Deprecated('Use unregisterDeviceTokenResponseDescriptor instead')
+const UnregisterDeviceTokenResponse$json = {
+  '1': 'UnregisterDeviceTokenResponse',
+};
+
+/// Descriptor for `UnregisterDeviceTokenResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List unregisterDeviceTokenResponseDescriptor = $convert.base64Decode(
+    'Ch1VbnJlZ2lzdGVyRGV2aWNlVG9rZW5SZXNwb25zZQ==');
+
+@$core.Deprecated('Use deviceTokenDescriptor instead')
+const DeviceToken$json = {
+  '1': 'DeviceToken',
+  '2': [
+    {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
+    {'1': 'device_id', '3': 2, '4': 1, '5': 9, '10': 'deviceId'},
+    {'1': 'token', '3': 3, '4': 1, '5': 9, '10': 'token'},
+    {'1': 'platform', '3': 4, '4': 1, '5': 14, '6': '.ontheblock.chat.v1.DevicePlatform', '10': 'platform'},
+    {'1': 'created_at', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {'1': 'last_seen_at', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastSeenAt'},
+  ],
+};
+
+/// Descriptor for `DeviceToken`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List deviceTokenDescriptor = $convert.base64Decode(
+    'CgtEZXZpY2VUb2tlbhIXCgd1c2VyX2lkGAEgASgJUgZ1c2VySWQSGwoJZGV2aWNlX2lkGAIgAS'
+    'gJUghkZXZpY2VJZBIUCgV0b2tlbhgDIAEoCVIFdG9rZW4SPgoIcGxhdGZvcm0YBCABKA4yIi5v'
+    'bnRoZWJsb2NrLmNoYXQudjEuRGV2aWNlUGxhdGZvcm1SCHBsYXRmb3JtEjkKCmNyZWF0ZWRfYX'
+    'QYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgljcmVhdGVkQXQSOQoKdXBkYXRl'
+    'ZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBSCXVwZGF0ZWRBdBI8CgxsYX'
+    'N0X3NlZW5fYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wUgpsYXN0U2VlbkF0');
 
 @$core.Deprecated('Use deactivateRoomRequestDescriptor instead')
 const DeactivateRoomRequest$json = {

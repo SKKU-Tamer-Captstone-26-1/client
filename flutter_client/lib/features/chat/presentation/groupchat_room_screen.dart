@@ -31,6 +31,7 @@ class GroupchatRoomScreen extends StatefulWidget {
     this.onRoomDeactivated,
     this.chatRepository,
     this.currentUserId,
+    this.authToken = '',
   });
 
   final GroupchatRoomSummary room;
@@ -38,6 +39,7 @@ class GroupchatRoomScreen extends StatefulWidget {
   final ValueChanged<String>? onRoomDeactivated;
   final ChatRepository? chatRepository;
   final String? currentUserId;
+  final String authToken;
 
   @override
   State<GroupchatRoomScreen> createState() => _GroupchatRoomScreenState();
@@ -109,10 +111,12 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     setState(() {
       _loading = true;
     });
+    var loadedMessages = false;
     try {
       final fetched = await widget.chatRepository!.getMessages(
         roomId: widget.room.roomId,
         userId: widget.currentUserId!,
+        authToken: widget.authToken,
         limit: 50,
       );
       if (!mounted) {
@@ -123,7 +127,9 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         final fetchedLatest = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
         _latestSequenceNo = _maxSequenceNo(_latestSequenceNo, fetchedLatest);
       });
+      loadedMessages = true;
       unawaited(_persistLatestSequenceNo());
+      unawaited(_markRoomRead());
       _restartMessageStream();
     } catch (error, stackTrace) {
       if (_messages.isEmpty) {
@@ -136,7 +142,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         );
       }
     } finally {
-      if (_streamSub == null) {
+      if (loadedMessages && _streamSub == null) {
         final currentLatest = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
         _latestSequenceNo = _maxSequenceNo(_latestSequenceNo, currentLatest);
         _restartMessageStream();
@@ -158,6 +164,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         .streamMessages(
           roomId: widget.room.roomId,
           userId: widget.currentUserId!,
+          authToken: widget.authToken,
           afterSequenceNo: _latestSequenceNo,
         )
         .listen((message) {
@@ -176,9 +183,10 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
             _messages = _normalizeMessages([..._messages, message]);
             _latestSequenceNo = _messages.last.sequenceNo;
           });
+          unawaited(_markRoomRead());
           _scrollMessagesToBottom();
           unawaited(_persistLatestSequenceNo());
-        });
+        }, onError: _handleMessageStreamError);
   }
 
   void _restartMessageStream() {
@@ -186,6 +194,25 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       return;
     }
     _startMessageStream();
+  }
+
+  void _handleMessageStreamError(Object error, StackTrace stackTrace) {
+    _streamSub?.cancel();
+    _streamSub = null;
+    if (!mounted) {
+      return;
+    }
+    if (_messages.isEmpty) {
+      _showError(
+        'Room updates unavailable.',
+        operation: 'stream_messages',
+        technicalMessage: error.toString(),
+        error: error,
+        stackTrace: stackTrace,
+      );
+    } else if (kDebugMode) {
+      debugPrint('STREAM_MESSAGES_FAILED: $error');
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -203,6 +230,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         roomId: widget.room.roomId,
         senderUserId: widget.currentUserId!,
         content: text,
+        authToken: widget.authToken,
       );
       _composerController.clear();
       await _loadMessages();
@@ -450,6 +478,19 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     });
   }
 
+  Future<void> _markRoomRead() async {
+    final repo = widget.chatRepository;
+    final roomId = widget.room.roomId;
+    if (repo == null || roomId.isEmpty || widget.authToken.trim().isEmpty) {
+      return;
+    }
+    try {
+      await repo.markChatRoomRead(roomId: roomId, authToken: widget.authToken);
+    } catch (_) {
+      // Keep chat usable if read-state sync fails.
+    }
+  }
+
   Future<void> _showAttachmentOptions() async {
     final option = await showModalBottomSheet<String>(
       context: context,
@@ -524,6 +565,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         roomId: widget.room.roomId,
         fileName: filename,
         contentType: createContentType,
+        authToken: widget.authToken,
       );
       await repo.uploadToSignedUrl(
         uploadUrl: target.uploadUrl,
@@ -596,6 +638,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         roomId: widget.room.roomId,
         fileName: filename,
         contentType: createContentType,
+        authToken: widget.authToken,
       );
       await repo.uploadToSignedUrl(
         uploadUrl: target.uploadUrl,
@@ -634,12 +677,14 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         roomId: roomId,
         senderUserId: senderUserId,
         imageUrl: imageUrl,
+        authToken: widget.authToken,
       );
     } catch (_) {
       await widget.chatRepository!.sendImageMessage(
         roomId: roomId,
         senderUserId: senderUserId,
         imageUrl: imageUrl,
+        authToken: widget.authToken,
       );
     }
   }
@@ -658,6 +703,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         fileUrl: fileUrl,
         fileName: fileName,
         contentType: contentType,
+        authToken: widget.authToken,
       );
     } catch (_) {
       await widget.chatRepository!.sendFileMessage(
@@ -666,6 +712,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         fileUrl: fileUrl,
         fileName: fileName,
         contentType: contentType,
+        authToken: widget.authToken,
       );
     }
   }

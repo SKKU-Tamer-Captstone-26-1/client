@@ -87,5 +87,22 @@ class MessageType extends $pb.ProtobufEnum {
   const MessageType._($core.int v, $core.String n) : super(v, n);
 }
 
+class DevicePlatform extends $pb.ProtobufEnum {
+  static const DevicePlatform DEVICE_PLATFORM_UNSPECIFIED = DevicePlatform._(0, _omitEnumNames ? '' : 'DEVICE_PLATFORM_UNSPECIFIED');
+  static const DevicePlatform DEVICE_PLATFORM_IOS = DevicePlatform._(1, _omitEnumNames ? '' : 'DEVICE_PLATFORM_IOS');
+  static const DevicePlatform DEVICE_PLATFORM_ANDROID = DevicePlatform._(2, _omitEnumNames ? '' : 'DEVICE_PLATFORM_ANDROID');
+
+  static const $core.List<DevicePlatform> values = <DevicePlatform> [
+    DEVICE_PLATFORM_UNSPECIFIED,
+    DEVICE_PLATFORM_IOS,
+    DEVICE_PLATFORM_ANDROID,
+  ];
+
+  static final $core.Map<$core.int, DevicePlatform> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static DevicePlatform? valueOf($core.int value) => _byValue[value];
+
+  const DevicePlatform._($core.int v, $core.String n) : super(v, n);
+}
+
 
 const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');

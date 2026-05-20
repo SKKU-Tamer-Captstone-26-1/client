@@ -7,6 +7,14 @@ abstract class ChatRepository {
   Future<GroupchatRoomSummary> createRoom({
     required String creatorUserId,
     required String title,
+    String authToken = '',
+  });
+
+  Future<GroupchatRoomSummary> getOrCreateBoardChatRoom({
+    required String boardId,
+    String? title,
+    String? boardOwnerUserId,
+    required String authToken,
   });
 
   Future<void> joinRoom({required String roomId, required String userId});
@@ -15,6 +23,7 @@ abstract class ChatRepository {
     required String roomId,
     required String senderUserId,
     required String content,
+    String authToken = '',
   });
 
   Future<AttachmentUploadTarget> createAttachmentUploadURL({
@@ -22,6 +31,7 @@ abstract class ChatRepository {
     required String roomId,
     required String fileName,
     required String contentType,
+    String authToken = '',
   });
 
   Future<void> uploadToSignedUrl({
@@ -34,6 +44,7 @@ abstract class ChatRepository {
     required String roomId,
     required String senderUserId,
     required String imageUrl,
+    String authToken = '',
   });
 
   Future<void> sendFileMessage({
@@ -42,6 +53,7 @@ abstract class ChatRepository {
     required String fileUrl,
     required String fileName,
     required String contentType,
+    String authToken = '',
   });
 
   Future<void> deleteMessage({
@@ -57,6 +69,7 @@ abstract class ChatRepository {
 
   Future<ChatRoomPage> listMyRooms({
     required String userId,
+    String authToken = '',
     int pageSize = 20,
     String pageToken = '',
   });
@@ -64,6 +77,7 @@ abstract class ChatRepository {
   Future<List<GroupchatMessage>> getMessages({
     required String roomId,
     required String userId,
+    String authToken = '',
     int beforeSequenceNo = 0,
     int limit = 20,
   });
@@ -74,9 +88,27 @@ abstract class ChatRepository {
     required int lastReadSequenceNo,
   });
 
+  Future<void> markChatRoomRead({
+    required String roomId,
+    required String authToken,
+  });
+
+  Future<void> registerDeviceToken({
+    required String deviceId,
+    required String token,
+    required DevicePlatform platform,
+    required String authToken,
+  });
+
+  Future<void> unregisterDeviceToken({
+    required String deviceId,
+    required String authToken,
+  });
+
   Stream<GroupchatMessage> streamMessages({
     required String roomId,
     required String userId,
+    String authToken = '',
     int afterSequenceNo = 0,
   });
 
@@ -111,11 +143,32 @@ class GrpcChatRepository implements ChatRepository {
   Future<GroupchatRoomSummary> createRoom({
     required String creatorUserId,
     required String title,
+    String authToken = '',
   }) async {
     final response = await _remote.createRoom(
       creatorUserId: creatorUserId,
       title: title,
+      authToken: authToken,
     );
+    return response.room.toUiRoomSummary();
+  }
+
+  @override
+  Future<GroupchatRoomSummary> getOrCreateBoardChatRoom({
+    required String boardId,
+    String? title,
+    String? boardOwnerUserId,
+    required String authToken,
+  }) async {
+    final response = await _remote.getOrCreateBoardChatRoom(
+      boardId: boardId,
+      title: title,
+      boardOwnerUserId: boardOwnerUserId,
+      authToken: authToken,
+    );
+    if (response.hasSummary()) {
+      return response.summary.toUiRoomSummary();
+    }
     return response.room.toUiRoomSummary();
   }
 
@@ -129,11 +182,13 @@ class GrpcChatRepository implements ChatRepository {
     required String roomId,
     required String senderUserId,
     required String content,
+    String authToken = '',
   }) {
     return _remote.sendTextMessage(
       roomId: roomId,
       senderUserId: senderUserId,
       content: content,
+      authToken: authToken,
     );
   }
 
@@ -143,12 +198,14 @@ class GrpcChatRepository implements ChatRepository {
     required String roomId,
     required String fileName,
     required String contentType,
+    String authToken = '',
   }) async {
     final response = await _remote.createAttachmentUploadURL(
       userId: userId,
       roomId: roomId,
       fileName: fileName,
       contentType: contentType,
+      authToken: authToken,
     );
     return AttachmentUploadTarget(
       objectName: response.objectName,
@@ -175,11 +232,13 @@ class GrpcChatRepository implements ChatRepository {
     required String roomId,
     required String senderUserId,
     required String imageUrl,
+    String authToken = '',
   }) {
     return _remote.sendImageMessage(
       roomId: roomId,
       senderUserId: senderUserId,
       imageUrl: imageUrl,
+      authToken: authToken,
     );
   }
 
@@ -190,6 +249,7 @@ class GrpcChatRepository implements ChatRepository {
     required String fileUrl,
     required String fileName,
     required String contentType,
+    String authToken = '',
   }) {
     return _remote.sendFileMessage(
       roomId: roomId,
@@ -197,6 +257,7 @@ class GrpcChatRepository implements ChatRepository {
       fileUrl: fileUrl,
       fileName: fileName,
       contentType: contentType,
+      authToken: authToken,
     );
   }
 
@@ -224,11 +285,13 @@ class GrpcChatRepository implements ChatRepository {
   @override
   Future<ChatRoomPage> listMyRooms({
     required String userId,
+    String authToken = '',
     int pageSize = 20,
     String pageToken = '',
   }) async {
     final response = await _remote.listMyRooms(
       userId: userId,
+      authToken: authToken,
       pageSize: pageSize,
       pageToken: pageToken,
     );
@@ -242,12 +305,14 @@ class GrpcChatRepository implements ChatRepository {
   Future<List<GroupchatMessage>> getMessages({
     required String roomId,
     required String userId,
+    String authToken = '',
     int beforeSequenceNo = 0,
     int limit = 20,
   }) async {
     final response = await _remote.getMessages(
       roomId: roomId,
       userId: userId,
+      authToken: authToken,
       beforeSequenceNo: beforeSequenceNo,
       limit: limit,
     );
@@ -270,15 +335,51 @@ class GrpcChatRepository implements ChatRepository {
   }
 
   @override
+  Future<void> markChatRoomRead({
+    required String roomId,
+    required String authToken,
+  }) {
+    return _remote.markChatRoomRead(roomId: roomId, authToken: authToken);
+  }
+
+  @override
+  Future<void> registerDeviceToken({
+    required String deviceId,
+    required String token,
+    required DevicePlatform platform,
+    required String authToken,
+  }) {
+    return _remote.registerDeviceToken(
+      deviceId: deviceId,
+      token: token,
+      platform: platform,
+      authToken: authToken,
+    );
+  }
+
+  @override
+  Future<void> unregisterDeviceToken({
+    required String deviceId,
+    required String authToken,
+  }) {
+    return _remote.unregisterDeviceToken(
+      deviceId: deviceId,
+      authToken: authToken,
+    );
+  }
+
+  @override
   Stream<GroupchatMessage> streamMessages({
     required String roomId,
     required String userId,
+    String authToken = '',
     int afterSequenceNo = 0,
   }) {
     return _remote
         .streamMessages(
           roomId: roomId,
           userId: userId,
+          authToken: authToken,
           afterSequenceNo: afterSequenceNo,
         )
         .map((response) => response.message.toUiMessage(currentUserId: userId));
@@ -287,6 +388,11 @@ class GrpcChatRepository implements ChatRepository {
   @override
   Future<void> dispose() {
     return _remote.dispose();
+  }
+
+  @override
+  String toString() {
+    return 'GrpcChatRepository($_remote)';
   }
 }
 

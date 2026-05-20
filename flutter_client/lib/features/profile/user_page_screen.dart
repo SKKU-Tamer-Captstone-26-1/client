@@ -15,11 +15,15 @@ class UserPageScreen extends ConsumerWidget {
     this.onBack,
     this.onBottomNavSelected,
     this.onRetakeSurvey,
+    this.onLogout,
+    this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
   final VoidCallback? onBack;
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onRetakeSurvey;
+  final VoidCallback? onLogout;
+  final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -48,7 +52,10 @@ class UserPageScreen extends ConsumerWidget {
         ),
         centerTitle: true,
       ),
-      bottomNavigationBar: AppBottomNavBar(onItemSelected: onBottomNavSelected),
+      bottomNavigationBar: AppBottomNavBar(
+        onItemSelected: onBottomNavSelected,
+        badgeCounts: bottomNavBadgeCounts,
+      ),
       body: SafeArea(
         top: false,
         child: ListView(
@@ -58,7 +65,10 @@ class UserPageScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             _StatusBentoGrid(user: user),
             const SizedBox(height: 24),
-            _MySettingsSection(onRetakeSurvey: onRetakeSurvey),
+            _MySettingsSection(
+              onRetakeSurvey: onRetakeSurvey,
+              onLogout: onLogout,
+            ),
           ],
         ),
       ),
@@ -389,9 +399,10 @@ class _PointsCard extends StatelessWidget {
 }
 
 class _MySettingsSection extends StatelessWidget {
-  const _MySettingsSection({this.onRetakeSurvey});
+  const _MySettingsSection({this.onRetakeSurvey, this.onLogout});
 
   final VoidCallback? onRetakeSurvey;
+  final VoidCallback? onLogout;
 
   @override
   Widget build(BuildContext context) {
@@ -439,6 +450,15 @@ class _MySettingsSection extends StatelessWidget {
           title: 'Help & Support',
           trailing: Icon(Icons.chevron_right, color: context.palette.secondary),
           onTap: () {},
+        ),
+        const SizedBox(height: 12),
+        _SettingsCard(
+          icon: Icons.logout,
+          iconColor: AppColors.primaryContainer,
+          iconBgColor: const Color(0xFFFFD8C7),
+          title: 'Log Out',
+          trailing: Icon(Icons.chevron_right, color: context.palette.secondary),
+          onTap: onLogout,
         ),
       ],
     );

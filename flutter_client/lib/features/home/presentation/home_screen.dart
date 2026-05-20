@@ -10,10 +10,16 @@ import '../data/mock_home_data.dart';
 import '../models/home_models.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key, this.onBottomNavSelected, this.onProfileSelected});
+  const HomeScreen({
+    super.key,
+    this.onBottomNavSelected,
+    this.onProfileSelected,
+    this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
+  });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onProfileSelected;
+  final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +33,10 @@ class HomeScreen extends StatelessWidget {
         },
         onProfileSelected: onProfileSelected,
       ),
-      bottomNavigationBar: AppBottomNavBar(onItemSelected: onBottomNavSelected),
+      bottomNavigationBar: AppBottomNavBar(
+        onItemSelected: onBottomNavSelected,
+        badgeCounts: bottomNavBadgeCounts,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showChatbotModal(context),
         backgroundColor: AppColors.primaryContainer,
