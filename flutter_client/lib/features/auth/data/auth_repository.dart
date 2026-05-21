@@ -49,7 +49,13 @@ class AuthRepository {
   }
 
   static AuthUser _toAuthUser(UserResponse u) {
-    final surveyId = u.surveyId.toInt() != 0 ? u.surveyId.toString() : null;
+    // Workaround: protobuf-3.1.0 returns native int (not Int64) as the default
+    // for unset int64 fields, causing an implicit cast error in the typed getter.
+    // getField() returns dynamic and avoids the cast.
+    final dynamic rawSurveyId = u.getField(11);
+    final surveyId = (rawSurveyId != null && rawSurveyId != 0)
+        ? rawSurveyId.toString()
+        : null;
     return AuthUser(
       userId: u.userId,
       email: u.email,
