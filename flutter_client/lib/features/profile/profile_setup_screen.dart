@@ -65,9 +65,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final accessToken = ref.read(authProvider).accessToken!;
+      final userId = ref.read(authProvider).userId!;
       final updatedUser = await ref.read(authRepositoryProvider).updateProfile(
-        accessToken,
+        userId,
         nickname,
         '',
       );
