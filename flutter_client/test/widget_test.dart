@@ -629,6 +629,15 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
+  Future<GenerateProfileUploadUrlResponse> generateProfileUploadUrl(
+    String userId,
+  ) async {
+    return GenerateProfileUploadUrlResponse()
+      ..uploadUrl = 'https://example.com/upload'
+      ..objectUrl = 'https://example.com/profile.png';
+  }
+
+  @override
   Future<void> logout(String userId) async {}
 
   @override

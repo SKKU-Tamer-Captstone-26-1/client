@@ -268,7 +268,7 @@ class _BoardPostCard extends StatelessWidget {
                     ],
                     const Spacer(),
                     const Divider(height: 24, color: Color(0xFFF4F4F5)),
-                    _PostMetaRow(post: post),
+                    _PostMetaRow(post: post, onChatRequested: onChatRequested),
                   ],
                 ),
               ),
@@ -309,9 +309,10 @@ class _CategoryBadge extends StatelessWidget {
 }
 
 class _PostMetaRow extends StatelessWidget {
-  const _PostMetaRow({required this.post});
+  const _PostMetaRow({required this.post, this.onChatRequested});
 
   final BoardPost post;
+  final ValueChanged<BoardPost>? onChatRequested;
 
   @override
   Widget build(BuildContext context) {
@@ -342,7 +343,40 @@ class _PostMetaRow extends StatelessWidget {
         _PostMetric(icon: Icons.forum, value: post.commentCount),
         const SizedBox(width: 10),
         _PostMetric(icon: Icons.favorite, value: post.favoriteCount),
+        const SizedBox(width: 8),
+        _BoardChatButton(
+          onPressed: onChatRequested == null
+              ? null
+              : () => onChatRequested!(post),
+        ),
       ],
+    );
+  }
+}
+
+class _BoardChatButton extends StatelessWidget {
+  const _BoardChatButton({this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Open board chat',
+      child: IconButton.filled(
+        onPressed: onPressed,
+        icon: const Icon(Icons.chat_bubble_outline, size: 16),
+        style: IconButton.styleFrom(
+          backgroundColor: AppColors.primaryContainer,
+          disabledBackgroundColor: context.palette.outlineVariant,
+          foregroundColor: Colors.white,
+          disabledForegroundColor: context.palette.secondary,
+          minimumSize: const Size.square(32),
+          fixedSize: const Size.square(32),
+          padding: EdgeInsets.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ),
     );
   }
 }
