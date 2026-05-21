@@ -26,6 +26,11 @@ class AuthRepository {
     return _toAuthUser(res.user);
   }
 
+  Future<({String uploadUrl, String objectUrl})> generateProfileUploadUrl(String userId) async {
+    final res = await _dataSource.generateProfileUploadUrl(userId);
+    return (uploadUrl: res.uploadUrl, objectUrl: res.objectUrl);
+  }
+
   Future<void> logout(String userId) => _dataSource.logout(userId);
 
   Future<void> dispose() => _dataSource.dispose();
