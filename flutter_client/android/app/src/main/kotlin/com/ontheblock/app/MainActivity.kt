@@ -1,4 +1,4 @@
-package com.example.flutter_client
+package com.ontheblock.app
 
 import io.flutter.embedding.android.FlutterActivity
 
