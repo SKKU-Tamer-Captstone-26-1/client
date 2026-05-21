@@ -1,48 +1,40 @@
 {
   "project_info": {
-    "project_number": "363489736370",
-    "project_id": "skkutamercapstone261",
-    "storage_bucket": "skkutamercapstone261.firebasestorage.app"
+    "project_number": "44649239380",
+    "project_id": "on-the-block-2026",
+    "storage_bucket": "on-the-block-2026.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:363489736370:android:e11b29c962c3e9c80e3bab",
+        "mobilesdk_app_id": "1:44649239380:android:fa11380353f6566156eec1",
         "android_client_info": {
-          "package_name": "com.ontheblock.app"
+          "package_name": "com.ontheblockand.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "363489736370-aa802qd3isef1ntr6600vqs2i8j8m1gc.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.ontheblock.app",
-            "certificate_hash": "53bf2e198faf576c79e2ce45915db6642636a51f"
-          }
-        },
-        {
-          "client_id": "363489736370-gco7h5pfol76a85j0hqghnlims211rac.apps.googleusercontent.com",
+          "client_id": "44649239380-2pqbv44f0hb68vu90t7f7bl2vqltl5pq.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDbFTMiaER_S_Qu9S8t6i1BGS8IrXkqwDs"
+          "current_key": "AIzaSyCsSizQTI8gFdapQKA9wU-05dFadxi6o6g"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "363489736370-5uv1gk66vcfmq3tkha05qek55a0p4fpr.apps.googleusercontent.com",
+              "client_id": "44649239380-2pqbv44f0hb68vu90t7f7bl2vqltl5pq.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "363489736370-g42bpmd1egdmuopac6kpv3o2tt3k3er7.apps.googleusercontent.com",
+              "client_id": "44649239380-0cpootoct3i32mijqe4diq88u4ala684.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.ontheblock.app"
+                "bundle_id": "com.ontheblockios.app"
               }
             }
           ]
