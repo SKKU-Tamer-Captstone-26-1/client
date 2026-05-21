@@ -12,6 +12,15 @@ const String kSurveyBaseUrl = String.fromEnvironment(
 
 const bool kBypassSurvey = bool.fromEnvironment('BYPASS_SURVEY');
 
+const String kSurveyGrpcHost = String.fromEnvironment(
+  'SURVEY_GRPC_HOST',
+  defaultValue: '10.0.2.2',
+);
+const String kSurveyGrpcPort = String.fromEnvironment(
+  'SURVEY_GRPC_PORT',
+  defaultValue: '9093',
+);
+
 /// Call once from main() before any network requests.
 /// Catches insecure HTTP defaults that would send bearer tokens over plaintext.
 void assertSecureConfig() {
