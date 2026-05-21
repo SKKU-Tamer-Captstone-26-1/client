@@ -1,5 +1,6 @@
 import '../models/auth_models.dart';
 import 'auth_remote_data_source.dart';
+import 'grpc_gen/auth/v1/auth.pb.dart';
 
 class AuthRepository {
   const AuthRepository(this._dataSource);
@@ -7,61 +8,66 @@ class AuthRepository {
   final AuthRemoteDataSource _dataSource;
 
   Future<AuthSession> googleLogin() async {
-    final response = await _dataSource.googleLogin();
-    final user = response.user;
-    return AuthSession(
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
-      user: AuthUser(
-        userId: user.userId,
-        email: user.email,
-        nickname: user.hasNickname() ? user.nickname : null,
-        profileImageUrl: user.hasProfileImageUrl() ? user.profileImageUrl : null,
-        neighborhood: user.hasNeighborhood() ? user.neighborhood : null,
-        surveyCompleted: user.surveyCompleted,
-        alcoholScore: user.alcoholScore,
-        points: user.points,
-      ),
-      isNewUser: response.isNewUser,
-    );
+    final res = await _dataSource.googleLogin();
+    return _sessionFromLoginResponse(res);
   }
 
   Future<AuthSession> refreshToken(String refreshToken) async {
-    final response = await _dataSource.refreshToken(refreshToken);
-    final user = response.user;
-    return AuthSession(
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
-      user: AuthUser(
-        userId: user.userId,
-        email: user.email,
-        nickname: user.hasNickname() ? user.nickname : null,
-        profileImageUrl: user.hasProfileImageUrl() ? user.profileImageUrl : null,
-        neighborhood: user.hasNeighborhood() ? user.neighborhood : null,
-        surveyCompleted: user.surveyCompleted,
-        alcoholScore: user.alcoholScore,
-        points: user.points,
-      ),
-      isNewUser: false,
-    );
+    final res = await _dataSource.refreshToken(refreshToken);
+    return _sessionFromRefreshResponse(res);
   }
 
-  Future<AuthUser> updateProfile(String userId, String nickname, String profileImageUrl) async {
-    final response = await _dataSource.updateProfile(userId, nickname, profileImageUrl);
-    final user = response.user;
-    return AuthUser(
-      userId: user.userId,
-      email: user.email,
-      nickname: user.hasNickname() ? user.nickname : null,
-      profileImageUrl: user.hasProfileImageUrl() ? user.profileImageUrl : null,
-      neighborhood: user.hasNeighborhood() ? user.neighborhood : null,
-      surveyCompleted: user.surveyCompleted,
-      alcoholScore: user.alcoholScore,
-      points: user.points,
-    );
+  Future<AuthUser> updateProfile(
+    String userId,
+    String nickname,
+    String profileImageUrl,
+  ) async {
+    final res = await _dataSource.updateProfile(userId, nickname, profileImageUrl);
+    return _toAuthUser(res.user);
+  }
+
+  Future<({String uploadUrl, String objectUrl})> generateProfileUploadUrl(String userId) async {
+    final res = await _dataSource.generateProfileUploadUrl(userId);
+    return (uploadUrl: res.uploadUrl, objectUrl: res.objectUrl);
   }
 
   Future<void> logout(String userId) => _dataSource.logout(userId);
 
   Future<void> dispose() => _dataSource.dispose();
+
+  static AuthSession _sessionFromLoginResponse(GoogleLoginResponse res) {
+    return AuthSession(
+      accessToken: res.accessToken,
+      refreshToken: res.refreshToken,
+      user: _toAuthUser(res.user),
+      isNewUser: res.isNewUser,
+    );
+  }
+
+  static AuthSession _sessionFromRefreshResponse(RefreshTokenResponse res) {
+    return AuthSession(
+      accessToken: res.accessToken,
+      refreshToken: res.refreshToken,
+      user: _toAuthUser(res.user),
+      isNewUser: false,
+    );
+  }
+
+  static AuthUser _toAuthUser(UserResponse u) {
+    // Workaround: protobuf-3.1.0 returns native int (not Int64) as the default
+    // for unset int64 fields, causing an implicit cast error in the typed getter.
+    // getField() returns dynamic and avoids the cast.
+    final dynamic rawSurveyId = u.getField(11);
+    final surveyId = (rawSurveyId != null && rawSurveyId != 0)
+        ? rawSurveyId.toString()
+        : null;
+    return AuthUser(
+      userId: u.userId,
+      email: u.email,
+      nickname: u.nickname.isEmpty ? null : u.nickname,
+      profileImageUrl: u.profileImageUrl.isEmpty ? null : u.profileImageUrl,
+      surveyCompleted: u.surveyCompleted,
+      surveyId: surveyId,
+    );
+  }
 }

@@ -14,11 +14,13 @@ class BoardScreen extends StatelessWidget {
     super.key,
     this.onBottomNavSelected,
     this.onProfileSelected,
+    this.onBoardChatRequested,
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onProfileSelected;
+  final ValueChanged<BoardPost>? onBoardChatRequested;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
@@ -90,7 +92,10 @@ class BoardScreen extends StatelessWidget {
                       mainAxisExtent: 392,
                     ),
                     delegate: SliverChildBuilderDelegate((context, index) {
-                      return _BoardPostCard(post: mockBoardPosts[index]);
+                      return _BoardPostCard(
+                        post: mockBoardPosts[index],
+                        onChatRequested: onBoardChatRequested,
+                      );
                     }, childCount: mockBoardPosts.length),
                   );
                 },
@@ -162,9 +167,10 @@ class _BoardCategoryChips extends StatelessWidget {
 }
 
 class _BoardPostCard extends StatelessWidget {
-  const _BoardPostCard({required this.post});
+  const _BoardPostCard({required this.post, this.onChatRequested});
 
   final BoardPost post;
+  final ValueChanged<BoardPost>? onChatRequested;
 
   @override
   Widget build(BuildContext context) {

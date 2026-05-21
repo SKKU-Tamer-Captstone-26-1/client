@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 @immutable
 class BoardPost {
   const BoardPost({
+    required this.boardId,
     required this.category,
     required this.title,
     required this.body,
     required this.author,
+    required this.boardOwnerUserId,
     required this.timeAgo,
     required this.commentCount,
     required this.favoriteCount,
@@ -15,6 +17,8 @@ class BoardPost {
     this.location,
   });
 
+  final String boardId;
+  final String boardOwnerUserId;
   final String category;
   final String title;
   final String body;

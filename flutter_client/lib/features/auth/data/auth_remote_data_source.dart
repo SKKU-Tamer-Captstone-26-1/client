@@ -8,6 +8,7 @@ abstract class AuthRemoteDataSource {
   Future<GoogleLoginResponse> googleLogin();
   Future<RefreshTokenResponse> refreshToken(String token);
   Future<UpdateProfileResponse> updateProfile(String userId, String nickname, String profileImageUrl);
+  Future<GenerateProfileUploadUrlResponse> generateProfileUploadUrl(String userId);
   Future<void> logout(String userId);
   Future<void> dispose();
 }
@@ -15,7 +16,7 @@ abstract class AuthRemoteDataSource {
 class GrpcAuthRemoteDataSource implements AuthRemoteDataSource {
   factory GrpcAuthRemoteDataSource({AuthGrpcEndpoint? endpoint}) {
     const serverClientId =
-        '44649239380-0cpootoct3i32mijqe4diq88u4ala684.apps.googleusercontent.com';
+        '44649239380-2pqbv44f0hb68vu90t7f7bl2vqltl5pq.apps.googleusercontent.com';
     final googleSignIn = GoogleSignIn(serverClientId: serverClientId);
 
     final resolvedEndpoint = endpoint ?? AuthGrpcEndpoint.fromEnvironment();
@@ -70,6 +71,13 @@ class GrpcAuthRemoteDataSource implements AuthRemoteDataSource {
         ..userId = userId
         ..nickname = nickname
         ..profileImageUrl = profileImageUrl,
+    );
+  }
+
+  @override
+  Future<GenerateProfileUploadUrlResponse> generateProfileUploadUrl(String userId) {
+    return _client.generateProfileUploadUrl(
+      GenerateProfileUploadUrlRequest()..userId = userId,
     );
   }
 

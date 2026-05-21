@@ -37,6 +37,10 @@ class AuthServiceClient extends $grpc.Client {
       '/ontheblock.auth.v1.AuthService/UpdateProfile',
       ($0.UpdateProfileRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.UpdateProfileResponse.fromBuffer(value));
+  static final _$generateProfileUploadUrl = $grpc.ClientMethod<$0.GenerateProfileUploadUrlRequest, $0.GenerateProfileUploadUrlResponse>(
+      '/ontheblock.auth.v1.AuthService/GenerateProfileUploadUrl',
+      ($0.GenerateProfileUploadUrlRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.GenerateProfileUploadUrlResponse.fromBuffer(value));
 
   AuthServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -57,5 +61,9 @@ class AuthServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.UpdateProfileResponse> updateProfile($0.UpdateProfileRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$updateProfile, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GenerateProfileUploadUrlResponse> generateProfileUploadUrl($0.GenerateProfileUploadUrlRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$generateProfileUploadUrl, request, options: options);
   }
 }

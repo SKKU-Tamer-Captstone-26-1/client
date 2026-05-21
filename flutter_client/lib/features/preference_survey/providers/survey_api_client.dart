@@ -7,7 +7,7 @@ class SurveyApiClient {
 
   const SurveyApiClient({required this.baseUrl, required this.authToken});
 
-  Future<void> submit({
+  Future<String> submit({
     required String userId,
     required Map<String, List<String>?> answers,
   }) async {
@@ -41,5 +41,8 @@ class SurveyApiClient {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception('Survey submit failed: ${response.statusCode}');
     }
+
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    return data['surveyId'] as String;
   }
 }

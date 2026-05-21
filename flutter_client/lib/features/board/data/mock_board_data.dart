@@ -11,6 +11,8 @@ const mockBoardCategories = [
 
 const mockBoardPosts = [
   BoardPost(
+    boardId: 'board-mock-001',
+    boardOwnerUserId: 'user-mock-001',
     category: 'Tasting Note',
     title: 'Hidden Gem: Old Soul Cask Strength Batch #4',
     body:
@@ -25,6 +27,8 @@ const mockBoardPosts = [
         'https://lh3.googleusercontent.com/aida-public/AB6AXuDtWhkWW2fEDphazGCI1UfA34SjfTVCnVOKVCsaQLo_XwcM7tKg3YIFBIKNMKSL1JVuXg44Eb_Om3fYMhrQVJhmc26L81l1CDcUaGICKFKwV5tHP96Cs3K2974KVHY-HkPp-9B8BgFIIWFnYo0bZWHmiWvm44xvghOYcH-2-w1hqqTqB_g_7caHh5jMSvVTjEqv-TsdZkn_h9WKJyUKKpBqmvOT39vEa9nmdmB9MRXdUCjBQOM4QS_MfdtYKN5Dy7qa5K462dS3ORw',
   ),
   BoardPost(
+    boardId: 'board-mock-002',
+    boardOwnerUserId: 'user-mock-002',
     category: 'Question',
     title: 'Looking for a recommendation: Peated scotch under \$100?',
     body:
@@ -37,6 +41,8 @@ const mockBoardPosts = [
         'https://lh3.googleusercontent.com/aida-public/AB6AXuA0QrnKiNBvp_IicrdkXM5x7eVVlpFjZG2LzW9dnh-y5U8L2bp_D85CARz-qHqY3wGaUhoaKMROCkSuMcE3MJ4YnhD70_p1Ex4Wsilh1uAH189zMbwaG29kvfSDavz1UsvaG_VHdhobQNbrLuAXkY9P3vyB6xFzGc6ttWdWg6oRWURO-FHiB8DlWvUNsNL3nldeuCkWxQ7_5IS2jXs_gaAS2z9E4m7tdgssoTwAtCVnZ9CpWiuvYZC4lokeWTEdJsTlA9ZpXOwz5dg',
   ),
   BoardPost(
+    boardId: 'board-mock-003',
+    boardOwnerUserId: 'user-mock-003',
     category: 'Nearby Drop',
     title: "Spotted: Blanton's Gold at 4th St Liquors",
     body:
@@ -52,6 +58,8 @@ const mockBoardPosts = [
         'https://lh3.googleusercontent.com/aida-public/AB6AXuB63IC0ZuFF_pCyVtPPDO5QHDdrywyTiTs2b8cWNPeeDyIAEcRBRNyIAn5rFn9t0hnRxSCoCEun3pQmOPOEIdercKJvRm7OlkdZLKPnpuWUHyxoqseHri_EDwfxHCG3p3_Nc8BaG6H8OcYBssGnG6jIsB_96orEKkJz6y_B_FusvQNZK34toTH8KI29DU2w-kvT9QK9bM3wAN_xZkwLh3kxZ7kYk7LJkA4H6iU6fSZYJzJFkvSWmVUEl7u2UNrLPPiDyOvsn18x5G8',
   ),
   BoardPost(
+    boardId: 'board-mock-004',
+    boardOwnerUserId: 'user-mock-004',
     category: 'Tasting Note',
     title: 'Tequila Tuesday: Fortaleza Reposado',
     body:
@@ -64,6 +72,8 @@ const mockBoardPosts = [
         'https://lh3.googleusercontent.com/aida-public/AB6AXuBxH4dfKgZBYlFrtruee2rNDgnmusQFxSIti5oyJxdsPJUZjZupOjxJ5_r_XnyPpSp6EINzUp3uVLIg23kWKtxf32OeWpR_hsJ8meecv4ZumTZR7Av4646RNk0lfGhnPOKt_F-KuD4APRufdLi0g9OTrfwO3ceXrM7RL__WttWkb9oPhWleAzcxDmeHtx3d4vrCmVSPhq-TW7iuIRFS08gwkGwBc-Jdcobgs9V5qcprXM9wAJXe3-7IhDUYEaTXUw9rRGygJO5AKj8',
   ),
   BoardPost(
+    boardId: 'board-mock-005',
+    boardOwnerUserId: 'user-mock-005',
     category: 'Nearby Drop',
     title: 'New Local Gin Release',
     body:
@@ -79,6 +89,8 @@ const mockBoardPosts = [
         'https://lh3.googleusercontent.com/aida-public/AB6AXuA9ans6MvyOREsXYeZhd5x4vJ4G0-0ShILt6N9SVoK5yDz0AEVyh1INKM9PE2wXTxpjnKMKA7Ca0cdbFy3jRQ7JT8oBi5ffnckNbh0H-QWu9KK7dmuDjYCBAsuPWuah6Gd7-MEAJpHv3nTem-Umf1z3e7JvQAjLKmW-a5XZuDi9TgLomOAC4A7M4_PMSpcVIso7OCKNVReY3o3CzLQRZ3-4FY6_km2FnhHJCLfMgL8webMBTS9MRQvrB4aBu3v3yqyP_1zENFB4b6c',
   ),
   BoardPost(
+    boardId: 'board-mock-006',
+    boardOwnerUserId: 'user-mock-006',
     category: 'Question',
     title: 'Shelf life of Vermouth?',
     body:
@@ -88,6 +100,6 @@ const mockBoardPosts = [
     commentCount: 42,
     favoriteCount: 18,
     authorAvatarUrl:
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuC-RNB5a3SZ1inLJYhS1HS7vKH_2y3Gx9kRV6NA62rQNpDZIym1OKCFbbj-jP13iyqkzxWHxFfxT3sHalL1SsgkFI4CJUwv6lW8S8Q4aIfSNn4xPRjnRnlXfX-LTic21bARbbgawVruNOrRSH_Xc3W_biUzZ_L4q2Mx8Lahi-zjwfLqNWnjIBmSDwZ8NIMFTr7XaJg8pC_tnv8BlxNjThKhA_vo_IYEBDiE0hUEVH7flGtfhDQPCSQerTfplHA5OAxw7cw-Qpj-CQc',
+        'https://lh3.googleusercontent.com/aida-public/AB6AXuC-RNB5a3SZ1inLJYhS1HS7vKH_2y3Gx9kRV6NA62rQNpDZIym1OKCFbbj-jP13iyqkzxWHxFfxT3sHalL1SsgkFI4CJUwv6lW8S8Q4aAfSNn4xPRjnRnlXfX-LTic21bARbbgawVruNOrRSH_Xc3W_biUzZ_L4q2Mx8Lahi-zjwfLqNWnjIBmSDwZ8NIMFTr7XaJg8pC_tnv8BlxNjThKhA_vo_IYEBDiE0hUEVH7flGtfhDQPCSQerTfplHA5OAxw7cw-Qpj-CQc',
   ),
 ];

@@ -135,7 +135,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         _stage = _AppStage.surveyIntro;
       } else {
         if (kBypassSurvey) {
-          ref.read(authProvider.notifier).markSurveyCompleted();
+          ref.read(authProvider.notifier).markSurveyCompleted(surveyId: session.user.surveyId ?? '');
         }
         _stage = _AppStage.home;
       }
@@ -166,7 +166,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         userId: ref.read(authProvider).userId ?? '',
         onComplete: () {
           if (kBypassSurvey) {
-            ref.read(authProvider.notifier).markSurveyCompleted();
+            ref.read(authProvider.notifier).markSurveyCompleted(surveyId: ref.read(authProvider).user?.surveyId ?? '');
           }
           setState(() {
             _stage = kBypassSurvey ? _AppStage.home : _AppStage.surveyIntro;

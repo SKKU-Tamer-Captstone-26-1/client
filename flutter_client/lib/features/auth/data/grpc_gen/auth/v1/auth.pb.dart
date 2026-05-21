@@ -753,5 +753,96 @@ class UpdateProfileResponse extends $pb.GeneratedMessage {
   UserResponse ensureUser() => $_ensure(0);
 }
 
+class GenerateProfileUploadUrlRequest extends $pb.GeneratedMessage {
+  factory GenerateProfileUploadUrlRequest({$core.String? userId}) {
+    final $result = create();
+    if (userId != null) $result.userId = userId;
+    return $result;
+  }
+  GenerateProfileUploadUrlRequest._() : super();
+  factory GenerateProfileUploadUrlRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateProfileUploadUrlRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateProfileUploadUrlRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.deepCopy] instead. Will be removed in next major version')
+  GenerateProfileUploadUrlRequest clone() => GenerateProfileUploadUrlRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.rebuild] instead. Will be removed in next major version')
+  GenerateProfileUploadUrlRequest copyWith(void Function(GenerateProfileUploadUrlRequest) updates) => super.copyWith((message) => updates(message as GenerateProfileUploadUrlRequest)) as GenerateProfileUploadUrlRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GenerateProfileUploadUrlRequest create() => GenerateProfileUploadUrlRequest._();
+  GenerateProfileUploadUrlRequest createEmptyInstance() => create();
+  static $pb.PbList<GenerateProfileUploadUrlRequest> createRepeated() => $pb.PbList<GenerateProfileUploadUrlRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateProfileUploadUrlRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateProfileUploadUrlRequest>(create);
+  static GenerateProfileUploadUrlRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+}
+
+class GenerateProfileUploadUrlResponse extends $pb.GeneratedMessage {
+  factory GenerateProfileUploadUrlResponse({$core.String? uploadUrl, $core.String? objectUrl}) {
+    final $result = create();
+    if (uploadUrl != null) $result.uploadUrl = uploadUrl;
+    if (objectUrl != null) $result.objectUrl = objectUrl;
+    return $result;
+  }
+  GenerateProfileUploadUrlResponse._() : super();
+  factory GenerateProfileUploadUrlResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenerateProfileUploadUrlResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'GenerateProfileUploadUrlResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'uploadUrl')
+    ..aOS(2, _omitFieldNames ? '' : 'objectUrl')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.deepCopy] instead. Will be removed in next major version')
+  GenerateProfileUploadUrlResponse clone() => GenerateProfileUploadUrlResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.rebuild] instead. Will be removed in next major version')
+  GenerateProfileUploadUrlResponse copyWith(void Function(GenerateProfileUploadUrlResponse) updates) => super.copyWith((message) => updates(message as GenerateProfileUploadUrlResponse)) as GenerateProfileUploadUrlResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static GenerateProfileUploadUrlResponse create() => GenerateProfileUploadUrlResponse._();
+  GenerateProfileUploadUrlResponse createEmptyInstance() => create();
+  static $pb.PbList<GenerateProfileUploadUrlResponse> createRepeated() => $pb.PbList<GenerateProfileUploadUrlResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GenerateProfileUploadUrlResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenerateProfileUploadUrlResponse>(create);
+  static GenerateProfileUploadUrlResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get uploadUrl => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set uploadUrl($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUploadUrl() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUploadUrl() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get objectUrl => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set objectUrl($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasObjectUrl() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearObjectUrl() => clearField(2);
+}
+
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
 const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
