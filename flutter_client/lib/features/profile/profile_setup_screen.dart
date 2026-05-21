@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -80,27 +81,38 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   Future<void> _complete() async {
     final nickname = _nicknameController.text.trim();
     if (nickname.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please enter a nickname')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Please enter a nickname')));
       return;
     }
 
     setState(() => _isLoading = true);
     try {
       final userId = ref.read(authProvider).userId!;
-      final updatedUser = await ref.read(authRepositoryProvider).updateProfile(
-        userId,
-        nickname,
-        '',
-      );
+      final repo = ref.read(authRepositoryProvider);
+
+      String profileImageUrl = '';
+      if (_pickedImage != null) {
+        final (:uploadUrl, :objectUrl) =
+            await repo.generateProfileUploadUrl(userId);
+        final uploadRes = await http.put(
+          Uri.parse(uploadUrl),
+          headers: {'Content-Type': 'image/jpeg'},
+          body: await _pickedImage!.readAsBytes(),
+        );
+        if (uploadRes.statusCode != 200) {
+          throw Exception('Image upload failed (${uploadRes.statusCode})');
+        }
+        profileImageUrl = objectUrl;
+      }
+
+      final updatedUser = await repo.updateProfile(userId, nickname, profileImageUrl);
       ref.read(authProvider.notifier).updateUser(updatedUser);
       widget.onComplete();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to save profile: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Failed to save profile: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
