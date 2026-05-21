@@ -8,6 +8,7 @@ abstract class AuthRemoteDataSource {
   Future<GoogleLoginResponse> googleLogin();
   Future<RefreshTokenResponse> refreshToken(String token);
   Future<UpdateProfileResponse> updateProfile(String userId, String nickname, String profileImageUrl);
+  Future<GenerateProfileUploadUrlResponse> generateProfileUploadUrl(String userId);
   Future<void> logout(String userId);
   Future<void> dispose();
 }
@@ -70,6 +71,13 @@ class GrpcAuthRemoteDataSource implements AuthRemoteDataSource {
         ..userId = userId
         ..nickname = nickname
         ..profileImageUrl = profileImageUrl,
+    );
+  }
+
+  @override
+  Future<GenerateProfileUploadUrlResponse> generateProfileUploadUrl(String userId) {
+    return _client.generateProfileUploadUrl(
+      GenerateProfileUploadUrlRequest()..userId = userId,
     );
   }
 
