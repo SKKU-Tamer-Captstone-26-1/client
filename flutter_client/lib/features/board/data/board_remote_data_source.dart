@@ -14,7 +14,10 @@ abstract class BoardRemoteDataSource {
     int pageSize = 20,
   });
 
-  Future<BoardPost> getPost({required String postId, String userId = ''});
+  Future<BoardPost> getPost({
+    required String postId,
+    String userId = '',
+  });
 
   Future<BoardPost> createPost({
     required String userId,
@@ -106,9 +109,9 @@ class GrpcBoardRemoteDataSource implements BoardRemoteDataSource {
   static const _timeout = Duration(seconds: 10);
 
   CallOptions _authOptions(String accessToken) => CallOptions(
-    metadata: {'authorization': 'Bearer $accessToken'},
-    timeout: _timeout,
-  );
+        metadata: {'authorization': 'Bearer $accessToken'},
+        timeout: _timeout,
+      );
 
   static final _defaultOptions = CallOptions(timeout: _timeout);
 
@@ -265,10 +268,7 @@ class GrpcBoardRemoteDataSource implements BoardRemoteDataSource {
       );
     }
 
-    final resp = await _client.createPost(
-      req,
-      options: _authOptions(accessToken),
-    );
+    final resp = await _client.createPost(req, options: _authOptions(accessToken));
     return _postFromProto(resp.post);
   }
 
@@ -282,15 +282,15 @@ class GrpcBoardRemoteDataSource implements BoardRemoteDataSource {
     List<String> imageUrls = const [],
     required String accessToken,
   }) async {
-    final req = UpdatePostRequest(postId: postId, updateImages: updateImages);
+    final req = UpdatePostRequest(
+      postId: postId,
+      updateImages: updateImages,
+    );
     if (title != null) req.title = title;
     if (content != null) req.content = content;
     if (updateImages) req.imageUrls.addAll(imageUrls);
 
-    final resp = await _client.updatePost(
-      req,
-      options: _authOptions(accessToken),
-    );
+    final resp = await _client.updatePost(req, options: _authOptions(accessToken));
     return _postFromProto(resp.post);
   }
 

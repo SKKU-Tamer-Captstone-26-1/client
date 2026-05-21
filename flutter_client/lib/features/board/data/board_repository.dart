@@ -78,7 +78,7 @@ abstract class BoardRepository {
 
 class RemoteBoardRepository implements BoardRepository {
   RemoteBoardRepository({BoardRemoteDataSource? dataSource})
-    : _dataSource = dataSource ?? GrpcBoardRemoteDataSource();
+      : _dataSource = dataSource ?? GrpcBoardRemoteDataSource();
 
   final BoardRemoteDataSource _dataSource;
 
@@ -90,12 +90,12 @@ class RemoteBoardRepository implements BoardRepository {
     int page = 1,
     int pageSize = 20,
   }) => _dataSource.listPosts(
-    boardType: boardType,
-    query: query,
-    userId: userId,
-    page: page,
-    pageSize: pageSize,
-  );
+        boardType: boardType,
+        query: query,
+        userId: userId,
+        page: page,
+        pageSize: pageSize,
+      );
 
   @override
   Future<BoardPost> getPost({required String postId, String userId = ''}) =>
@@ -114,17 +114,17 @@ class RemoteBoardRepository implements BoardRepository {
     double? longitude,
     required String accessToken,
   }) => _dataSource.createPost(
-    userId: userId,
-    boardType: boardType,
-    title: title,
-    content: content,
-    imageUrls: imageUrls,
-    locationName: locationName,
-    locationAddress: locationAddress,
-    latitude: latitude,
-    longitude: longitude,
-    accessToken: accessToken,
-  );
+        userId: userId,
+        boardType: boardType,
+        title: title,
+        content: content,
+        imageUrls: imageUrls,
+        locationName: locationName,
+        locationAddress: locationAddress,
+        latitude: latitude,
+        longitude: longitude,
+        accessToken: accessToken,
+      );
 
   @override
   Future<BoardPost> updatePost({
@@ -136,14 +136,14 @@ class RemoteBoardRepository implements BoardRepository {
     List<String> imageUrls = const [],
     required String accessToken,
   }) => _dataSource.updatePost(
-    postId: postId,
-    userId: userId,
-    title: title,
-    content: content,
-    updateImages: updateImages,
-    imageUrls: imageUrls,
-    accessToken: accessToken,
-  );
+        postId: postId,
+        userId: userId,
+        title: title,
+        content: content,
+        updateImages: updateImages,
+        imageUrls: imageUrls,
+        accessToken: accessToken,
+      );
 
   @override
   Future<void> deletePost({
@@ -164,11 +164,11 @@ class RemoteBoardRepository implements BoardRepository {
     int page = 1,
     int pageSize = 20,
   }) => _dataSource.listComments(
-    postId: postId,
-    userId: userId,
-    page: page,
-    pageSize: pageSize,
-  );
+        postId: postId,
+        userId: userId,
+        page: page,
+        pageSize: pageSize,
+      );
 
   @override
   Future<BoardComment> createComment({
@@ -177,11 +177,11 @@ class RemoteBoardRepository implements BoardRepository {
     String parentCommentId = '',
     required String accessToken,
   }) => _dataSource.createComment(
-    postId: postId,
-    content: content,
-    parentCommentId: parentCommentId,
-    accessToken: accessToken,
-  );
+        postId: postId,
+        content: content,
+        parentCommentId: parentCommentId,
+        accessToken: accessToken,
+      );
 
   @override
   Future<BoardComment> updateComment({
@@ -189,23 +189,28 @@ class RemoteBoardRepository implements BoardRepository {
     required String content,
     required String accessToken,
   }) => _dataSource.updateComment(
-    commentId: commentId,
-    content: content,
-    accessToken: accessToken,
-  );
+        commentId: commentId,
+        content: content,
+        accessToken: accessToken,
+      );
 
   @override
   Future<void> deleteComment({
     required String commentId,
     required String accessToken,
-  }) =>
-      _dataSource.deleteComment(commentId: commentId, accessToken: accessToken);
+  }) => _dataSource.deleteComment(
+        commentId: commentId,
+        accessToken: accessToken,
+      );
 
   @override
   Future<({bool liked, int likeCount})> likeComment({
     required String commentId,
     required String accessToken,
-  }) => _dataSource.likeComment(commentId: commentId, accessToken: accessToken);
+  }) => _dataSource.likeComment(
+        commentId: commentId,
+        accessToken: accessToken,
+      );
 
   Future<void> dispose() => _dataSource.dispose();
 }

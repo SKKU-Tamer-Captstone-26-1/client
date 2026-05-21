@@ -64,8 +64,7 @@ class BoardPost {
       authorProfileImageUrl: json['author_profile_image_url'] as String? ?? '',
       title: json['title'] as String? ?? '',
       content: json['content'] as String? ?? '',
-      imageUrls:
-          (json['image_urls'] as List<dynamic>?)
+      imageUrls: (json['image_urls'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           [],
@@ -150,14 +149,15 @@ class BoardComment {
       parentCommentId: json['parent_comment_id'] as String? ?? '',
       authorId: json['author_id'] as String? ?? '',
       authorNickname: json['author_nickname'] as String? ?? '',
-      authorProfileImageUrl: json['author_profile_image_url'] as String? ?? '',
+      authorProfileImageUrl:
+          json['author_profile_image_url'] as String? ?? '',
       content: json['content'] as String? ?? '',
       likeCount: json['like_count'] as int? ?? 0,
       isLiked: json['is_liked'] as bool? ?? false,
       isDeleted: json['is_deleted'] as bool? ?? false,
-      replies:
-          (json['replies'] as List<dynamic>?)
-              ?.map((e) => BoardComment.fromJson(e as Map<String, dynamic>))
+      replies: (json['replies'] as List<dynamic>?)
+              ?.map((e) =>
+                  BoardComment.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       createdAt: json['created_at'] != null
@@ -196,7 +196,10 @@ class BoardPagination {
 
 @immutable
 class BoardPostPage {
-  const BoardPostPage({required this.posts, required this.pagination});
+  const BoardPostPage({
+    required this.posts,
+    required this.pagination,
+  });
 
   final List<BoardPost> posts;
   final BoardPagination pagination;
@@ -204,7 +207,10 @@ class BoardPostPage {
 
 @immutable
 class BoardCommentPage {
-  const BoardCommentPage({required this.comments, required this.pagination});
+  const BoardCommentPage({
+    required this.comments,
+    required this.pagination,
+  });
 
   final List<BoardComment> comments;
   final BoardPagination pagination;
