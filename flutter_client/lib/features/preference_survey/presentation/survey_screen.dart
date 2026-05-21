@@ -16,6 +16,17 @@ class SurveyScreen extends ConsumerWidget {
     final state = ref.watch(surveyProvider);
     final notifier = ref.read(surveyProvider.notifier);
 
+    if (state.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (state.error != null) {
+      return Scaffold(
+        body: Center(child: Text('Failed to load questions: ${state.error}')),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -54,16 +65,13 @@ class SurveyScreen extends ConsumerWidget {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               transitionBuilder: (child, animation) {
-                final slide =
-                    Tween<Offset>(
-                      begin: const Offset(1, 0),
-                      end: Offset.zero,
-                    ).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeInOut,
-                      ),
-                    );
+                final slide = Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInOut,
+                ));
                 return SlideTransition(position: slide, child: child);
               },
               child: _QuestionBody(
