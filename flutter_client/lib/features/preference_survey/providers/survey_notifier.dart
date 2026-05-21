@@ -1,17 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../config/questions_config.dart';
+import '../data/survey_grpc_client.dart';
 import '../models/survey_question.dart';
 
 class SurveyState {
+  final List<SurveyQuestion> _allQuestions;
   final List<SurveyQuestion> visibleQuestions;
   final int currentIndex;
   final Map<String, List<String>?> answers;
+  final bool isLoading;
+  final String? error;
 
   const SurveyState({
-    required this.visibleQuestions,
-    required this.currentIndex,
-    required this.answers,
-  });
+    List<SurveyQuestion> allQuestions = const [],
+    this.visibleQuestions = const [],
+    this.currentIndex = 0,
+    this.answers = const {},
+    this.isLoading = true,
+    this.error,
+  }) : _allQuestions = allQuestions;
 
   SurveyQuestion get currentQuestion => visibleQuestions[currentIndex];
   List<String>? get currentAnswerList => answers[currentQuestion.id];
@@ -22,8 +28,7 @@ class SurveyState {
 
   bool get isReadyToAdvance {
     final ans = currentAnswerList;
-    if (ans == null) return false;
-    if (ans.isEmpty) return false;
+    if (ans == null || ans.isEmpty) return false;
     final q = currentQuestion;
     if (q.isMultiSelect && q.maxSelections != null) {
       return ans.length == q.maxSelections;
@@ -32,25 +37,43 @@ class SurveyState {
   }
 
   SurveyState copyWith({
+    List<SurveyQuestion>? allQuestions,
     List<SurveyQuestion>? visibleQuestions,
     int? currentIndex,
     Map<String, List<String>?>? answers,
+    bool? isLoading,
+    String? error,
   }) {
     return SurveyState(
+      allQuestions: allQuestions ?? _allQuestions,
       visibleQuestions: visibleQuestions ?? this.visibleQuestions,
       currentIndex: currentIndex ?? this.currentIndex,
       answers: answers ?? this.answers,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
     );
   }
 }
 
 class SurveyNotifier extends StateNotifier<SurveyState> {
-  SurveyNotifier()
-      : super(SurveyState(
-          visibleQuestions: getVisibleQuestions(null, null),
-          currentIndex: 0,
-          answers: {},
-        ));
+  final SurveyGrpcClient _client;
+
+  SurveyNotifier(this._client) : super(const SurveyState()) {
+    _loadQuestions();
+  }
+
+  Future<void> _loadQuestions() async {
+    try {
+      final questions = await _client.fetchQuestions();
+      state = state.copyWith(
+        allQuestions: questions,
+        visibleQuestions: _filter(questions, null, null),
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
 
   void select(String value) {
     final updated = Map<String, List<String>?>.from(state.answers)
@@ -95,7 +118,7 @@ class SurveyNotifier extends StateNotifier<SurveyState> {
     if (state.currentQuestion.id == 'q2') {
       final q1 = state.answers['q1']?.first;
       final q2 = state.answers['q2'];
-      final refreshed = getVisibleQuestions(q1, q2);
+      final refreshed = _filter(state._allQuestions, q1, q2);
       final visibleIds = refreshed.map((q) => q.id).toSet();
       final cleanedAnswers = Map<String, List<String>?>.fromEntries(
         state.answers.entries.where((e) => visibleIds.contains(e.key)),
@@ -109,7 +132,18 @@ class SurveyNotifier extends StateNotifier<SurveyState> {
       state = state.copyWith(currentIndex: nextIndex);
     }
   }
+
+  static List<SurveyQuestion> _filter(
+      List<SurveyQuestion> all, String? q1, List<String>? q2) {
+    return all.where((q) {
+      if (q.condition == null) return true;
+      return q.condition!(q1, q2);
+    }).toList();
+  }
 }
 
 final surveyProvider =
-    StateNotifierProvider<SurveyNotifier, SurveyState>((ref) => SurveyNotifier());
+    StateNotifierProvider<SurveyNotifier, SurveyState>((ref) {
+  final client = ref.read(surveyGrpcClientProvider);
+  return SurveyNotifier(client);
+});
