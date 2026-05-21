@@ -135,7 +135,9 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         _stage = _AppStage.surveyIntro;
       } else {
         if (kBypassSurvey) {
-          ref.read(authProvider.notifier).markSurveyCompleted(surveyId: session.user.surveyId ?? '');
+          ref
+              .read(authProvider.notifier)
+              .markSurveyCompleted(surveyId: session.user.surveyId ?? '');
         }
         _stage = _AppStage.home;
       }
@@ -166,7 +168,11 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         userId: ref.read(authProvider).userId ?? '',
         onComplete: () {
           if (kBypassSurvey) {
-            ref.read(authProvider.notifier).markSurveyCompleted(surveyId: ref.read(authProvider).user?.surveyId ?? '');
+            ref
+                .read(authProvider.notifier)
+                .markSurveyCompleted(
+                  surveyId: ref.read(authProvider).user?.surveyId ?? '',
+                );
           }
           setState(() {
             _stage = kBypassSurvey ? _AppStage.home : _AppStage.surveyIntro;
@@ -443,7 +449,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   Future<void> _openBoardChat(BoardPost post) async {
     final repo = _chatRepository;
     final authToken = _currentAuthToken;
-    final boardId = post.boardId.trim();
+    final boardId = post.postId.trim();
     if (repo == null || authToken.trim().isEmpty || boardId.isEmpty) {
       throw StateError('Missing chat repository, auth token, or board id.');
     }
@@ -451,7 +457,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     final room = await repo.getOrCreateBoardChatRoom(
       boardId: boardId,
       title: post.title,
-      boardOwnerUserId: post.boardOwnerUserId,
+      boardOwnerUserId: post.authorId,
       authToken: authToken,
     );
     if (!mounted) {

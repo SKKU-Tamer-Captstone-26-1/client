@@ -205,7 +205,9 @@ class _BoardPostCard extends StatelessWidget {
                     Positioned(
                       top: 16,
                       left: 16,
-                      child: _CategoryBadge(label: post.category),
+                      child: _CategoryBadge(
+                        label: post.category ?? post.boardType,
+                      ),
                     ),
                   ],
                 ),
@@ -217,7 +219,7 @@ class _BoardPostCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (!hasImage) ...[
-                      _CategoryBadge(label: post.category),
+                      _CategoryBadge(label: post.category ?? post.boardType),
                       const SizedBox(height: 16),
                     ],
                     Text(
@@ -233,7 +235,7 @@ class _BoardPostCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      post.body,
+                      post.body ?? post.content,
                       maxLines: hasImage ? 3 : 5,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -254,7 +256,7 @@ class _BoardPostCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
-                              post.location!,
+                              post.location!.name,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: AppColors.primaryContainer,
@@ -322,7 +324,7 @@ class _PostMetaRow extends StatelessWidget {
       children: [
         ClipOval(
           child: AppNetworkImage(
-            url: post.authorAvatarUrl,
+            url: post.authorAvatarUrl ?? post.authorProfileImageUrl,
             width: 24,
             height: 24,
           ),
@@ -330,7 +332,7 @@ class _PostMetaRow extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            '${post.author}  •  ${post.timeAgo}',
+            '${post.author ?? post.authorNickname}  •  ${post.timeAgo ?? ''}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -342,7 +344,10 @@ class _PostMetaRow extends StatelessWidget {
         ),
         _PostMetric(icon: Icons.forum, value: post.commentCount),
         const SizedBox(width: 10),
-        _PostMetric(icon: Icons.favorite, value: post.favoriteCount),
+        _PostMetric(
+          icon: Icons.favorite,
+          value: post.favoriteCount ?? post.likeCount,
+        ),
         const SizedBox(width: 8),
         _BoardChatButton(
           onPressed: onChatRequested == null

@@ -13,6 +13,7 @@ analyzer:
   exclude:
     - lib/features/chat/data/grpc_gen/**
     - lib/features/auth/data/grpc_gen/**
+    - lib/features/board/data/grpc_gen/**
 
 linter:
   # The lint rules applied to this project can be customized in the
