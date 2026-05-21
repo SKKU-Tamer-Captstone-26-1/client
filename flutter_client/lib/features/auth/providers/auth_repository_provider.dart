@@ -3,7 +3,7 @@ import '../data/auth_remote_data_source.dart';
 import '../data/auth_repository.dart';
 
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>(
-  (ref) => HttpAuthRemoteDataSource(),
+  (ref) => GrpcAuthRemoteDataSource(),
 );
 
 final authRepositoryProvider = Provider<AuthRepository>(
