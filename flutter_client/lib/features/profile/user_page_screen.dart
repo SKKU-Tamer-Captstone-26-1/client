@@ -1,5 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
@@ -76,13 +81,20 @@ class UserPageScreen extends ConsumerWidget {
   }
 }
 
-class _ProfileSection extends ConsumerWidget {
+class _ProfileSection extends ConsumerStatefulWidget {
   const _ProfileSection({required this.user});
 
   final AuthUser? user;
 
-  void _showEditNicknameDialog(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: user?.nickname ?? '');
+  @override
+  ConsumerState<_ProfileSection> createState() => _ProfileSectionState();
+}
+
+class _ProfileSectionState extends ConsumerState<_ProfileSection> {
+  bool _isUploading = false;
+
+  void _showEditNicknameDialog(BuildContext context) {
+    final controller = TextEditingController(text: widget.user?.nickname ?? '');
     showDialog<void>(
       context: context,
       builder: (ctx) {
@@ -109,10 +121,10 @@ class _ProfileSection extends ConsumerWidget {
                         if (newNickname.isEmpty) return;
                         setDialogState(() => isSaving = true);
                         try {
-                          final auth = ref.read(authProvider);
+                          final userId = ref.read(authProvider).userId!;
                           final updated = await ref
                               .read(authRepositoryProvider)
-                              .updateProfile(auth.accessToken!, newNickname, '');
+                              .updateProfile(userId, newNickname, '');
                           if (ctx.mounted) {
                             Navigator.pop(ctx);
                             ref.read(authProvider.notifier).updateUser(updated);
@@ -138,12 +150,71 @@ class _ProfileSection extends ConsumerWidget {
     );
   }
 
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+    );
+    if (picked == null) return;
+
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: picked.path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      compressQuality: 80,
+      compressFormat: ImageCompressFormat.jpg,
+      uiSettings: [
+        AndroidUiSettings(
+          cropStyle: CropStyle.circle,
+          toolbarTitle: 'Crop Profile Photo',
+          hideBottomControls: true,
+          lockAspectRatio: true,
+        ),
+        IOSUiSettings(
+          cropStyle: CropStyle.circle,
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+        ),
+      ],
+    );
+    if (cropped == null) return;
+
+    setState(() => _isUploading = true);
+    try {
+      final userId = ref.read(authProvider).userId!;
+      final nickname = widget.user?.nickname ?? '';
+      final repo = ref.read(authRepositoryProvider);
+
+      final (:uploadUrl, :objectUrl) = await repo.generateProfileUploadUrl(userId);
+      final uploadRes = await http.put(
+        Uri.parse(uploadUrl),
+        headers: {'Content-Type': 'image/jpeg'},
+        body: await File(cropped.path).readAsBytes(),
+      );
+      if (uploadRes.statusCode != 200) {
+        throw Exception('Image upload failed (${uploadRes.statusCode})');
+      }
+
+      final updated = await repo.updateProfile(userId, nickname, objectUrl);
+      ref.read(authProvider.notifier).updateUser(updated);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update photo: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final palette = context.palette;
-    final nickname = user?.nickname ?? 'User';
-    final email = user?.email ?? '';
-    final profileImageUrl = user?.profileImageUrl;
+    final nickname = widget.user?.nickname ?? 'User';
+    final email = widget.user?.email ?? '';
+    final profileImageUrl = widget.user?.profileImageUrl;
 
     return Padding(
       padding: const EdgeInsets.only(top: 24, bottom: 8),
@@ -165,17 +236,28 @@ class _ProfileSection extends ConsumerWidget {
               Positioned(
                 bottom: 0,
                 right: 0,
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.photo_camera,
-                    size: 18,
-                    color: Colors.white,
+                child: GestureDetector(
+                  onTap: _isUploading ? null : _pickAndUploadImage,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: _isUploading
+                        ? const Padding(
+                            padding: EdgeInsets.all(6),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.photo_camera,
+                            size: 18,
+                            color: Colors.white,
+                          ),
                   ),
                 ),
               ),
@@ -194,7 +276,7 @@ class _ProfileSection extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () => _showEditNicknameDialog(context, ref),
+                onTap: () => _showEditNicknameDialog(context),
                 child: Icon(Icons.edit, size: 20, color: palette.secondary),
               ),
             ],
