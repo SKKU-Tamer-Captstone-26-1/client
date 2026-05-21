@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: common/v1/common.proto
+//  source: google/protobuf/timestamp.proto
 //
 // @dart = 2.12
 

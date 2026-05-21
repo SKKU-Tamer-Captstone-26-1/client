@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -6,39 +8,100 @@ import '../../../features/chatbot/presentation/chatbot_modal.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
+import '../data/board_repository.dart';
 import '../data/mock_board_data.dart';
 import '../models/board_models.dart';
 
-class BoardScreen extends StatelessWidget {
+class BoardScreen extends StatefulWidget {
   const BoardScreen({
     super.key,
     this.onBottomNavSelected,
     this.onProfileSelected,
     this.onBoardChatRequested,
+    this.boardRepository,
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onProfileSelected;
   final ValueChanged<BoardPost>? onBoardChatRequested;
+  final BoardRepository? boardRepository;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
+
+  @override
+  State<BoardScreen> createState() => _BoardScreenState();
+}
+
+class _BoardScreenState extends State<BoardScreen> {
+  List<BoardPost> _posts = mockBoardPosts;
+  bool _isRefreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.boardRepository != null) {
+      _isRefreshing = true;
+      unawaited(_loadPosts());
+    }
+  }
+
+  @override
+  void didUpdateWidget(BoardScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.boardRepository != widget.boardRepository &&
+        widget.boardRepository != null) {
+      unawaited(_loadPosts());
+    }
+  }
+
+  Future<void> _loadPosts() async {
+    final repository = widget.boardRepository;
+    if (repository == null) {
+      return;
+    }
+
+    if (!_isRefreshing && mounted) {
+      setState(() {
+        _isRefreshing = true;
+      });
+    }
+
+    try {
+      final page = await repository.listPosts(pageSize: 20);
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _posts = page.posts;
+        _isRefreshing = false;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isRefreshing = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final posts = _posts;
 
     return Scaffold(
       backgroundColor: palette.surfaceContainerLow,
       appBar: AppTopAppBar(
         onNotificationBoardSelected: () {
-          onBottomNavSelected?.call(AppBottomNavItem.board);
+          widget.onBottomNavSelected?.call(AppBottomNavItem.board);
         },
-        onProfileSelected: onProfileSelected,
+        onProfileSelected: widget.onProfileSelected,
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.board,
-        onItemSelected: onBottomNavSelected,
-        badgeCounts: bottomNavBadgeCounts,
+        onItemSelected: widget.onBottomNavSelected,
+        badgeCounts: widget.bottomNavBadgeCounts,
       ),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
@@ -66,42 +129,60 @@ class BoardScreen extends StatelessWidget {
       ),
       body: SafeArea(
         top: false,
-        child: CustomScrollView(
-          slivers: [
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 20, 16, 18),
-                child: _BoardCategoryChips(categories: mockBoardCategories),
+        child: RefreshIndicator(
+          color: AppColors.primaryContainer,
+          onRefresh: _loadPosts,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              if (_isRefreshing)
+                const SliverToBoxAdapter(
+                  child: LinearProgressIndicator(
+                    minHeight: 2,
+                    color: AppColors.primaryContainer,
+                  ),
+                ),
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(16, 20, 16, 18),
+                  child: _BoardCategoryChips(categories: mockBoardCategories),
+                ),
               ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
-              sliver: SliverLayoutBuilder(
-                builder: (context, constraints) {
-                  final crossAxisCount = constraints.crossAxisExtent >= 900
-                      ? 3
-                      : constraints.crossAxisExtent >= 620
-                      ? 2
-                      : 1;
+              if (posts.isEmpty)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _EmptyBoardState(),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+                  sliver: SliverLayoutBuilder(
+                    builder: (context, constraints) {
+                      final crossAxisCount = constraints.crossAxisExtent >= 900
+                          ? 3
+                          : constraints.crossAxisExtent >= 620
+                          ? 2
+                          : 1;
 
-                  return SliverGrid(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: 20,
-                      mainAxisSpacing: 20,
-                      mainAxisExtent: 392,
-                    ),
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      return _BoardPostCard(
-                        post: mockBoardPosts[index],
-                        onChatRequested: onBoardChatRequested,
+                      return SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 20,
+                          mainAxisSpacing: 20,
+                          mainAxisExtent: 392,
+                        ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          return _BoardPostCard(
+                            post: posts[index],
+                            onChatRequested: widget.onBoardChatRequested,
+                          );
+                        }, childCount: posts.length),
                       );
-                    }, childCount: mockBoardPosts.length),
-                  );
-                },
-              ),
-            ),
-          ],
+                    },
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -175,7 +256,8 @@ class _BoardPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final hasImage = post.imageUrl != null;
+    final imageUrl = _primaryImageUrl(post);
+    final hasImage = imageUrl != null;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -201,13 +283,11 @@ class _BoardPostCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    AppNetworkImage(url: post.imageUrl!),
+                    AppNetworkImage(url: imageUrl),
                     Positioned(
                       top: 16,
                       left: 16,
-                      child: _CategoryBadge(
-                        label: post.category ?? post.boardType,
-                      ),
+                      child: _CategoryBadge(label: _categoryLabel(post)),
                     ),
                   ],
                 ),
@@ -219,7 +299,7 @@ class _BoardPostCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (!hasImage) ...[
-                      _CategoryBadge(label: post.category ?? post.boardType),
+                      _CategoryBadge(label: _categoryLabel(post)),
                       const SizedBox(height: 16),
                     ],
                     Text(
@@ -282,6 +362,30 @@ class _BoardPostCard extends StatelessWidget {
   }
 }
 
+class _EmptyBoardState extends StatelessWidget {
+  const _EmptyBoardState();
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Text(
+          'No board posts yet.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: palette.secondary,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _CategoryBadge extends StatelessWidget {
   const _CategoryBadge({required this.label});
 
@@ -319,6 +423,7 @@ class _PostMetaRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final timeLabel = post.timeAgo ?? _relativeTimeLabel(post.createdAt);
 
     return Row(
       children: [
@@ -332,7 +437,7 @@ class _PostMetaRow extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            '${post.author ?? post.authorNickname}  •  ${post.timeAgo ?? ''}',
+            '${post.author ?? post.authorNickname}  •  $timeLabel',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -357,6 +462,51 @@ class _PostMetaRow extends StatelessWidget {
       ],
     );
   }
+}
+
+String? _primaryImageUrl(BoardPost post) {
+  if (post.imageUrl != null && post.imageUrl!.trim().isNotEmpty) {
+    return post.imageUrl;
+  }
+  if (post.imageUrls.isEmpty) {
+    return null;
+  }
+  final firstImageUrl = post.imageUrls.first.trim();
+  return firstImageUrl.isEmpty ? null : firstImageUrl;
+}
+
+String _categoryLabel(BoardPost post) {
+  final category = post.category;
+  if (category != null && category.trim().isNotEmpty) {
+    return category;
+  }
+
+  return switch (post.boardType) {
+    'free' => 'Question',
+    'BOARD_TYPE_FREE' => 'Question',
+    'flash_meetup' => 'Nearby Drop',
+    'BOARD_TYPE_FLASH_MEETUP' => 'Nearby Drop',
+    'info' => 'Tasting Note',
+    'BOARD_TYPE_INFO' => 'Tasting Note',
+    _ => 'Board',
+  };
+}
+
+String _relativeTimeLabel(DateTime createdAt) {
+  final elapsed = DateTime.now().difference(createdAt);
+  if (elapsed.inMinutes < 1) {
+    return 'now';
+  }
+  if (elapsed.inHours < 1) {
+    return '${elapsed.inMinutes}m ago';
+  }
+  if (elapsed.inDays < 1) {
+    return '${elapsed.inHours}h ago';
+  }
+  if (elapsed.inDays < 7) {
+    return '${elapsed.inDays}d ago';
+  }
+  return '${createdAt.month}/${createdAt.day}/${createdAt.year}';
 }
 
 class _BoardChatButton extends StatelessWidget {

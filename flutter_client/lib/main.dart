@@ -11,6 +11,7 @@ import 'core/config/app_config.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/providers/auth_repository_provider.dart';
+import 'features/board/data/board_repository.dart';
 import 'features/board/models/board_models.dart';
 import 'features/board/presentation/board_screen.dart';
 import 'features/chat/data/chat_push_service.dart';
@@ -39,10 +40,16 @@ Future<void> main() async {
 }
 
 class OnTheBlockApp extends ConsumerStatefulWidget {
-  const OnTheBlockApp({super.key, this.chatRepository, this.chatPushService});
+  const OnTheBlockApp({
+    super.key,
+    this.chatRepository,
+    this.chatPushService,
+    this.boardRepository,
+  });
 
   final ChatRepository? chatRepository;
   final ChatPushService? chatPushService;
+  final BoardRepository? boardRepository;
 
   @override
   ConsumerState<OnTheBlockApp> createState() => _OnTheBlockAppState();
@@ -71,6 +78,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   GroupchatRoomSummary _selectedGroupchatRoom = _emptyRoom;
   ChatRepository? _chatRepository;
   ChatPushService? _chatPushService;
+  BoardRepository? _boardRepository;
   final Set<String> _locallyHiddenRoomIds = <String>{};
   String? _pendingChatPushRoomId;
   int _chatUnreadCount = 0;
@@ -92,6 +100,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     _chatRepository =
         widget.chatRepository ?? GrpcChatRepository(GrpcChatRemoteDataSource());
     _chatPushService = widget.chatPushService ?? FirebaseChatPushService();
+    _boardRepository = widget.boardRepository ?? RemoteBoardRepository();
     unawaited(_printDevErrorLogPathAtStartup());
   }
 
@@ -104,6 +113,10 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     final repo = _chatRepository;
     if (repo != null) {
       unawaited(repo.dispose());
+    }
+    final boardRepo = _boardRepository;
+    if (boardRepo is RemoteBoardRepository) {
+      unawaited(boardRepo.dispose());
     }
     super.dispose();
   }
@@ -220,6 +233,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         onBottomNavSelected: _selectBottomNavItem,
         onProfileSelected: _goToProfile,
         onBoardChatRequested: _openBoardChat,
+        boardRepository: _boardRepository,
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
       ),
       _AppStage.chat => GroupchatListScreen(

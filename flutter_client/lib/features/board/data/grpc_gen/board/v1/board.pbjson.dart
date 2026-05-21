@@ -1,15 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from board/v1/board.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: board/v1/board.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
-// ignore_for_file: unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -71,23 +69,10 @@ const PostResponse$json = {
   '1': 'PostResponse',
   '2': [
     {'1': 'post_id', '3': 1, '4': 1, '5': 9, '10': 'postId'},
-    {
-      '1': 'board_type',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.ontheblock.board.v1.BoardType',
-      '10': 'boardType'
-    },
+    {'1': 'board_type', '3': 2, '4': 1, '5': 14, '6': '.ontheblock.board.v1.BoardType', '10': 'boardType'},
     {'1': 'author_id', '3': 3, '4': 1, '5': 9, '10': 'authorId'},
     {'1': 'author_nickname', '3': 4, '4': 1, '5': 9, '10': 'authorNickname'},
-    {
-      '1': 'author_profile_image_url',
-      '3': 5,
-      '4': 1,
-      '5': 9,
-      '10': 'authorProfileImageUrl'
-    },
+    {'1': 'author_profile_image_url', '3': 5, '4': 1, '5': 9, '10': 'authorProfileImageUrl'},
     {'1': 'title', '3': 6, '4': 1, '5': 9, '10': 'title'},
     {'1': 'content', '3': 7, '4': 1, '5': 9, '10': 'content'},
     {'1': 'image_urls', '3': 8, '4': 3, '5': 9, '10': 'imageUrls'},
@@ -96,30 +81,9 @@ const PostResponse$json = {
     {'1': 'comment_count', '3': 11, '4': 1, '5': 5, '10': 'commentCount'},
     {'1': 'is_notice', '3': 12, '4': 1, '5': 8, '10': 'isNotice'},
     {'1': 'is_liked', '3': 13, '4': 1, '5': 8, '10': 'isLiked'},
-    {
-      '1': 'location',
-      '3': 14,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.board.v1.Location',
-      '10': 'location'
-    },
-    {
-      '1': 'created_at',
-      '3': 15,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 16,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'location', '3': 14, '4': 1, '5': 11, '6': '.ontheblock.board.v1.Location', '10': 'location'},
+    {'1': 'created_at', '3': 15, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 16, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -147,41 +111,14 @@ const CommentResponse$json = {
     {'1': 'parent_comment_id', '3': 3, '4': 1, '5': 9, '10': 'parentCommentId'},
     {'1': 'author_id', '3': 4, '4': 1, '5': 9, '10': 'authorId'},
     {'1': 'author_nickname', '3': 5, '4': 1, '5': 9, '10': 'authorNickname'},
-    {
-      '1': 'author_profile_image_url',
-      '3': 6,
-      '4': 1,
-      '5': 9,
-      '10': 'authorProfileImageUrl'
-    },
+    {'1': 'author_profile_image_url', '3': 6, '4': 1, '5': 9, '10': 'authorProfileImageUrl'},
     {'1': 'content', '3': 7, '4': 1, '5': 9, '10': 'content'},
     {'1': 'like_count', '3': 8, '4': 1, '5': 5, '10': 'likeCount'},
     {'1': 'is_liked', '3': 9, '4': 1, '5': 8, '10': 'isLiked'},
     {'1': 'is_deleted', '3': 10, '4': 1, '5': 8, '10': 'isDeleted'},
-    {
-      '1': 'replies',
-      '3': 11,
-      '4': 3,
-      '5': 11,
-      '6': '.ontheblock.board.v1.CommentResponse',
-      '10': 'replies'
-    },
-    {
-      '1': 'created_at',
-      '3': 12,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'createdAt'
-    },
-    {
-      '1': 'updated_at',
-      '3': 13,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'updatedAt'
-    },
+    {'1': 'replies', '3': 11, '4': 3, '5': 11, '6': '.ontheblock.board.v1.CommentResponse', '10': 'replies'},
+    {'1': 'created_at', '3': 12, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'createdAt'},
+    {'1': 'updated_at', '3': 13, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
   ],
 };
 
@@ -203,25 +140,11 @@ const CreatePostRequest$json = {
   '1': 'CreatePostRequest',
   '2': [
     {'1': 'user_id', '3': 1, '4': 1, '5': 9, '10': 'userId'},
-    {
-      '1': 'board_type',
-      '3': 2,
-      '4': 1,
-      '5': 14,
-      '6': '.ontheblock.board.v1.BoardType',
-      '10': 'boardType'
-    },
+    {'1': 'board_type', '3': 2, '4': 1, '5': 14, '6': '.ontheblock.board.v1.BoardType', '10': 'boardType'},
     {'1': 'title', '3': 3, '4': 1, '5': 9, '10': 'title'},
     {'1': 'content', '3': 4, '4': 1, '5': 9, '10': 'content'},
     {'1': 'image_urls', '3': 5, '4': 3, '5': 9, '10': 'imageUrls'},
-    {
-      '1': 'location',
-      '3': 6,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.board.v1.Location',
-      '10': 'location'
-    },
+    {'1': 'location', '3': 6, '4': 1, '5': 11, '6': '.ontheblock.board.v1.Location', '10': 'location'},
   ],
 };
 
@@ -237,14 +160,7 @@ final $typed_data.Uint8List createPostRequestDescriptor = $convert.base64Decode(
 const CreatePostResponse$json = {
   '1': 'CreatePostResponse',
   '2': [
-    {
-      '1': 'post',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.board.v1.PostResponse',
-      '10': 'post'
-    },
+    {'1': 'post', '3': 1, '4': 1, '5': 11, '6': '.ontheblock.board.v1.PostResponse', '10': 'post'},
   ],
 };
 
@@ -271,14 +187,7 @@ final $typed_data.Uint8List getPostRequestDescriptor = $convert.base64Decode(
 const GetPostResponse$json = {
   '1': 'GetPostResponse',
   '2': [
-    {
-      '1': 'post',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.board.v1.PostResponse',
-      '10': 'post'
-    },
+    {'1': 'post', '3': 1, '4': 1, '5': 11, '6': '.ontheblock.board.v1.PostResponse', '10': 'post'},
   ],
 };
 
@@ -294,26 +203,11 @@ const UpdatePostRequest$json = {
     {'1': 'post_id', '3': 1, '4': 1, '5': 9, '10': 'postId'},
     {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
     {'1': 'title', '3': 3, '4': 1, '5': 9, '9': 0, '10': 'title', '17': true},
-    {
-      '1': 'content',
-      '3': 4,
-      '4': 1,
-      '5': 9,
-      '9': 1,
-      '10': 'content',
-      '17': true
-    },
+    {'1': 'content', '3': 4, '4': 1, '5': 9, '9': 1, '10': 'content', '17': true},
     {'1': 'update_images', '3': 5, '4': 1, '5': 8, '10': 'updateImages'},
     {'1': 'image_urls', '3': 6, '4': 3, '5': 9, '10': 'imageUrls'},
     {'1': 'update_location', '3': 7, '4': 1, '5': 8, '10': 'updateLocation'},
-    {
-      '1': 'location',
-      '3': 8,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.board.v1.Location',
-      '10': 'location'
-    },
+    {'1': 'location', '3': 8, '4': 1, '5': 11, '6': '.ontheblock.board.v1.Location', '10': 'location'},
   ],
   '8': [
     {'1': '_title'},
@@ -334,14 +228,7 @@ final $typed_data.Uint8List updatePostRequestDescriptor = $convert.base64Decode(
 const UpdatePostResponse$json = {
   '1': 'UpdatePostResponse',
   '2': [
-    {
-      '1': 'post',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.board.v1.PostResponse',
-      '10': 'post'
-    },
+    {'1': 'post', '3': 1, '4': 1, '5': 11, '6': '.ontheblock.board.v1.PostResponse', '10': 'post'},
   ],
 };
 
@@ -370,31 +257,17 @@ const DeletePostResponse$json = {
 };
 
 /// Descriptor for `DeletePostResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deletePostResponseDescriptor =
-    $convert.base64Decode('ChJEZWxldGVQb3N0UmVzcG9uc2U=');
+final $typed_data.Uint8List deletePostResponseDescriptor = $convert.base64Decode(
+    'ChJEZWxldGVQb3N0UmVzcG9uc2U=');
 
 @$core.Deprecated('Use listPostsRequestDescriptor instead')
 const ListPostsRequest$json = {
   '1': 'ListPostsRequest',
   '2': [
-    {
-      '1': 'board_type',
-      '3': 1,
-      '4': 1,
-      '5': 14,
-      '6': '.ontheblock.board.v1.BoardType',
-      '10': 'boardType'
-    },
+    {'1': 'board_type', '3': 1, '4': 1, '5': 14, '6': '.ontheblock.board.v1.BoardType', '10': 'boardType'},
     {'1': 'query', '3': 2, '4': 1, '5': 9, '10': 'query'},
     {'1': 'user_id', '3': 3, '4': 1, '5': 9, '10': 'userId'},
-    {
-      '1': 'pagination',
-      '3': 4,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.common.v1.PaginationRequest',
-      '10': 'pagination'
-    },
+    {'1': 'pagination', '3': 4, '4': 1, '5': 11, '6': '.ontheblock.common.v1.PaginationRequest', '10': 'pagination'},
   ],
 };
 
@@ -409,22 +282,8 @@ final $typed_data.Uint8List listPostsRequestDescriptor = $convert.base64Decode(
 const ListPostsResponse$json = {
   '1': 'ListPostsResponse',
   '2': [
-    {
-      '1': 'posts',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.ontheblock.board.v1.PostResponse',
-      '10': 'posts'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.common.v1.PaginationResponse',
-      '10': 'pagination'
-    },
+    {'1': 'posts', '3': 1, '4': 3, '5': 11, '6': '.ontheblock.board.v1.PostResponse', '10': 'posts'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.ontheblock.common.v1.PaginationResponse', '10': 'pagination'},
   ],
 };
 
@@ -510,14 +369,7 @@ final $typed_data.Uint8List createCommentRequestDescriptor = $convert.base64Deco
 const CreateCommentResponse$json = {
   '1': 'CreateCommentResponse',
   '2': [
-    {
-      '1': 'comment',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.board.v1.CommentResponse',
-      '10': 'comment'
-    },
+    {'1': 'comment', '3': 1, '4': 1, '5': 11, '6': '.ontheblock.board.v1.CommentResponse', '10': 'comment'},
   ],
 };
 
@@ -545,14 +397,7 @@ final $typed_data.Uint8List updateCommentRequestDescriptor = $convert.base64Deco
 const UpdateCommentResponse$json = {
   '1': 'UpdateCommentResponse',
   '2': [
-    {
-      '1': 'comment',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.board.v1.CommentResponse',
-      '10': 'comment'
-    },
+    {'1': 'comment', '3': 1, '4': 1, '5': 11, '6': '.ontheblock.board.v1.CommentResponse', '10': 'comment'},
   ],
 };
 
@@ -581,8 +426,8 @@ const DeleteCommentResponse$json = {
 };
 
 /// Descriptor for `DeleteCommentResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List deleteCommentResponseDescriptor =
-    $convert.base64Decode('ChVEZWxldGVDb21tZW50UmVzcG9uc2U=');
+final $typed_data.Uint8List deleteCommentResponseDescriptor = $convert.base64Decode(
+    'ChVEZWxldGVDb21tZW50UmVzcG9uc2U=');
 
 @$core.Deprecated('Use listCommentsRequestDescriptor instead')
 const ListCommentsRequest$json = {
@@ -590,14 +435,7 @@ const ListCommentsRequest$json = {
   '2': [
     {'1': 'post_id', '3': 1, '4': 1, '5': 9, '10': 'postId'},
     {'1': 'user_id', '3': 2, '4': 1, '5': 9, '10': 'userId'},
-    {
-      '1': 'pagination',
-      '3': 3,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.common.v1.PaginationRequest',
-      '10': 'pagination'
-    },
+    {'1': 'pagination', '3': 3, '4': 1, '5': 11, '6': '.ontheblock.common.v1.PaginationRequest', '10': 'pagination'},
   ],
 };
 
@@ -611,22 +449,8 @@ final $typed_data.Uint8List listCommentsRequestDescriptor = $convert.base64Decod
 const ListCommentsResponse$json = {
   '1': 'ListCommentsResponse',
   '2': [
-    {
-      '1': 'comments',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.ontheblock.board.v1.CommentResponse',
-      '10': 'comments'
-    },
-    {
-      '1': 'pagination',
-      '3': 2,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.common.v1.PaginationResponse',
-      '10': 'pagination'
-    },
+    {'1': 'comments', '3': 1, '4': 3, '5': 11, '6': '.ontheblock.board.v1.CommentResponse', '10': 'comments'},
+    {'1': 'pagination', '3': 2, '4': 1, '5': 11, '6': '.ontheblock.common.v1.PaginationResponse', '10': 'pagination'},
   ],
 };
 
@@ -670,14 +494,7 @@ const ReportPostRequest$json = {
   '2': [
     {'1': 'post_id', '3': 1, '4': 1, '5': 9, '10': 'postId'},
     {'1': 'reporter_id', '3': 2, '4': 1, '5': 9, '10': 'reporterId'},
-    {
-      '1': 'reason',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.ontheblock.board.v1.ReportReason',
-      '10': 'reason'
-    },
+    {'1': 'reason', '3': 3, '4': 1, '5': 14, '6': '.ontheblock.board.v1.ReportReason', '10': 'reason'},
     {'1': 'detail', '3': 4, '4': 1, '5': 9, '10': 'detail'},
   ],
 };
@@ -694,8 +511,8 @@ const ReportPostResponse$json = {
 };
 
 /// Descriptor for `ReportPostResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List reportPostResponseDescriptor =
-    $convert.base64Decode('ChJSZXBvcnRQb3N0UmVzcG9uc2U=');
+final $typed_data.Uint8List reportPostResponseDescriptor = $convert.base64Decode(
+    'ChJSZXBvcnRQb3N0UmVzcG9uc2U=');
 
 @$core.Deprecated('Use reportCommentRequestDescriptor instead')
 const ReportCommentRequest$json = {
@@ -703,14 +520,7 @@ const ReportCommentRequest$json = {
   '2': [
     {'1': 'comment_id', '3': 1, '4': 1, '5': 9, '10': 'commentId'},
     {'1': 'reporter_id', '3': 2, '4': 1, '5': 9, '10': 'reporterId'},
-    {
-      '1': 'reason',
-      '3': 3,
-      '4': 1,
-      '5': 14,
-      '6': '.ontheblock.board.v1.ReportReason',
-      '10': 'reason'
-    },
+    {'1': 'reason', '3': 3, '4': 1, '5': 14, '6': '.ontheblock.board.v1.ReportReason', '10': 'reason'},
     {'1': 'detail', '3': 4, '4': 1, '5': 9, '10': 'detail'},
   ],
 };
@@ -728,5 +538,6 @@ const ReportCommentResponse$json = {
 };
 
 /// Descriptor for `ReportCommentResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List reportCommentResponseDescriptor =
-    $convert.base64Decode('ChVSZXBvcnRDb21tZW50UmVzcG9uc2U=');
+final $typed_data.Uint8List reportCommentResponseDescriptor = $convert.base64Decode(
+    'ChVSZXBvcnRDb21tZW50UmVzcG9uc2U=');
+
