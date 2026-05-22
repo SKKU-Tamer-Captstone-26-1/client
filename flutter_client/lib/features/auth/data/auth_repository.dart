@@ -64,7 +64,7 @@ class AuthRepository {
   }
 
   static AuthUser _toAuthUser(UserResponse u) {
-    final surveyId = u.hasSurveyId() ? u.surveyId.toString() : null;
+    final surveyId = u.hasSurveyId() ? u.surveyId : null;
     return AuthUser(
       userId: u.userId,
       email: u.email,
