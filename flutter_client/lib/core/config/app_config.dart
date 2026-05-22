@@ -12,6 +12,8 @@ const String kSurveyBaseUrl = String.fromEnvironment(
 
 const bool kBypassSurvey = bool.fromEnvironment('BYPASS_SURVEY');
 
+const String kKakaoRestApiKey = String.fromEnvironment('KAKAO_REST_API_KEY');
+
 const String kSurveyGrpcHost = String.fromEnvironment(
   'SURVEY_GRPC_HOST',
   defaultValue: '10.0.2.2',
