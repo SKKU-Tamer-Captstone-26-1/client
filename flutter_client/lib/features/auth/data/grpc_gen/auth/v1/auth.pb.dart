@@ -208,30 +208,21 @@ class UserResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   void clearPoints() => clearField(9);
 
-  @$pb.TagNumber(10)
-  $core.bool get surveyCompleted => $_getBF(9);
-  @$pb.TagNumber(10)
-  set surveyCompleted($core.bool v) { $_setBool(9, v); }
-  @$pb.TagNumber(10)
-  $core.bool hasSurveyCompleted() => $_has(9);
-  @$pb.TagNumber(10)
-  void clearSurveyCompleted() => clearField(10);
-
   @$pb.TagNumber(11)
-  $fixnum.Int64 get surveyId => $_getI64(10);
+  $fixnum.Int64 get surveyId => $_getI64(9);
   @$pb.TagNumber(11)
-  set surveyId($fixnum.Int64 v) { $_setInt64(10, v); }
+  set surveyId($fixnum.Int64 v) { $_setInt64(9, v); }
   @$pb.TagNumber(11)
-  $core.bool hasSurveyId() => $_has(10);
+  $core.bool hasSurveyId() => $_has(9);
   @$pb.TagNumber(11)
   void clearSurveyId() => clearField(11);
 
   @$pb.TagNumber(12)
-  $core.bool get onboardingCompleted => $_getBF(11);
+  $core.bool get onboardingCompleted => $_getBF(10);
   @$pb.TagNumber(12)
-  set onboardingCompleted($core.bool v) { $_setBool(11, v); }
+  set onboardingCompleted($core.bool v) { $_setBool(10, v); }
   @$pb.TagNumber(12)
-  $core.bool hasOnboardingCompleted() => $_has(11);
+  $core.bool hasOnboardingCompleted() => $_has(10);
   @$pb.TagNumber(12)
   void clearOnboardingCompleted() => clearField(12);
 }
@@ -549,12 +540,10 @@ class LogoutResponse extends $pb.GeneratedMessage {
 class UpdateSurveyDataRequest extends $pb.GeneratedMessage {
   factory UpdateSurveyDataRequest({
     $core.String? userId,
-    $core.bool? surveyCompleted,
     $fixnum.Int64? surveyId,
   }) {
     final $result = create();
     if (userId != null) $result.userId = userId;
-    if (surveyCompleted != null) $result.surveyCompleted = surveyCompleted;
     if (surveyId != null) $result.surveyId = surveyId;
     return $result;
   }
@@ -564,7 +553,6 @@ class UpdateSurveyDataRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSurveyDataRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..aOB(2, _omitFieldNames ? '' : 'surveyCompleted')
     ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'surveyId', $pb.PbFieldType.O6)
     ..hasRequiredFields = false
   ;
@@ -593,21 +581,12 @@ class UpdateSurveyDataRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearUserId() => clearField(1);
 
-  @$pb.TagNumber(2)
-  $core.bool get surveyCompleted => $_getBF(1);
-  @$pb.TagNumber(2)
-  set surveyCompleted($core.bool v) { $_setBool(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasSurveyCompleted() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearSurveyCompleted() => clearField(2);
-
   @$pb.TagNumber(3)
-  $fixnum.Int64 get surveyId => $_getI64(2);
+  $fixnum.Int64 get surveyId => $_getI64(1);
   @$pb.TagNumber(3)
-  set surveyId($fixnum.Int64 v) { $_setInt64(2, v); }
+  set surveyId($fixnum.Int64 v) { $_setInt64(1, v); }
   @$pb.TagNumber(3)
-  $core.bool hasSurveyId() => $_has(2);
+  $core.bool hasSurveyId() => $_has(1);
   @$pb.TagNumber(3)
   void clearSurveyId() => clearField(3);
 }
