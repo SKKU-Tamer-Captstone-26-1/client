@@ -31,6 +31,16 @@ class AuthRepository {
     return (uploadUrl: res.uploadUrl, objectUrl: res.objectUrl);
   }
 
+  Future<AuthUser> updateNeighborhood(String userId, String neighborhood) async {
+    final res = await _dataSource.updateNeighborhood(userId, neighborhood);
+    return _toAuthUser(res.user);
+  }
+
+  Future<AuthUser> completeOnboarding(String userId) async {
+    final res = await _dataSource.completeOnboarding(userId);
+    return _toAuthUser(res.user);
+  }
+
   Future<void> logout(String userId) => _dataSource.logout(userId);
 
   Future<void> dispose() => _dataSource.dispose();
@@ -66,8 +76,10 @@ class AuthRepository {
       email: u.email,
       nickname: u.nickname.isEmpty ? null : u.nickname,
       profileImageUrl: u.profileImageUrl.isEmpty ? null : u.profileImageUrl,
+      neighborhood: u.neighborhood.isEmpty ? null : u.neighborhood,
       surveyCompleted: u.surveyCompleted,
       surveyId: surveyId,
+      onboardingCompleted: u.onboardingCompleted,
     );
   }
 }
