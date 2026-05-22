@@ -11,7 +11,6 @@
 
 import 'dart:core' as $core;
 
-import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 import '../../google/protobuf/timestamp.pb.dart' as $1;
@@ -74,7 +73,7 @@ class UserResponse extends $pb.GeneratedMessage {
     $core.String? neighborhood,
     $core.int? alcoholScore,
     $core.int? points,
-    $fixnum.Int64? surveyId,
+    $core.String? surveyId,
     $core.bool? onboardingCompleted,
   }) {
     final $result = create();
@@ -105,7 +104,7 @@ class UserResponse extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'neighborhood')
     ..a<$core.int>(8, _omitFieldNames ? '' : 'alcoholScore', $pb.PbFieldType.O3)
     ..a<$core.int>(9, _omitFieldNames ? '' : 'points', $pb.PbFieldType.O3)
-    ..a<$fixnum.Int64>(11, _omitFieldNames ? '' : 'surveyId', $pb.PbFieldType.O6)
+    ..aOS(11, _omitFieldNames ? '' : 'surveyId')
     ..aOB(12, _omitFieldNames ? '' : 'onboardingCompleted')
     ..hasRequiredFields = false
   ;
@@ -209,9 +208,9 @@ class UserResponse extends $pb.GeneratedMessage {
   void clearPoints() => clearField(9);
 
   @$pb.TagNumber(11)
-  $fixnum.Int64 get surveyId => $_getI64(9);
+  $core.String get surveyId => $_getSZ(9);
   @$pb.TagNumber(11)
-  set surveyId($fixnum.Int64 v) { $_setInt64(9, v); }
+  set surveyId($core.String v) { $_setString(9, v); }
   @$pb.TagNumber(11)
   $core.bool hasSurveyId() => $_has(9);
   @$pb.TagNumber(11)
@@ -540,7 +539,7 @@ class LogoutResponse extends $pb.GeneratedMessage {
 class UpdateSurveyDataRequest extends $pb.GeneratedMessage {
   factory UpdateSurveyDataRequest({
     $core.String? userId,
-    $fixnum.Int64? surveyId,
+    $core.String? surveyId,
   }) {
     final $result = create();
     if (userId != null) $result.userId = userId;
@@ -553,7 +552,7 @@ class UpdateSurveyDataRequest extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateSurveyDataRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'userId')
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'surveyId', $pb.PbFieldType.O6)
+    ..aOS(3, _omitFieldNames ? '' : 'surveyId')
     ..hasRequiredFields = false
   ;
 
@@ -582,9 +581,9 @@ class UpdateSurveyDataRequest extends $pb.GeneratedMessage {
   void clearUserId() => clearField(1);
 
   @$pb.TagNumber(3)
-  $fixnum.Int64 get surveyId => $_getI64(1);
+  $core.String get surveyId => $_getSZ(1);
   @$pb.TagNumber(3)
-  set surveyId($fixnum.Int64 v) { $_setInt64(1, v); }
+  set surveyId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(3)
   $core.bool hasSurveyId() => $_has(1);
   @$pb.TagNumber(3)
