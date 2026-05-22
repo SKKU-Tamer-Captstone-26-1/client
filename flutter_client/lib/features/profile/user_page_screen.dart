@@ -12,7 +12,7 @@ import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../auth/models/auth_models.dart';
 import '../auth/providers/auth_provider.dart';
 import '../auth/providers/auth_repository_provider.dart';
-import 'select_neighborhood_screen.dart';
+import '../location/presentation/location_screen.dart';
 
 class UserPageScreen extends ConsumerWidget {
   const UserPageScreen({
@@ -480,14 +480,43 @@ class _PointsCard extends StatelessWidget {
   }
 }
 
-class _MySettingsSection extends StatelessWidget {
+class _MySettingsSection extends ConsumerWidget {
   const _MySettingsSection({this.onRetakeSurvey, this.onLogout});
 
   final VoidCallback? onRetakeSurvey;
   final VoidCallback? onLogout;
 
+  Future<void> _openLocationUpdate(BuildContext context, WidgetRef ref) async {
+    final userId = ref.read(authProvider).userId;
+    if (userId == null) return;
+
+    String? saved;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (navCtx) => LocationScreen(
+          onSave: (neighborhood) {
+            saved = neighborhood;
+            Navigator.of(navCtx).pop();
+          },
+          onSkip: () => Navigator.of(navCtx).pop(),
+        ),
+      ),
+    );
+
+    if (saved != null && context.mounted) {
+      try {
+        final updated = await ref
+            .read(authRepositoryProvider)
+            .updateNeighborhood(userId, saved!);
+        if (context.mounted) ref.read(authProvider.notifier).updateUser(updated);
+      } catch (_) {}
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final neighborhood = ref.watch(authProvider).user?.neighborhood;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -506,13 +535,9 @@ class _MySettingsSection extends StatelessWidget {
           iconColor: AppColors.primaryContainer,
           iconBgColor: const Color(0xFFE7EFF8),
           title: 'My Neighborhood',
-          subtitle: 'Downtown, Metro Area',
+          subtitle: neighborhood ?? 'Not set',
           actionLabel: 'Update',
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<String>(
-              builder: (_) => const SelectNeighborhoodScreen(),
-            ),
-          ),
+          onTap: () => _openLocationUpdate(context, ref),
         ),
         const SizedBox(height: 12),
         _SettingsCard(
