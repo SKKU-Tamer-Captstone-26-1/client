@@ -56,6 +56,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     updateUser(user.copyWith(surveyCompleted: true, surveyId: surveyId));
   }
 
+  void markOnboardingCompleted() {
+    final user = state.user;
+    if (user == null) return;
+    updateUser(user.copyWith(onboardingCompleted: true));
+  }
+
   void refreshSession({
     required String accessToken,
     required String refreshToken,
