@@ -74,8 +74,8 @@ class UserResponse extends $pb.GeneratedMessage {
     $core.String? neighborhood,
     $core.int? alcoholScore,
     $core.int? points,
-    $core.bool? surveyCompleted,
     $fixnum.Int64? surveyId,
+    $core.bool? onboardingCompleted,
   }) {
     final $result = create();
     if (userId != null) $result.userId = userId;
@@ -87,8 +87,8 @@ class UserResponse extends $pb.GeneratedMessage {
     if (neighborhood != null) $result.neighborhood = neighborhood;
     if (alcoholScore != null) $result.alcoholScore = alcoholScore;
     if (points != null) $result.points = points;
-    if (surveyCompleted != null) $result.surveyCompleted = surveyCompleted;
     if (surveyId != null) $result.surveyId = surveyId;
+    if (onboardingCompleted != null) $result.onboardingCompleted = onboardingCompleted;
     return $result;
   }
   UserResponse._() : super();
@@ -105,8 +105,8 @@ class UserResponse extends $pb.GeneratedMessage {
     ..aOS(7, _omitFieldNames ? '' : 'neighborhood')
     ..a<$core.int>(8, _omitFieldNames ? '' : 'alcoholScore', $pb.PbFieldType.O3)
     ..a<$core.int>(9, _omitFieldNames ? '' : 'points', $pb.PbFieldType.O3)
-    ..aOB(10, _omitFieldNames ? '' : 'surveyCompleted')
     ..a<$fixnum.Int64>(11, _omitFieldNames ? '' : 'surveyId', $pb.PbFieldType.O6)
+    ..aOB(12, _omitFieldNames ? '' : 'onboardingCompleted')
     ..hasRequiredFields = false
   ;
 
@@ -225,6 +225,15 @@ class UserResponse extends $pb.GeneratedMessage {
   $core.bool hasSurveyId() => $_has(10);
   @$pb.TagNumber(11)
   void clearSurveyId() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.bool get onboardingCompleted => $_getBF(11);
+  @$pb.TagNumber(12)
+  set onboardingCompleted($core.bool v) { $_setBool(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasOnboardingCompleted() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearOnboardingCompleted() => clearField(12);
 }
 
 class GoogleLoginResponse extends $pb.GeneratedMessage {
@@ -842,6 +851,184 @@ class GenerateProfileUploadUrlResponse extends $pb.GeneratedMessage {
   $core.bool hasObjectUrl() => $_has(1);
   @$pb.TagNumber(2)
   void clearObjectUrl() => clearField(2);
+}
+
+class UpdateNeighborhoodRequest extends $pb.GeneratedMessage {
+  factory UpdateNeighborhoodRequest({
+    $core.String? userId,
+    $core.String? neighborhood,
+  }) {
+    final $result = create();
+    if (userId != null) $result.userId = userId;
+    if (neighborhood != null) $result.neighborhood = neighborhood;
+    return $result;
+  }
+  UpdateNeighborhoodRequest._() : super();
+  factory UpdateNeighborhoodRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateNeighborhoodRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateNeighborhoodRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..aOS(2, _omitFieldNames ? '' : 'neighborhood')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.deepCopy] instead. Will be removed in next major version')
+  UpdateNeighborhoodRequest clone() => UpdateNeighborhoodRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.rebuild] instead. Will be removed in next major version')
+  UpdateNeighborhoodRequest copyWith(void Function(UpdateNeighborhoodRequest) updates) => super.copyWith((message) => updates(message as UpdateNeighborhoodRequest)) as UpdateNeighborhoodRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateNeighborhoodRequest create() => UpdateNeighborhoodRequest._();
+  UpdateNeighborhoodRequest createEmptyInstance() => create();
+  static $pb.PbList<UpdateNeighborhoodRequest> createRepeated() => $pb.PbList<UpdateNeighborhoodRequest>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateNeighborhoodRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateNeighborhoodRequest>(create);
+  static UpdateNeighborhoodRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get neighborhood => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set neighborhood($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasNeighborhood() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearNeighborhood() => clearField(2);
+}
+
+class UpdateNeighborhoodResponse extends $pb.GeneratedMessage {
+  factory UpdateNeighborhoodResponse({UserResponse? user}) {
+    final $result = create();
+    if (user != null) $result.user = user;
+    return $result;
+  }
+  UpdateNeighborhoodResponse._() : super();
+  factory UpdateNeighborhoodResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory UpdateNeighborhoodResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'UpdateNeighborhoodResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
+    ..aOM<UserResponse>(1, _omitFieldNames ? '' : 'user', subBuilder: UserResponse.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.deepCopy] instead. Will be removed in next major version')
+  UpdateNeighborhoodResponse clone() => UpdateNeighborhoodResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.rebuild] instead. Will be removed in next major version')
+  UpdateNeighborhoodResponse copyWith(void Function(UpdateNeighborhoodResponse) updates) => super.copyWith((message) => updates(message as UpdateNeighborhoodResponse)) as UpdateNeighborhoodResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static UpdateNeighborhoodResponse create() => UpdateNeighborhoodResponse._();
+  UpdateNeighborhoodResponse createEmptyInstance() => create();
+  static $pb.PbList<UpdateNeighborhoodResponse> createRepeated() => $pb.PbList<UpdateNeighborhoodResponse>();
+  @$core.pragma('dart2js:noInline')
+  static UpdateNeighborhoodResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<UpdateNeighborhoodResponse>(create);
+  static UpdateNeighborhoodResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  UserResponse get user => $_getN(0);
+  @$pb.TagNumber(1)
+  set user(UserResponse v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUser() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUser() => clearField(1);
+  @$pb.TagNumber(1)
+  UserResponse ensureUser() => $_ensure(0);
+}
+
+class CompleteOnboardingRequest extends $pb.GeneratedMessage {
+  factory CompleteOnboardingRequest({$core.String? userId}) {
+    final $result = create();
+    if (userId != null) $result.userId = userId;
+    return $result;
+  }
+  CompleteOnboardingRequest._() : super();
+  factory CompleteOnboardingRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CompleteOnboardingRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CompleteOnboardingRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
+    ..aOS(1, _omitFieldNames ? '' : 'userId')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.deepCopy] instead. Will be removed in next major version')
+  CompleteOnboardingRequest clone() => CompleteOnboardingRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.rebuild] instead. Will be removed in next major version')
+  CompleteOnboardingRequest copyWith(void Function(CompleteOnboardingRequest) updates) => super.copyWith((message) => updates(message as CompleteOnboardingRequest)) as CompleteOnboardingRequest;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CompleteOnboardingRequest create() => CompleteOnboardingRequest._();
+  CompleteOnboardingRequest createEmptyInstance() => create();
+  static $pb.PbList<CompleteOnboardingRequest> createRepeated() => $pb.PbList<CompleteOnboardingRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CompleteOnboardingRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CompleteOnboardingRequest>(create);
+  static CompleteOnboardingRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get userId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set userId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUserId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUserId() => clearField(1);
+}
+
+class CompleteOnboardingResponse extends $pb.GeneratedMessage {
+  factory CompleteOnboardingResponse({UserResponse? user}) {
+    final $result = create();
+    if (user != null) $result.user = user;
+    return $result;
+  }
+  CompleteOnboardingResponse._() : super();
+  factory CompleteOnboardingResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CompleteOnboardingResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CompleteOnboardingResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'ontheblock.auth.v1'), createEmptyInstance: create)
+    ..aOM<UserResponse>(1, _omitFieldNames ? '' : 'user', subBuilder: UserResponse.create)
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.deepCopy] instead. Will be removed in next major version')
+  CompleteOnboardingResponse clone() => CompleteOnboardingResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. Use [GeneratedMessageGenericExtensions.rebuild] instead. Will be removed in next major version')
+  CompleteOnboardingResponse copyWith(void Function(CompleteOnboardingResponse) updates) => super.copyWith((message) => updates(message as CompleteOnboardingResponse)) as CompleteOnboardingResponse;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CompleteOnboardingResponse create() => CompleteOnboardingResponse._();
+  CompleteOnboardingResponse createEmptyInstance() => create();
+  static $pb.PbList<CompleteOnboardingResponse> createRepeated() => $pb.PbList<CompleteOnboardingResponse>();
+  @$core.pragma('dart2js:noInline')
+  static CompleteOnboardingResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CompleteOnboardingResponse>(create);
+  static CompleteOnboardingResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  UserResponse get user => $_getN(0);
+  @$pb.TagNumber(1)
+  set user(UserResponse v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasUser() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearUser() => clearField(1);
+  @$pb.TagNumber(1)
+  UserResponse ensureUser() => $_ensure(0);
 }
 
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
