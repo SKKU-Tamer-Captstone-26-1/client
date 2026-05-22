@@ -22,6 +22,7 @@ import 'features/chat/presentation/groupchat_room_screen.dart';
 import 'features/collection/presentation/collection_screen.dart';
 import 'features/home/presentation/home_screen.dart';
 import 'features/map/presentation/map_screen.dart';
+import 'features/location/presentation/location_screen.dart';
 import 'features/preference_survey/presentation/survey_intro_screen.dart';
 import 'features/preference_survey/presentation/survey_screen.dart';
 import 'features/profile/profile_setup_screen.dart';
@@ -131,12 +132,9 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     setState(() {
       if (session.isNewUser) {
         _stage = _AppStage.profileSetup;
-      } else if (!session.user.surveyCompleted && !kBypassSurvey) {
-        _stage = _AppStage.surveyIntro;
+      } else if (!session.user.onboardingCompleted) {
+        _stage = kBypassSurvey ? _AppStage.locationSetup : _AppStage.surveyIntro;
       } else {
-        if (kBypassSurvey) {
-          ref.read(authProvider.notifier).markSurveyCompleted(surveyId: session.user.surveyId ?? '');
-        }
         _stage = _AppStage.home;
       }
     });
@@ -169,9 +167,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
             ref.read(authProvider.notifier).markSurveyCompleted(surveyId: ref.read(authProvider).user?.surveyId ?? '');
           }
           setState(() {
-            _stage = kBypassSurvey ? _AppStage.home : _AppStage.surveyIntro;
+            _stage = kBypassSurvey ? _AppStage.locationSetup : _AppStage.surveyIntro;
           });
-          _openPendingChatPushIfReady();
         },
       ),
       _AppStage.login => LoginScreen(
@@ -187,18 +184,25 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         },
         onSkip: () {
           setState(() {
-            _stage = _AppStage.home;
+            _stage = _AppStage.locationSetup;
           });
-          _openPendingChatPushIfReady();
         },
       ),
       _AppStage.survey => SurveyScreen(
+        onBack: () {
+          setState(() {
+            _stage = _AppStage.surveyIntro;
+          });
+        },
         onCompleted: () {
           setState(() {
-            _stage = _AppStage.home;
+            _stage = _AppStage.locationSetup;
           });
-          _openPendingChatPushIfReady();
         },
+      ),
+      _AppStage.locationSetup => LocationScreen(
+        onSave: (neighborhood) => unawaited(_saveNeighborhoodAndFinish(neighborhood)),
+        onSkip: () => unawaited(_finishOnboarding()),
       ),
       _AppStage.home => HomeScreen(
         onBottomNavSelected: _selectBottomNavItem,
@@ -391,7 +395,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       _AppStage.login ||
       _AppStage.profileSetup ||
       _AppStage.surveyIntro ||
-      _AppStage.survey => false,
+      _AppStage.survey ||
+      _AppStage.locationSetup => false,
       _ => true,
     };
   }
@@ -524,6 +529,36 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     );
   }
 
+  Future<void> _saveNeighborhoodAndFinish(String neighborhood) async {
+    final userId = ref.read(authProvider).userId;
+    if (userId != null) {
+      try {
+        final user = await ref.read(authRepositoryProvider).updateNeighborhood(userId, neighborhood);
+        if (mounted) ref.read(authProvider.notifier).updateUser(user);
+      } catch (_) {
+        // Non-fatal: proceed to complete onboarding even if neighborhood save fails.
+      }
+    }
+    await _finishOnboarding();
+  }
+
+  Future<void> _finishOnboarding() async {
+    final userId = ref.read(authProvider).userId;
+    if (userId != null) {
+      try {
+        await ref.read(authRepositoryProvider).completeOnboarding(userId);
+        if (mounted) ref.read(authProvider.notifier).markOnboardingCompleted();
+      } catch (_) {
+        // Non-fatal: allow user into the app even if the flag fails to persist.
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _stage = _AppStage.home;
+    });
+    _openPendingChatPushIfReady();
+  }
+
   Future<void> _handleLogout() async {
     final auth = ref.read(authProvider);
     final authToken = auth.accessToken;
@@ -569,6 +604,7 @@ enum _AppStage {
   profileSetup,
   surveyIntro,
   survey,
+  locationSetup,
   home,
   map,
   board,
