@@ -9,6 +9,7 @@ class AuthUser {
     this.surveyId,
     this.alcoholScore = 0,
     this.points = 0,
+    this.onboardingCompleted = false,
   });
 
   final String userId;
@@ -20,6 +21,7 @@ class AuthUser {
   final String? surveyId;
   final int alcoholScore;
   final int points;
+  final bool onboardingCompleted;
 
   AuthUser copyWith({
     String? userId,
@@ -31,6 +33,7 @@ class AuthUser {
     String? surveyId,
     int? alcoholScore,
     int? points,
+    bool? onboardingCompleted,
   }) {
     return AuthUser(
       userId: userId ?? this.userId,
@@ -42,6 +45,7 @@ class AuthUser {
       surveyId: surveyId ?? this.surveyId,
       alcoholScore: alcoholScore ?? this.alcoholScore,
       points: points ?? this.points,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
     );
   }
 }
