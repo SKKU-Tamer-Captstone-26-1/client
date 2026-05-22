@@ -260,6 +260,11 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       ),
       _AppStage.profile => UserPageScreen(
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
+        onRetakeSurvey: () {
+          setState(() {
+            _stage = _AppStage.surveyIntro;
+          });
+        },
         onLogout: () => unawaited(_handleLogout()),
         onBack: () {
           setState(() {
