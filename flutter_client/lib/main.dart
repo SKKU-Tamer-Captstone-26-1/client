@@ -69,6 +69,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   ThemeMode _themeMode = ThemeMode.light;
   _AppStage _stage = _AppStage.login;
   _AppStage _previousStage = _AppStage.home;
+  bool _isRetaking = false;
   GroupchatRoomSummary _selectedGroupchatRoom = _emptyRoom;
   ChatRepository? _chatRepository;
   ChatPushService? _chatPushService;
@@ -184,7 +185,12 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         },
         onSkip: () {
           setState(() {
-            _stage = _AppStage.locationSetup;
+            if (_isRetaking) {
+              _isRetaking = false;
+              _stage = _AppStage.home;
+            } else {
+              _stage = _AppStage.locationSetup;
+            }
           });
         },
       ),
@@ -196,7 +202,12 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         },
         onCompleted: () {
           setState(() {
-            _stage = _AppStage.locationSetup;
+            if (_isRetaking) {
+              _isRetaking = false;
+              _stage = _AppStage.home;
+            } else {
+              _stage = _AppStage.locationSetup;
+            }
           });
         },
       ),
@@ -262,6 +273,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
         onRetakeSurvey: () {
           setState(() {
+            _isRetaking = true;
             _stage = _AppStage.surveyIntro;
           });
         },
