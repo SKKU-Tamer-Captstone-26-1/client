@@ -276,6 +276,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       ),
       _AppStage.profile => UserPageScreen(
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
+        onBottomNavSelected: _selectBottomNavItem,
         onLogout: () => unawaited(_handleLogout()),
         onBack: () {
           setState(() {
