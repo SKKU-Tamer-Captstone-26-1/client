@@ -31,6 +31,16 @@ class AuthRepository {
     return (uploadUrl: res.uploadUrl, objectUrl: res.objectUrl);
   }
 
+  Future<AuthUser> updateNeighborhood(String userId, String neighborhood) async {
+    final res = await _dataSource.updateNeighborhood(userId, neighborhood);
+    return _toAuthUser(res.user);
+  }
+
+  Future<AuthUser> completeOnboarding(String userId) async {
+    final res = await _dataSource.completeOnboarding(userId);
+    return _toAuthUser(res.user);
+  }
+
   Future<void> logout(String userId) => _dataSource.logout(userId);
 
   Future<void> dispose() => _dataSource.dispose();
@@ -54,20 +64,15 @@ class AuthRepository {
   }
 
   static AuthUser _toAuthUser(UserResponse u) {
-    // Workaround: protobuf-3.1.0 returns native int (not Int64) as the default
-    // for unset int64 fields, causing an implicit cast error in the typed getter.
-    // getField() returns dynamic and avoids the cast.
-    final dynamic rawSurveyId = u.getField(11);
-    final surveyId = (rawSurveyId != null && rawSurveyId != 0)
-        ? rawSurveyId.toString()
-        : null;
+    final surveyId = u.hasSurveyId() ? u.surveyId : null;
     return AuthUser(
       userId: u.userId,
       email: u.email,
       nickname: u.nickname.isEmpty ? null : u.nickname,
       profileImageUrl: u.profileImageUrl.isEmpty ? null : u.profileImageUrl,
-      surveyCompleted: u.surveyCompleted,
+      neighborhood: u.neighborhood.isEmpty ? null : u.neighborhood,
       surveyId: surveyId,
+      onboardingCompleted: u.onboardingCompleted,
     );
   }
 }

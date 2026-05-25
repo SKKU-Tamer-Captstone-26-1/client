@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "44649239380-5mo3fu8gf523n91clash77umg8i719a0.apps.googleusercontent.com",
+          "client_id": "44649239380-925mubm23uo413v3f42vpt8008uop44m.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.ontheblockand.app",
-            "certificate_hash": "53bf2e198faf576c79e2ce45915db6642636a51f"
+            "certificate_hash": "9e8a8307fd6f9ed052074db7d15f38e76dc64281"
           }
         },
         {

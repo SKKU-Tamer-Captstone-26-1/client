@@ -41,6 +41,14 @@ class AuthServiceClient extends $grpc.Client {
       '/ontheblock.auth.v1.AuthService/GenerateProfileUploadUrl',
       ($0.GenerateProfileUploadUrlRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.GenerateProfileUploadUrlResponse.fromBuffer(value));
+  static final _$updateNeighborhood = $grpc.ClientMethod<$0.UpdateNeighborhoodRequest, $0.UpdateNeighborhoodResponse>(
+      '/ontheblock.auth.v1.AuthService/UpdateNeighborhood',
+      ($0.UpdateNeighborhoodRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.UpdateNeighborhoodResponse.fromBuffer(value));
+  static final _$completeOnboarding = $grpc.ClientMethod<$0.CompleteOnboardingRequest, $0.CompleteOnboardingResponse>(
+      '/ontheblock.auth.v1.AuthService/CompleteOnboarding',
+      ($0.CompleteOnboardingRequest value) => value.writeToBuffer(),
+      ($core.List<$core.int> value) => $0.CompleteOnboardingResponse.fromBuffer(value));
 
   AuthServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -65,5 +73,13 @@ class AuthServiceClient extends $grpc.Client {
 
   $grpc.ResponseFuture<$0.GenerateProfileUploadUrlResponse> generateProfileUploadUrl($0.GenerateProfileUploadUrlRequest request, {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$generateProfileUploadUrl, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.UpdateNeighborhoodResponse> updateNeighborhood($0.UpdateNeighborhoodRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$updateNeighborhood, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.CompleteOnboardingResponse> completeOnboarding($0.CompleteOnboardingRequest request, {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$completeOnboarding, request, options: options);
   }
 }

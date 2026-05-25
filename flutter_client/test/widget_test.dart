@@ -17,6 +17,9 @@ import 'package:flutter_client/features/chat/data/mock_groupchat_data.dart';
 import 'package:flutter_client/features/chat/models/groupchat_models.dart';
 import 'package:flutter_client/features/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:flutter_client/features/chat/presentation/widgets/typing_indicator.dart';
+import 'package:flutter_client/features/preference_survey/data/survey_grpc_client.dart';
+import 'package:flutter_client/features/preference_survey/data/survey_grpc_endpoint.dart';
+import 'package:flutter_client/features/preference_survey/models/survey_question.dart';
 import 'package:flutter_client/main.dart';
 
 void main() {
@@ -79,10 +82,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     expect(find.text('OnTheBlock'), findsOneWidget);
     expect(find.text('The Golden Old Fashioned'), findsOneWidget);
@@ -98,10 +98,7 @@ void main() {
   testWidgets('navigates from home to map screen', (WidgetTester tester) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     await tester.tap(find.text('Map'));
     await tester.pumpAndSettle();
@@ -117,10 +114,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     expect(find.text('3'), findsOneWidget);
     expect(find.text('7'), findsNothing);
@@ -131,10 +125,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     await tester.tap(find.text('Board'));
     await tester.pumpAndSettle();
@@ -155,10 +146,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     await tester.tap(find.text('Chat'));
     await tester.pumpAndSettle();
@@ -182,10 +170,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     await tester.tap(find.text('Chat'));
     await tester.pumpAndSettle();
@@ -206,10 +191,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     await tester.tap(find.text('Chat'));
     await tester.pumpAndSettle();
@@ -249,8 +231,7 @@ void main() {
     expect(find.text('Start Survey'), findsOneWidget);
     expect(find.text('Westside Bourbon Enthusiasts'), findsNothing);
 
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _skipSurveyAndLocation(tester);
 
     expect(find.byTooltip('Back to messages'), findsOneWidget);
     expect(find.text('Westside Bourbon Enthusiasts'), findsOneWidget);
@@ -261,10 +242,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     await tester.tap(find.text('Collection'));
     await tester.pumpAndSettle();
@@ -315,10 +293,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     await tester.tap(find.byIcon(Icons.chat));
     await tester.pumpAndSettle();
@@ -345,10 +320,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
     await tester.tap(find.text('Board'));
     await tester.pumpAndSettle();
 
@@ -367,10 +339,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
     await tester.tap(find.text('Board'));
     await tester.pumpAndSettle();
 
@@ -389,10 +358,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     await tester.tap(find.byTooltip('Notifications'));
     await tester.pumpAndSettle();
@@ -423,10 +389,7 @@ void main() {
   ) async {
     await _pumpApp(tester);
 
-    await tester.tap(find.text('Continue with Google'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('SKIP'));
-    await tester.pumpAndSettle();
+    await _signInAndSkipOnboarding(tester);
 
     await tester.tap(find.byTooltip('Search'));
     await tester.pumpAndSettle();
@@ -553,6 +516,19 @@ Widget _chatInputBarApp({
   );
 }
 
+Future<void> _signInAndSkipOnboarding(WidgetTester tester) async {
+  await tester.tap(find.text('Continue with Google'));
+  await tester.pumpAndSettle();
+  await _skipSurveyAndLocation(tester);
+}
+
+Future<void> _skipSurveyAndLocation(WidgetTester tester) async {
+  await tester.tap(find.text('SKIP'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Skip'));
+  await tester.pumpAndSettle();
+}
+
 Future<void> _pumpApp(WidgetTester tester, {ChatPushService? chatPushService}) {
   SharedPreferences.setMockInitialValues({});
   return tester.pumpWidget(
@@ -561,6 +537,7 @@ Future<void> _pumpApp(WidgetTester tester, {ChatPushService? chatPushService}) {
         authRemoteDataSourceProvider.overrideWithValue(
           _FakeAuthRemoteDataSource(),
         ),
+        surveyGrpcClientProvider.overrideWithValue(_FakeSurveyGrpcClient()),
       ],
       child: OnTheBlockApp(
         boardRepository: _FakeBoardRepository(),
@@ -598,6 +575,98 @@ class _FakeChatPushService implements ChatPushService {
 
   @override
   Future<void> dispose() async {}
+}
+
+class _FakeSurveyGrpcClient extends SurveyGrpcClient {
+  _FakeSurveyGrpcClient()
+    : super(
+        const SurveyGrpcEndpoint(host: 'localhost', port: 0, useTls: false),
+      );
+
+  @override
+  Future<List<SurveyQuestion>> fetchQuestions() async {
+    return const [
+      SurveyQuestion(
+        id: 'q1',
+        text: '본인이 어느 정도로 술을 좋아하시나요?',
+        subtitle: '솔직하게 선택해 주세요. 맞춤 추천의 첫 번째 단계예요.',
+        options: [
+          QuestionOption(
+            value: 'beginner',
+            label: '입문자',
+            description: '이제 막 맛있는 술을 알아가는 중이에요.',
+            icon: 'school',
+          ),
+          QuestionOption(
+            value: 'enthusiast',
+            label: '애호가',
+            description: '새로운 술을 시도하는 걸 좋아해요.',
+            icon: 'star',
+          ),
+        ],
+      ),
+      SurveyQuestion(
+        id: 'q2',
+        text: '가장 끌리는 주류 카테고리를 모두 선택해 주세요.',
+        subtitle: '여러 개를 선택할 수 있어요.',
+        isMultiSelect: true,
+        options: [
+          QuestionOption(
+            value: 'whiskey',
+            label: '위스키',
+            description: 'Single Malt, Bourbon 등',
+            icon: 'liquor',
+          ),
+          QuestionOption(
+            value: 'wine',
+            label: '와인',
+            description: 'Red, White, Sparkling 등',
+            icon: 'wine_bar',
+          ),
+        ],
+      ),
+      SurveyQuestion(
+        id: 'q11',
+        text: '좋아하는 향과 맛의 키워드를 3가지 골라주세요.',
+        subtitle: '정확히 3가지를 선택해 주세요.',
+        isMultiSelect: true,
+        maxSelections: 3,
+        options: [
+          QuestionOption(
+            value: 'vanilla_caramel',
+            label: '#바닐라·카라멜',
+            description: '달콤함',
+            icon: 'cake',
+          ),
+          QuestionOption(
+            value: 'citrus_berry',
+            label: '#시트러스·베리',
+            description: '상큼한 과일',
+            icon: 'water_drop',
+          ),
+          QuestionOption(
+            value: 'oak_woody',
+            label: '#오크·우디',
+            description: '나무향',
+            icon: 'forest',
+          ),
+        ],
+      ),
+      SurveyQuestion(
+        id: 'q12',
+        text: '주로 생각하시는 1병당 구매 예산은 어느 정도인가요?',
+        subtitle: '추천 상품의 가격 범위를 설정하는 데 사용돼요.',
+        options: [
+          QuestionOption(
+            value: 'under_30k',
+            label: '3만원 이하',
+            description: '가성비 데일리',
+            icon: 'savings',
+          ),
+        ],
+      ),
+    ];
+  }
 }
 
 class _FakeBoardRepository implements BoardRepository {
@@ -753,7 +822,7 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
       ..accessToken = 'access-token'
       ..refreshToken = 'refresh-token'
       ..isNewUser = false
-      ..user = _fakeUser(surveyCompleted: false);
+      ..user = _fakeUser(onboardingCompleted: false);
   }
 
   @override
@@ -761,7 +830,7 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
     return RefreshTokenResponse()
       ..accessToken = 'refreshed-access-token'
       ..refreshToken = 'refreshed-refresh-token'
-      ..user = _fakeUser(surveyCompleted: false);
+      ..user = _fakeUser(onboardingCompleted: false);
   }
 
   @override
@@ -774,7 +843,7 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
       ..user = _fakeUser(
         nickname: nickname,
         profileImageUrl: profileImageUrl,
-        surveyCompleted: false,
+        onboardingCompleted: false,
       );
   }
 
@@ -788,6 +857,24 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
+  Future<UpdateNeighborhoodResponse> updateNeighborhood(
+    String userId,
+    String neighborhood,
+  ) async {
+    return UpdateNeighborhoodResponse()
+      ..user = _fakeUser(
+        neighborhood: neighborhood,
+        onboardingCompleted: false,
+      );
+  }
+
+  @override
+  Future<CompleteOnboardingResponse> completeOnboarding(String userId) async {
+    return CompleteOnboardingResponse()
+      ..user = _fakeUser(onboardingCompleted: true);
+  }
+
+  @override
   Future<void> logout(String userId) async {}
 
   @override
@@ -796,14 +883,17 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   UserResponse _fakeUser({
     String nickname = 'Alex Drinkwater',
     String profileImageUrl = '',
-    required bool surveyCompleted,
+    String neighborhood = '',
+    required bool onboardingCompleted,
   }) {
     return UserResponse()
       ..userId = '11111111-1111-1111-1111-111111111111'
       ..email = 'alex.d@example.com'
       ..nickname = nickname
       ..profileImageUrl = profileImageUrl
-      ..surveyCompleted = surveyCompleted
+      ..neighborhood = neighborhood
+      ..surveyId = 'survey-1'
+      ..onboardingCompleted = onboardingCompleted
       ..alcoholScore = 5
       ..points = 1250;
   }
