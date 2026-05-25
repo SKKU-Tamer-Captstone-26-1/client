@@ -948,12 +948,21 @@ class _FakeChatRepository implements ChatRepository {
   }) async {}
 
   @override
-  Future<void> sendTextMessage({
+  Future<GroupchatMessage> sendTextMessage({
     required String roomId,
     required String senderUserId,
     required String content,
     String authToken = '',
-  }) async {}
+  }) async {
+    return GroupchatMessage(
+      messageId: 'sent-text',
+      roomId: roomId,
+      sequenceNo: 4,
+      kind: GroupchatMessageKind.outgoing,
+      text: content,
+      timeLabel: 'Now',
+    );
+  }
 
   @override
   Future<AttachmentUploadTarget> createAttachmentUploadURL({
@@ -978,22 +987,46 @@ class _FakeChatRepository implements ChatRepository {
   }) async {}
 
   @override
-  Future<void> sendImageMessage({
+  Future<GroupchatMessage> sendImageMessage({
     required String roomId,
     required String senderUserId,
     required String imageUrl,
     String authToken = '',
-  }) async {}
+  }) async {
+    return GroupchatMessage(
+      messageId: 'sent-image',
+      roomId: roomId,
+      sequenceNo: 4,
+      kind: GroupchatMessageKind.outgoing,
+      text: '[Image]',
+      timeLabel: 'Now',
+      contentType: GroupchatMessageContentType.image,
+      imageUrl: imageUrl,
+    );
+  }
 
   @override
-  Future<void> sendFileMessage({
+  Future<GroupchatMessage> sendFileMessage({
     required String roomId,
     required String senderUserId,
     required String fileUrl,
     required String fileName,
     required String contentType,
     String authToken = '',
-  }) async {}
+  }) async {
+    return GroupchatMessage(
+      messageId: 'sent-file',
+      roomId: roomId,
+      sequenceNo: 4,
+      kind: GroupchatMessageKind.outgoing,
+      text: '[File] $fileName',
+      timeLabel: 'Now',
+      contentType: GroupchatMessageContentType.file,
+      fileUrl: fileUrl,
+      fileName: fileName,
+      fileContentType: contentType,
+    );
+  }
 
   @override
   Future<void> deleteMessage({

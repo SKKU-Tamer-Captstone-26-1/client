@@ -286,6 +286,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
             _locallyHiddenRoomIds.add(roomId);
           });
         },
+        onRoomRead: () => unawaited(_refreshChatUnreadCount()),
       ),
       _AppStage.collection => CollectionScreen(
         onBottomNavSelected: _selectBottomNavItem,

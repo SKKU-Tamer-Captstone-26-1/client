@@ -129,9 +129,10 @@ class _ChatInputBarState extends State<ChatInputBar> {
                             controller: widget.controller,
                             minLines: 1,
                             maxLines: _inputMaxLines,
-                            keyboardType: TextInputType.multiline,
-                            textInputAction: TextInputAction.newline,
+                            keyboardType: TextInputType.text,
+                            textInputAction: TextInputAction.send,
                             textCapitalization: TextCapitalization.sentences,
+                            onSubmitted: (_) => _handleSend(),
                             style: TextStyle(
                               color: palette.onSurface,
                               fontSize: 15,

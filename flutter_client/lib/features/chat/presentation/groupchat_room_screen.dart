@@ -32,6 +32,7 @@ class GroupchatRoomScreen extends StatefulWidget {
     this.chatRepository,
     this.currentUserId,
     this.authToken = '',
+    this.onRoomRead,
   });
 
   final GroupchatRoomSummary room;
@@ -40,6 +41,7 @@ class GroupchatRoomScreen extends StatefulWidget {
   final ChatRepository? chatRepository;
   final String? currentUserId;
   final String authToken;
+  final VoidCallback? onRoomRead;
 
   @override
   State<GroupchatRoomScreen> createState() => _GroupchatRoomScreenState();
@@ -101,10 +103,10 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     if (_canUseRemote) {
       _latestSequenceNo = await _readPersistedSequenceNo();
     }
-    await _loadMessages();
+    await _loadMessages(scrollToBottom: true);
   }
 
-  Future<void> _loadMessages() async {
+  Future<void> _loadMessages({bool scrollToBottom = false}) async {
     if (!_canUseRemote) {
       return;
     }
@@ -130,6 +132,9 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       loadedMessages = true;
       unawaited(_persistLatestSequenceNo());
       unawaited(_markRoomRead());
+      if (scrollToBottom) {
+        _scrollMessagesToBottom();
+      }
       _restartMessageStream();
     } catch (error, stackTrace) {
       if (_messages.isEmpty) {
@@ -179,13 +184,8 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
           if (exists) {
             return;
           }
-          setState(() {
-            _messages = _normalizeMessages([..._messages, message]);
-            _latestSequenceNo = _messages.last.sequenceNo;
-          });
+          _appendOrReplaceMessage(message, scrollToBottom: true);
           unawaited(_markRoomRead());
-          _scrollMessagesToBottom();
-          unawaited(_persistLatestSequenceNo());
         }, onError: _handleMessageStreamError);
   }
 
@@ -226,15 +226,15 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     }
 
     try {
-      await widget.chatRepository!.sendTextMessage(
+      final sent = await widget.chatRepository!.sendTextMessage(
         roomId: widget.room.roomId,
         senderUserId: widget.currentUserId!,
         content: text,
         authToken: widget.authToken,
       );
       _composerController.clear();
-      await _loadMessages();
-      _scrollMessagesToBottom();
+      _appendOrReplaceMessage(sent, scrollToBottom: true);
+      unawaited(_markRoomRead());
     } catch (error, stackTrace) {
       _showError(
         'Could not send message.',
@@ -243,6 +243,30 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         error: error,
         stackTrace: stackTrace,
       );
+    }
+  }
+
+  void _appendOrReplaceMessage(
+    GroupchatMessage message, {
+    required bool scrollToBottom,
+  }) {
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      final deduped = _messages
+          .where(
+            (candidate) =>
+                candidate.messageId != message.messageId &&
+                candidate.sequenceNo != message.sequenceNo,
+          )
+          .toList();
+      _messages = _normalizeMessages([...deduped, message]);
+      _latestSequenceNo = _maxSequenceNo(_latestSequenceNo, message.sequenceNo);
+    });
+    unawaited(_persistLatestSequenceNo());
+    if (scrollToBottom) {
+      _scrollMessagesToBottom();
     }
   }
 
@@ -486,6 +510,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     }
     try {
       await repo.markChatRoomRead(roomId: roomId, authToken: widget.authToken);
+      widget.onRoomRead?.call();
     } catch (_) {
       // Keep chat usable if read-state sync fails.
     }
@@ -572,12 +597,14 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         contentType: putContentType,
         bytes: bytes,
       );
-      await _retrySendImageMessage(
+      final sent = await repo.sendImageMessage(
         roomId: widget.room.roomId,
         senderUserId: userId,
         imageUrl: target.fileUrl,
+        authToken: widget.authToken,
       );
-      await _loadMessages();
+      _appendOrReplaceMessage(sent, scrollToBottom: true);
+      unawaited(_markRoomRead());
       _showInfo('Image sent: $filename');
     } catch (error, stackTrace) {
       final detail = _describeAttachmentError(error);
@@ -645,14 +672,16 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         contentType: putContentType,
         bytes: bytes,
       );
-      await _retrySendFileMessage(
+      final sent = await repo.sendFileMessage(
         roomId: widget.room.roomId,
         senderUserId: userId,
         fileUrl: target.fileUrl,
         fileName: filename,
         contentType: contentType,
+        authToken: widget.authToken,
       );
-      await _loadMessages();
+      _appendOrReplaceMessage(sent, scrollToBottom: true);
+      unawaited(_markRoomRead());
       _showInfo('File sent: $filename');
     } catch (error, stackTrace) {
       final detail = _describeAttachmentError(error);
@@ -663,56 +692,6 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
             'create_content_type=$createContentType put_content_type=$putContentType detail=$detail',
         error: error,
         stackTrace: stackTrace,
-      );
-    }
-  }
-
-  Future<void> _retrySendImageMessage({
-    required String roomId,
-    required String senderUserId,
-    required String imageUrl,
-  }) async {
-    try {
-      await widget.chatRepository!.sendImageMessage(
-        roomId: roomId,
-        senderUserId: senderUserId,
-        imageUrl: imageUrl,
-        authToken: widget.authToken,
-      );
-    } catch (_) {
-      await widget.chatRepository!.sendImageMessage(
-        roomId: roomId,
-        senderUserId: senderUserId,
-        imageUrl: imageUrl,
-        authToken: widget.authToken,
-      );
-    }
-  }
-
-  Future<void> _retrySendFileMessage({
-    required String roomId,
-    required String senderUserId,
-    required String fileUrl,
-    required String fileName,
-    required String contentType,
-  }) async {
-    try {
-      await widget.chatRepository!.sendFileMessage(
-        roomId: roomId,
-        senderUserId: senderUserId,
-        fileUrl: fileUrl,
-        fileName: fileName,
-        contentType: contentType,
-        authToken: widget.authToken,
-      );
-    } catch (_) {
-      await widget.chatRepository!.sendFileMessage(
-        roomId: roomId,
-        senderUserId: senderUserId,
-        fileUrl: fileUrl,
-        fileName: fileName,
-        contentType: contentType,
-        authToken: widget.authToken,
       );
     }
   }
@@ -847,7 +826,11 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
     Object? error,
   }) {
     if (error is GrpcError) {
-      return 'grpc ${error.codeName}';
+      final message = (error.message ?? '').trim();
+      if (message.isEmpty) {
+        return 'grpc ${error.codeName}';
+      }
+      return 'grpc ${error.codeName}: $message';
     }
     final uploadStatus = RegExp(
       r'upload failed with status (\d{3})',
@@ -983,7 +966,7 @@ class _GroupchatRoomAppBar extends StatelessWidget
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${room.memberSummary.split('/').first} members',
+                  _roomMemberLabel(room),
                   style: TextStyle(
                     color: palette.secondary,
                     fontSize: 12,
@@ -1005,6 +988,24 @@ class _GroupchatRoomAppBar extends StatelessWidget
       ],
     );
   }
+}
+
+String _roomMemberLabel(GroupchatRoomSummary room) {
+  if (room.memberCount > 0) {
+    return room.memberCount == 1 ? '1 member' : '${room.memberCount} members';
+  }
+
+  final summary = room.memberSummary.trim();
+  if (summary.isEmpty || summary == '-' || summary == '-/-') {
+    return 'Members';
+  }
+
+  final firstCount = int.tryParse(summary.split('/').first.trim());
+  if (firstCount != null && firstCount > 0) {
+    return firstCount == 1 ? '1 member' : '$firstCount members';
+  }
+
+  return summary;
 }
 
 class DateDivider extends StatelessWidget {

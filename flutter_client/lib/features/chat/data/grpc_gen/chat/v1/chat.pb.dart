@@ -1018,6 +1018,7 @@ class ChatRoomSummary extends $pb.GeneratedMessage {
     LastMessagePreview? lastMessage,
     $fixnum.Int64? unreadCount,
     $1.Timestamp? updatedAt,
+    $fixnum.Int64? memberCount,
   }) {
     final $result = create();
     if (roomId != null) {
@@ -1044,6 +1045,9 @@ class ChatRoomSummary extends $pb.GeneratedMessage {
     if (updatedAt != null) {
       $result.updatedAt = updatedAt;
     }
+    if (memberCount != null) {
+      $result.memberCount = memberCount;
+    }
     return $result;
   }
   ChatRoomSummary._() : super();
@@ -1059,6 +1063,7 @@ class ChatRoomSummary extends $pb.GeneratedMessage {
     ..aOM<LastMessagePreview>(6, _omitFieldNames ? '' : 'lastMessage', subBuilder: LastMessagePreview.create)
     ..aInt64(7, _omitFieldNames ? '' : 'unreadCount')
     ..aOM<$1.Timestamp>(8, _omitFieldNames ? '' : 'updatedAt', subBuilder: $1.Timestamp.create)
+    ..aInt64(9, _omitFieldNames ? '' : 'memberCount')
     ..hasRequiredFields = false
   ;
 
@@ -1158,6 +1163,15 @@ class ChatRoomSummary extends $pb.GeneratedMessage {
   void clearUpdatedAt() => clearField(8);
   @$pb.TagNumber(8)
   $1.Timestamp ensureUpdatedAt() => $_ensure(7);
+
+  @$pb.TagNumber(9)
+  $fixnum.Int64 get memberCount => $_getI64(8);
+  @$pb.TagNumber(9)
+  set memberCount($fixnum.Int64 v) { $_setInt64(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasMemberCount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearMemberCount() => clearField(9);
 }
 
 class LastMessagePreview extends $pb.GeneratedMessage {

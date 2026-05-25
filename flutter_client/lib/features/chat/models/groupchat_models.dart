@@ -24,6 +24,7 @@ class GroupchatRoomSummary {
     required this.timeLabel,
     required this.tags,
     required this.avatarUrls,
+    this.memberCount = 0,
     this.unreadCount = 0,
     this.isMuted = false,
     this.trailingIcon,
@@ -38,6 +39,7 @@ class GroupchatRoomSummary {
   final String timeLabel;
   final List<String> tags;
   final List<String> avatarUrls;
+  final int memberCount;
   final int unreadCount;
   final bool isMuted;
   final IconData? trailingIcon;
@@ -54,6 +56,7 @@ class GroupchatRoomSummary {
     String? timeLabel,
     List<String>? tags,
     List<String>? avatarUrls,
+    int? memberCount,
     int? unreadCount,
     bool? isMuted,
     IconData? trailingIcon,
@@ -68,6 +71,7 @@ class GroupchatRoomSummary {
       timeLabel: timeLabel ?? this.timeLabel,
       tags: tags ?? this.tags,
       avatarUrls: avatarUrls ?? this.avatarUrls,
+      memberCount: memberCount ?? this.memberCount,
       unreadCount: unreadCount ?? this.unreadCount,
       isMuted: isMuted ?? this.isMuted,
       trailingIcon: trailingIcon ?? this.trailingIcon,

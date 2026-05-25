@@ -311,6 +311,7 @@ const ChatRoomSummary$json = {
     {'1': 'last_message', '3': 6, '4': 1, '5': 11, '6': '.ontheblock.chat.v1.LastMessagePreview', '10': 'lastMessage'},
     {'1': 'unread_count', '3': 7, '4': 1, '5': 3, '10': 'unreadCount'},
     {'1': 'updated_at', '3': 8, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'updatedAt'},
+    {'1': 'member_count', '3': 9, '4': 1, '5': 3, '10': 'memberCount'},
   ],
 };
 
@@ -322,7 +323,8 @@ final $typed_data.Uint8List chatRoomSummaryDescriptor = $convert.base64Decode(
     '1vd25lcl91c2VyX2lkGAUgASgJUgtvd25lclVzZXJJZBJJCgxsYXN0X21lc3NhZ2UYBiABKAsy'
     'Ji5vbnRoZWJsb2NrLmNoYXQudjEuTGFzdE1lc3NhZ2VQcmV2aWV3UgtsYXN0TWVzc2FnZRIhCg'
     'x1bnJlYWRfY291bnQYByABKANSC3VucmVhZENvdW50EjkKCnVwZGF0ZWRfYXQYCCABKAsyGi5n'
-    'b29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQ=');
+    'b29nbGUucHJvdG9idWYuVGltZXN0YW1wUgl1cGRhdGVkQXQSIQoMbWVtYmVyX2NvdW50GAkgAS'
+    'gDUgttZW1iZXJDb3VudA==');
 
 @$core.Deprecated('Use lastMessagePreviewDescriptor instead')
 const LastMessagePreview$json = {

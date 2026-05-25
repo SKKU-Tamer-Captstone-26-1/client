@@ -19,7 +19,7 @@ abstract class ChatRepository {
 
   Future<void> joinRoom({required String roomId, required String userId});
 
-  Future<void> sendTextMessage({
+  Future<GroupchatMessage> sendTextMessage({
     required String roomId,
     required String senderUserId,
     required String content,
@@ -40,14 +40,14 @@ abstract class ChatRepository {
     required List<int> bytes,
   });
 
-  Future<void> sendImageMessage({
+  Future<GroupchatMessage> sendImageMessage({
     required String roomId,
     required String senderUserId,
     required String imageUrl,
     String authToken = '',
   });
 
-  Future<void> sendFileMessage({
+  Future<GroupchatMessage> sendFileMessage({
     required String roomId,
     required String senderUserId,
     required String fileUrl,
@@ -178,18 +178,19 @@ class GrpcChatRepository implements ChatRepository {
   }
 
   @override
-  Future<void> sendTextMessage({
+  Future<GroupchatMessage> sendTextMessage({
     required String roomId,
     required String senderUserId,
     required String content,
     String authToken = '',
-  }) {
-    return _remote.sendTextMessage(
+  }) async {
+    final response = await _remote.sendTextMessage(
       roomId: roomId,
       senderUserId: senderUserId,
       content: content,
       authToken: authToken,
     );
+    return response.message.toUiMessage(currentUserId: senderUserId);
   }
 
   @override
@@ -228,30 +229,31 @@ class GrpcChatRepository implements ChatRepository {
   }
 
   @override
-  Future<void> sendImageMessage({
+  Future<GroupchatMessage> sendImageMessage({
     required String roomId,
     required String senderUserId,
     required String imageUrl,
     String authToken = '',
-  }) {
-    return _remote.sendImageMessage(
+  }) async {
+    final response = await _remote.sendImageMessage(
       roomId: roomId,
       senderUserId: senderUserId,
       imageUrl: imageUrl,
       authToken: authToken,
     );
+    return response.message.toUiMessage(currentUserId: senderUserId);
   }
 
   @override
-  Future<void> sendFileMessage({
+  Future<GroupchatMessage> sendFileMessage({
     required String roomId,
     required String senderUserId,
     required String fileUrl,
     required String fileName,
     required String contentType,
     String authToken = '',
-  }) {
-    return _remote.sendFileMessage(
+  }) async {
+    final response = await _remote.sendFileMessage(
       roomId: roomId,
       senderUserId: senderUserId,
       fileUrl: fileUrl,
@@ -259,6 +261,7 @@ class GrpcChatRepository implements ChatRepository {
       contentType: contentType,
       authToken: authToken,
     );
+    return response.message.toUiMessage(currentUserId: senderUserId);
   }
 
   @override
@@ -401,12 +404,13 @@ extension _ChatRoomMapper on ChatRoom {
     return GroupchatRoomSummary(
       roomId: roomId,
       title: title,
-      memberSummary: '-/-',
+      memberSummary: '1 member',
       location: 'Unknown',
       lastMessage: 'No messages yet',
       timeLabel: _formatTimestamp(hasUpdatedAt() ? updatedAt : null),
       tags: const [],
       avatarUrls: const [],
+      memberCount: 1,
       unreadCount: 0,
     );
   }
@@ -417,18 +421,27 @@ extension _ChatRoomSummaryMapper on ChatRoomSummary {
     final preview = lastMessage.contentPreview.isNotEmpty
         ? lastMessage.contentPreview
         : 'No messages yet';
+    final activeMemberCount = memberCount.toInt();
     return GroupchatRoomSummary(
       roomId: roomId,
       title: title,
-      memberSummary: '-/-',
-      location: 'Unknown',
+      memberSummary: _formatMemberSummary(activeMemberCount),
+      location: linkedBoardId.isNotEmpty ? 'Board' : 'Chat',
       lastMessage: preview,
       timeLabel: _formatTimestamp(hasUpdatedAt() ? updatedAt : null),
       tags: const [],
       avatarUrls: const [],
+      memberCount: activeMemberCount,
       unreadCount: unreadCount.toInt(),
     );
   }
+}
+
+String _formatMemberSummary(int memberCount) {
+  if (memberCount <= 0) {
+    return 'Members';
+  }
+  return memberCount == 1 ? '1 member' : '$memberCount members';
 }
 
 extension _ChatMessageMapper on ChatMessage {
