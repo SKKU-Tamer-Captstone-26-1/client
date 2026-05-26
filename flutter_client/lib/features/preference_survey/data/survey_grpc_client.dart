@@ -10,22 +10,51 @@ class SurveyGrpcClient {
 
   final SurveyGrpcEndpoint _endpoint;
 
+  ClientChannel _channel() => ClientChannel(
+        _endpoint.host,
+        port: _endpoint.port,
+        options: ChannelOptions(
+          credentials: _endpoint.useTls
+              ? const ChannelCredentials.secure()
+              : const ChannelCredentials.insecure(),
+        ),
+      );
+
   Future<List<SurveyQuestion>> fetchQuestions() async {
-    final channel = ClientChannel(
-      _endpoint.host,
-      port: _endpoint.port,
-      options: ChannelOptions(
-        credentials: _endpoint.useTls
-            ? const ChannelCredentials.secure()
-            : const ChannelCredentials.insecure(),
-      ),
-    );
+    final channel = _channel();
     try {
       final stub = pb.SurveyServiceClient(channel);
-      final response = await stub.getSurveyQuestions(pb.GetSurveyQuestionsRequest());
-      return response.questions
-          .map(SurveyQuestion.fromProto)
-          .toList();
+      final response =
+          await stub.getSurveyQuestions(pb.GetSurveyQuestionsRequest());
+      return response.questions.map(SurveyQuestion.fromProto).toList();
+    } finally {
+      await channel.shutdown();
+    }
+  }
+
+  Future<String> submitAnswers({
+    required String userId,
+    required Map<String, List<String>?> answers,
+  }) async {
+    String? single(String key) => answers[key]?.first;
+
+    final request = pb.SubmitSurveyRequest(
+      userId: userId,
+      level: single('q1') ?? '',
+      categories: answers['q2'] ?? [],
+      whiskey: answers['q3'] ?? answers['q4'] ?? [],
+      wine: answers['q5'] ?? answers['q6'] ?? [],
+      cocktail: answers['q7'] ?? answers['q8'] ?? [],
+      beer: answers['q9'] ?? answers['q10'] ?? [],
+      flavorKeywords: answers['q11'] ?? [],
+      budget: single('q12') ?? '',
+    );
+
+    final channel = _channel();
+    try {
+      final stub = pb.SurveyServiceClient(channel);
+      final response = await stub.submitSurvey(request);
+      return response.surveyId;
     } finally {
       await channel.shutdown();
     }
