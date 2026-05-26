@@ -112,6 +112,18 @@ class SurveyNotifier extends StateNotifier<SurveyState> {
     state = state.copyWith(currentIndex: state.currentIndex - 1);
   }
 
+  void reset() {
+    final loaded = state._allQuestions.isNotEmpty;
+    final filtered = loaded ? _filter(state._allQuestions, null, null) : const <SurveyQuestion>[];
+    state = SurveyState(
+      allQuestions: state._allQuestions,
+      visibleQuestions: filtered,
+      currentIndex: 0,
+      answers: const {},
+      isLoading: !loaded,
+    );
+  }
+
   void _advance() {
     if (state.isLast) return;
     final nextIndex = state.currentIndex + 1;
