@@ -95,8 +95,8 @@ class QuestionOption {
     // Q2
     'whiskey': 'liquor',
     'wine': 'wine_bar',
-    'cognac': 'local_bar',
-    'cocktail': 'sports_bar',
+    'cognac': 'liquor',
+    'cocktail': 'local_bar',
     'beer': 'sports_bar',
     // Q3 whiskey beginner
     'sweet_smooth': 'cake',
@@ -156,9 +156,9 @@ class QuestionOption {
     'spicy': 'whatshot',
     'herb_mint': 'eco',
     // Q12 budget
-    'under_30k': 'savings',
-    '30k_100k': 'star',
-    '100k_200k': 'verified',
-    'over_200k': 'diamond',
+    'under_30k':  'monetization_on',
+    '30k_100k':   'monetization_on',
+    '100k_200k':  'monetization_on',
+    'over_200k':  'monetization_on',
   };
 }
