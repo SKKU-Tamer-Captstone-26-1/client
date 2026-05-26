@@ -127,6 +127,7 @@ class OptionCard extends StatelessWidget {
       'beach_access': Icons.beach_access,
       'savings': Icons.savings,
       'diamond': Icons.diamond,
+      'monetization_on': Icons.monetization_on,
     };
     return map[name] ?? Icons.help_outline;
   }
