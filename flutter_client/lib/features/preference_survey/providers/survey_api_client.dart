@@ -13,20 +13,18 @@ class SurveyApiClient {
   }) async {
     String? single(String key) => answers[key]?.first;
 
+    // q3 (beginner) and q4 (expert) both cover whiskey — only one is shown.
+    // q5/q6 = wine, q7/q8 = cocktail, q9/q10 = beer.
     final body = <String, dynamic>{
       'userId': userId,
-      'q1Answer': single('q1'),
-      'q2Answer': answers['q2'],
-      'q3Answer': single('q3'),
-      'q4Answer': single('q4'),
-      'q5Answer': single('q5'),
-      'q6Answer': single('q6'),
-      'q7Answer': single('q7'),
-      'q8Answer': single('q8'),
-      'q9Answer': single('q9'),
-      'q10Answer': single('q10'),
-      'q11Answer': answers['q11'],
-      'q12Answer': single('q12'),
+      'level': single('q1'),
+      'categories': answers['q2'],
+      'whiskey': answers['q3'] ?? answers['q4'],
+      'wine': answers['q5'] ?? answers['q6'],
+      'cocktail': answers['q7'] ?? answers['q8'],
+      'beer': answers['q9'] ?? answers['q10'],
+      'flavorKeywords': answers['q11'],
+      'budget': single('q12'),
     };
 
     final response = await http.post(
