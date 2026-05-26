@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../data/survey_grpc_client.dart';
 import '../providers/survey_notifier.dart';
 import '../widgets/option_card.dart';
 
@@ -110,24 +111,24 @@ class SurveyScreen extends ConsumerWidget {
     SurveyState state,
   ) async {
     final auth = ref.read(authProvider);
-    final client = ref.read(surveyApiClientProvider);
-
-    if (auth.userId == null || client == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('로그인이 필요합니다.')));
+    if (auth.userId == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('로그인이 필요합니다.')));
       return;
     }
 
     try {
-      final surveyId = await client.submit(userId: auth.userId!, answers: state.answers);
+      final grpcClient = ref.read(surveyGrpcClientProvider);
+      final surveyId = await grpcClient.submitAnswers(
+        userId: auth.userId!,
+        answers: state.answers,
+      );
       ref.read(authProvider.notifier).markSurveyCompleted(surveyId: surveyId);
       if (context.mounted) onCompleted?.call();
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('제출 실패: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('제출 실패: $e')));
       }
     }
   }
