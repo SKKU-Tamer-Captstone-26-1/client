@@ -98,52 +98,29 @@ class QuestionOption {
     'cognac': 'liquor',
     'cocktail': 'local_bar',
     'beer': 'sports_bar',
-    // Q3 whiskey beginner
-    'sweet_smooth': 'cake',
-    'fruity_aromatic': 'local_florist',
-    'peaty_smoky': 'local_fire_department',
-    'light_floral': 'spa',
-    'bold_intense': 'whatshot',
-    // Q4 whiskey enthusiast/expert
+    // Q3+Q4 whiskey (shared keys)
     'bourbon_character': 'liquor',
     'sherry_character': 'wine_bar',
     'peat_character': 'local_fire_department',
     'floral_citrus': 'local_florist',
     'american_whiskey': 'agriculture',
-    // Q5 wine beginner
-    'light_sweet': 'water_drop',
-    'crisp_clean': 'air',
-    'smooth_medium': 'sentiment_satisfied',
-    'rich_full': 'whatshot',
-    'bubbly_refreshing': 'celebration',
-    // Q6 wine enthusiast/expert
+    // Q5+Q6 wine (shared keys)
     'full_red': 'wine_bar',
     'light_red_rose': 'local_florist',
     'white': 'water_drop',
-    'natural_orange': 'eco',
+    'sparkling': 'celebration',
     'fortified': 'liquor',
-    // Q7 cocktail beginner
-    'sweet_fruity': 'local_florist',
-    'tart_refreshing': 'water_drop',
-    'clean_fizzy': 'sports_bar',
-    'rich_spirited': 'local_bar',
-    'smooth_creamy': 'coffee',
-    // Q8 cocktail enthusiast/expert
+    // Q7+Q8 cocktail (shared keys)
+    'tropical_tiki': 'beach_access',
     'tart_balanced': 'water_drop',
     'refreshing_long': 'sports_bar',
+    'dessert_cream': 'coffee',
     'bold_spirit_fwd': 'local_bar',
-    'sweet_herb_liq': 'local_florist',
-    'tropical_tiki': 'beach_access',
-    // Q9 beer beginner
-    'light_crisp': 'water_drop',
-    'bittersweet_citrusy': 'local_florist',
-    'rich_dark': 'coffee',
-    'unique_tart': 'eco',
-    // Q10 beer enthusiast/expert
+    // Q9+Q10 beer (shared keys)
     'lager_pilsner': 'sports_bar',
+    'weizen_white': 'grain',
     'pale_ale_ipa': 'local_florist',
     'stout_porter': 'coffee',
-    'weizen_white': 'grain',
     'sour_wild': 'eco',
     // Q11 flavor keywords
     'vanilla_caramel': 'cake',
