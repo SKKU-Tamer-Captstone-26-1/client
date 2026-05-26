@@ -559,7 +559,7 @@ class _MySettingsSection extends ConsumerWidget {
           iconColor: const Color(0xFF825516),
           iconBgColor: const Color(0xFFE7EFF8),
           title: 'Taste Profile',
-          subtitle: 'Prefers Whiskey, Gin',
+          centerTitle: true,
           actionLabel: 'Retake',
           onTap: onRetakeSurvey,
         ),
@@ -606,6 +606,7 @@ class _SettingsCard extends StatelessWidget {
     required this.iconBgColor,
     required this.title,
     this.subtitle,
+    this.centerTitle = false,
     this.actionLabel,
     this.trailing,
     this.onTap,
@@ -616,6 +617,7 @@ class _SettingsCard extends StatelessWidget {
   final Color iconBgColor;
   final String title;
   final String? subtitle;
+  final bool centerTitle;
   final String? actionLabel;
   final Widget? trailing;
   final VoidCallback? onTap;
@@ -649,7 +651,7 @@ class _SettingsCard extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: centerTitle ? CrossAxisAlignment.center : CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
