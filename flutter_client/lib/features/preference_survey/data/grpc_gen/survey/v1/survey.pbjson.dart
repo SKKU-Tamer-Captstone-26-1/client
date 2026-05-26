@@ -1,15 +1,13 @@
-// This is a generated file - do not edit.
 //
-// Generated from survey/v1/survey.proto.
-
-// @dart = 3.3
+//  Generated code. Do not modify.
+//  source: survey/v1/survey.proto
+//
+// @dart = 2.12
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names
-// ignore_for_file: curly_braces_in_flow_control_structures
-// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
-// ignore_for_file: unused_import
+// ignore_for_file: constant_identifier_names, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_final_fields
+// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -24,9 +22,8 @@ const GetSurveyResultRequest$json = {
 };
 
 /// Descriptor for `GetSurveyResultRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSurveyResultRequestDescriptor =
-    $convert.base64Decode(
-        'ChZHZXRTdXJ2ZXlSZXN1bHRSZXF1ZXN0EhsKCXN1cnZleV9pZBgBIAEoCVIIc3VydmV5SWQ=');
+final $typed_data.Uint8List getSurveyResultRequestDescriptor = $convert.base64Decode(
+    'ChZHZXRTdXJ2ZXlSZXN1bHRSZXF1ZXN0EhsKCXN1cnZleV9pZBgBIAEoCVIIc3VydmV5SWQ=');
 
 @$core.Deprecated('Use getSurveyResultByUserRequestDescriptor instead')
 const GetSurveyResultByUserRequest$json = {
@@ -37,31 +34,22 @@ const GetSurveyResultByUserRequest$json = {
 };
 
 /// Descriptor for `GetSurveyResultByUserRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSurveyResultByUserRequestDescriptor =
-    $convert.base64Decode(
-        'ChxHZXRTdXJ2ZXlSZXN1bHRCeVVzZXJSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA'
-        '==');
+final $typed_data.Uint8List getSurveyResultByUserRequestDescriptor = $convert.base64Decode(
+    'ChxHZXRTdXJ2ZXlSZXN1bHRCeVVzZXJSZXF1ZXN0EhcKB3VzZXJfaWQYASABKAlSBnVzZXJJZA'
+    '==');
 
 @$core.Deprecated('Use getSurveyResultResponseDescriptor instead')
 const GetSurveyResultResponse$json = {
   '1': 'GetSurveyResultResponse',
   '2': [
-    {
-      '1': 'result',
-      '3': 1,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.survey.v1.SurveyResult',
-      '10': 'result'
-    },
+    {'1': 'result', '3': 1, '4': 1, '5': 11, '6': '.ontheblock.survey.v1.SurveyResult', '10': 'result'},
   ],
 };
 
 /// Descriptor for `GetSurveyResultResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSurveyResultResponseDescriptor =
-    $convert.base64Decode(
-        'ChdHZXRTdXJ2ZXlSZXN1bHRSZXNwb25zZRI6CgZyZXN1bHQYASABKAsyIi5vbnRoZWJsb2NrLn'
-        'N1cnZleS52MS5TdXJ2ZXlSZXN1bHRSBnJlc3VsdA==');
+final $typed_data.Uint8List getSurveyResultResponseDescriptor = $convert.base64Decode(
+    'ChdHZXRTdXJ2ZXlSZXN1bHRSZXNwb25zZRI6CgZyZXN1bHQYASABKAsyIi5vbnRoZWJsb2NrLn'
+    'N1cnZleS52MS5TdXJ2ZXlSZXN1bHRSBnJlc3VsdA==');
 
 @$core.Deprecated('Use surveyResultDescriptor instead')
 const SurveyResult$json = {
@@ -77,14 +65,7 @@ const SurveyResult$json = {
     {'1': 'beer', '3': 8, '4': 3, '5': 9, '10': 'beer'},
     {'1': 'flavor_keywords', '3': 9, '4': 3, '5': 9, '10': 'flavorKeywords'},
     {'1': 'budget', '3': 10, '4': 1, '5': 9, '10': 'budget'},
-    {
-      '1': 'submitted_at',
-      '3': 11,
-      '4': 1,
-      '5': 11,
-      '6': '.google.protobuf.Timestamp',
-      '10': 'submittedAt'
-    },
+    {'1': 'submitted_at', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'submittedAt'},
   ],
 };
 
@@ -104,29 +85,21 @@ const GetSurveyQuestionsRequest$json = {
 };
 
 /// Descriptor for `GetSurveyQuestionsRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSurveyQuestionsRequestDescriptor =
-    $convert.base64Decode('ChlHZXRTdXJ2ZXlRdWVzdGlvbnNSZXF1ZXN0');
+final $typed_data.Uint8List getSurveyQuestionsRequestDescriptor = $convert.base64Decode(
+    'ChlHZXRTdXJ2ZXlRdWVzdGlvbnNSZXF1ZXN0');
 
 @$core.Deprecated('Use getSurveyQuestionsResponseDescriptor instead')
 const GetSurveyQuestionsResponse$json = {
   '1': 'GetSurveyQuestionsResponse',
   '2': [
-    {
-      '1': 'questions',
-      '3': 1,
-      '4': 3,
-      '5': 11,
-      '6': '.ontheblock.survey.v1.SurveyQuestion',
-      '10': 'questions'
-    },
+    {'1': 'questions', '3': 1, '4': 3, '5': 11, '6': '.ontheblock.survey.v1.SurveyQuestion', '10': 'questions'},
   ],
 };
 
 /// Descriptor for `GetSurveyQuestionsResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List getSurveyQuestionsResponseDescriptor =
-    $convert.base64Decode(
-        'ChpHZXRTdXJ2ZXlRdWVzdGlvbnNSZXNwb25zZRJCCglxdWVzdGlvbnMYASADKAsyJC5vbnRoZW'
-        'Jsb2NrLnN1cnZleS52MS5TdXJ2ZXlRdWVzdGlvblIJcXVlc3Rpb25z');
+final $typed_data.Uint8List getSurveyQuestionsResponseDescriptor = $convert.base64Decode(
+    'ChpHZXRTdXJ2ZXlRdWVzdGlvbnNSZXNwb25zZRJCCglxdWVzdGlvbnMYASADKAsyJC5vbnRoZW'
+    'Jsb2NrLnN1cnZleS52MS5TdXJ2ZXlRdWVzdGlvblIJcXVlc3Rpb25z');
 
 @$core.Deprecated('Use surveyQuestionDescriptor instead')
 const SurveyQuestion$json = {
@@ -137,22 +110,8 @@ const SurveyQuestion$json = {
     {'1': 'question_type', '3': 3, '4': 1, '5': 9, '10': 'questionType'},
     {'1': 'max_selections', '3': 4, '4': 1, '5': 5, '10': 'maxSelections'},
     {'1': 'question_order', '3': 5, '4': 1, '5': 5, '10': 'questionOrder'},
-    {
-      '1': 'options',
-      '3': 6,
-      '4': 3,
-      '5': 11,
-      '6': '.ontheblock.survey.v1.AnswerOption',
-      '10': 'options'
-    },
-    {
-      '1': 'condition',
-      '3': 7,
-      '4': 1,
-      '5': 11,
-      '6': '.ontheblock.survey.v1.QuestionCondition',
-      '10': 'condition'
-    },
+    {'1': 'options', '3': 6, '4': 3, '5': 11, '6': '.ontheblock.survey.v1.AnswerOption', '10': 'options'},
+    {'1': 'condition', '3': 7, '4': 1, '5': 11, '6': '.ontheblock.survey.v1.QuestionCondition', '10': 'condition'},
   ],
 };
 
@@ -228,6 +187,6 @@ const SubmitSurveyResponse$json = {
 };
 
 /// Descriptor for `SubmitSurveyResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List submitSurveyResponseDescriptor =
-    $convert.base64Decode(
-        'ChRTdWJtaXRTdXJ2ZXlSZXNwb25zZRIbCglzdXJ2ZXlfaWQYASABKAlSCHN1cnZleUlk');
+final $typed_data.Uint8List submitSurveyResponseDescriptor = $convert.base64Decode(
+    'ChRTdWJtaXRTdXJ2ZXlSZXNwb25zZRIbCglzdXJ2ZXlfaWQYASABKAlSCHN1cnZleUlk');
+
