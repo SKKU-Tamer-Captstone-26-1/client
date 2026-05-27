@@ -62,18 +62,17 @@ void main() {
     await tester.tap(find.text('Start Survey'));
     await tester.pumpAndSettle();
 
-    expect(find.text('STEP 1 / 4'), findsOneWidget);
+    expect(find.text('Onboarding'), findsOneWidget);
     expect(find.text('본인이 어느 정도로 술을 좋아하시나요?'), findsOneWidget);
-    expect(find.text('솔직하게 선택해 주세요. 맞춤 추천의 첫 번째 단계예요.'), findsOneWidget);
-    expect(find.text('다음'), findsOneWidget);
+    expect(find.text('Next'), findsOneWidget);
 
     await tester.tap(find.text('입문자'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('다음'));
+    await tester.tap(find.text('Next'));
     await tester.pumpAndSettle();
 
-    expect(find.text('STEP 2 / 4'), findsOneWidget);
+    expect(find.text('Previous'), findsOneWidget);
     expect(find.text('가장 끌리는 주류 카테고리를 모두 선택해 주세요.'), findsOneWidget);
   });
 

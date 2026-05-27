@@ -26,6 +26,7 @@ import 'features/map/presentation/map_screen.dart';
 import 'features/location/presentation/location_screen.dart';
 import 'features/preference_survey/presentation/survey_intro_screen.dart';
 import 'features/preference_survey/presentation/survey_screen.dart';
+import 'features/preference_survey/providers/survey_notifier.dart';
 import 'features/profile/profile_setup_screen.dart';
 import 'features/profile/user_page_screen.dart';
 
@@ -200,6 +201,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       ),
       _AppStage.surveyIntro => SurveyIntroScreen(
         onStartSurvey: () {
+          ref.read(surveyProvider.notifier).reset();
           setState(() {
             _stage = _AppStage.survey;
           });
@@ -222,6 +224,16 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
           });
         },
         onCompleted: () {
+          setState(() {
+            if (_isRetaking) {
+              _isRetaking = false;
+              _stage = _AppStage.home;
+            } else {
+              _stage = _AppStage.locationSetup;
+            }
+          });
+        },
+        onSkipAll: () {
           setState(() {
             if (_isRetaking) {
               _isRetaking = false;

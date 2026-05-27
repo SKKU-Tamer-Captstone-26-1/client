@@ -1,6 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../preference_survey/providers/survey_api_client.dart';
-import '../../../core/config/app_config.dart';
 import '../models/auth_models.dart';
 
 class AuthState {
@@ -84,9 +82,3 @@ class AuthNotifier extends StateNotifier<AuthState> {
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
   (ref) => AuthNotifier(),
 );
-
-final surveyApiClientProvider = Provider<SurveyApiClient?>((ref) {
-  final auth = ref.watch(authProvider);
-  if (!auth.isAuthenticated) return null;
-  return SurveyApiClient(baseUrl: kSurveyBaseUrl, authToken: auth.accessToken!);
-});

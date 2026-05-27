@@ -72,6 +72,8 @@ class AuthRepository {
       profileImageUrl: u.profileImageUrl.isEmpty ? null : u.profileImageUrl,
       neighborhood: u.neighborhood.isEmpty ? null : u.neighborhood,
       surveyId: surveyId,
+      alcoholScore: u.alcoholScore,
+      points: u.points,
       onboardingCompleted: u.onboardingCompleted,
     );
   }

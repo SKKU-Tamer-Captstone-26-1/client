@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
@@ -314,10 +315,23 @@ class _AlcoholScoreCard extends StatelessWidget {
 
   final int alcoholScore;
 
+  static String _titleForScore(int score) {
+    if (score >= 96) return 'Spirytus';
+    if (score >= 75) return 'Overproof';
+    if (score >= 60) return 'Absinthe';
+    if (score >= 40) return 'Whiskey';
+    if (score >= 25) return 'Liqueur';
+    if (score >= 18) return 'Port';
+    if (score >= 12) return 'Wine';
+    if (score >= 5)  return 'Beer';
+    return 'Mocktail';
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
     final progress = (alcoholScore / 100.0).clamp(0.0, 1.0);
+    final title = _titleForScore(alcoholScore);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -346,9 +360,9 @@ class _AlcoholScoreCard extends StatelessWidget {
                   color: const Color(0xFFFFDDB9),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Text(
-                  'Beer',
-                  style: TextStyle(
+                child: Text(
+                  title,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF663E00),
@@ -545,7 +559,7 @@ class _MySettingsSection extends ConsumerWidget {
           iconColor: const Color(0xFF825516),
           iconBgColor: const Color(0xFFE7EFF8),
           title: 'Taste Profile',
-          subtitle: 'Prefers Whiskey, Gin',
+          centerTitle: true,
           actionLabel: 'Retake',
           onTap: onRetakeSurvey,
         ),
@@ -556,7 +570,20 @@ class _MySettingsSection extends ConsumerWidget {
           iconBgColor: const Color(0xFFE7EFF8),
           title: 'Help & Support',
           trailing: Icon(Icons.chevron_right, color: context.palette.secondary),
-          onTap: () {},
+          onTap: () async {
+            final userEmail = ref.read(authProvider).user?.email ?? '';
+            final uri = Uri(
+              scheme: 'mailto',
+              path: 'kimgoondo00@gmail.com',
+              queryParameters: {
+                'subject': '[On The Block] Help & Support',
+                'body': 'Account: $userEmail\n\n',
+              },
+            );
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri);
+            }
+          },
         ),
         const SizedBox(height: 12),
         _SettingsCard(
@@ -579,6 +606,7 @@ class _SettingsCard extends StatelessWidget {
     required this.iconBgColor,
     required this.title,
     this.subtitle,
+    this.centerTitle = false,
     this.actionLabel,
     this.trailing,
     this.onTap,
@@ -589,6 +617,7 @@ class _SettingsCard extends StatelessWidget {
   final Color iconBgColor;
   final String title;
   final String? subtitle;
+  final bool centerTitle;
   final String? actionLabel;
   final Widget? trailing;
   final VoidCallback? onTap;
@@ -622,7 +651,7 @@ class _SettingsCard extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: centerTitle ? CrossAxisAlignment.center : CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
