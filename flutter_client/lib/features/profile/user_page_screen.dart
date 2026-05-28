@@ -14,6 +14,8 @@ import '../auth/models/auth_models.dart';
 import '../auth/providers/auth_provider.dart';
 import '../auth/providers/auth_repository_provider.dart';
 import '../location/presentation/location_screen.dart';
+import '../recommendation/data/recommendation_repository.dart';
+import '../recommendation/models/recommendation_models.dart';
 
 class UserPageScreen extends ConsumerWidget {
   const UserPageScreen({
@@ -22,6 +24,8 @@ class UserPageScreen extends ConsumerWidget {
     this.onBottomNavSelected,
     this.onRetakeSurvey,
     this.onLogout,
+    this.recommendationRepository,
+    this.recommendationAuthToken = '',
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
@@ -29,6 +33,8 @@ class UserPageScreen extends ConsumerWidget {
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onRetakeSurvey;
   final VoidCallback? onLogout;
+  final RecommendationRepository? recommendationRepository;
+  final String recommendationAuthToken;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
@@ -74,6 +80,8 @@ class UserPageScreen extends ConsumerWidget {
             _MySettingsSection(
               onRetakeSurvey: onRetakeSurvey,
               onLogout: onLogout,
+              recommendationRepository: recommendationRepository,
+              recommendationAuthToken: recommendationAuthToken,
             ),
           ],
         ),
@@ -187,7 +195,9 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
       final nickname = widget.user?.nickname ?? '';
       final repo = ref.read(authRepositoryProvider);
 
-      final (:uploadUrl, :objectUrl) = await repo.generateProfileUploadUrl(userId);
+      final (:uploadUrl, :objectUrl) = await repo.generateProfileUploadUrl(
+        userId,
+      );
       final uploadRes = await http.put(
         Uri.parse(uploadUrl),
         headers: {'Content-Type': 'image/jpeg'},
@@ -201,9 +211,9 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
       ref.read(authProvider.notifier).updateUser(updated);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update photo: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update photo: $e')));
       }
     } finally {
       if (mounted) setState(() => _isUploading = false);
@@ -323,7 +333,7 @@ class _AlcoholScoreCard extends StatelessWidget {
     if (score >= 25) return 'Liqueur';
     if (score >= 18) return 'Port';
     if (score >= 12) return 'Wine';
-    if (score >= 5)  return 'Beer';
+    if (score >= 5) return 'Beer';
     return 'Mocktail';
   }
 
@@ -495,10 +505,17 @@ class _PointsCard extends StatelessWidget {
 }
 
 class _MySettingsSection extends ConsumerWidget {
-  const _MySettingsSection({this.onRetakeSurvey, this.onLogout});
+  const _MySettingsSection({
+    this.onRetakeSurvey,
+    this.onLogout,
+    this.recommendationRepository,
+    this.recommendationAuthToken = '',
+  });
 
   final VoidCallback? onRetakeSurvey;
   final VoidCallback? onLogout;
+  final RecommendationRepository? recommendationRepository;
+  final String recommendationAuthToken;
 
   Future<void> _openLocationUpdate(BuildContext context, WidgetRef ref) async {
     final userId = ref.read(authProvider).userId;
@@ -522,7 +539,9 @@ class _MySettingsSection extends ConsumerWidget {
         final updated = await ref
             .read(authRepositoryProvider)
             .updateNeighborhood(userId, saved!);
-        if (context.mounted) ref.read(authProvider.notifier).updateUser(updated);
+        if (context.mounted) {
+          ref.read(authProvider.notifier).updateUser(updated);
+        }
       } catch (_) {}
     }
   }
@@ -554,13 +573,9 @@ class _MySettingsSection extends ConsumerWidget {
           onTap: () => _openLocationUpdate(context, ref),
         ),
         const SizedBox(height: 12),
-        _SettingsCard(
-          icon: Icons.assignment,
-          iconColor: const Color(0xFF825516),
-          iconBgColor: const Color(0xFFE7EFF8),
-          title: 'Taste Profile',
-          centerTitle: true,
-          actionLabel: 'Retake',
+        _TasteProfileSettingsCard(
+          repository: recommendationRepository,
+          authToken: recommendationAuthToken,
           onTap: onRetakeSurvey,
         ),
         const SizedBox(height: 12),
@@ -599,6 +614,105 @@ class _MySettingsSection extends ConsumerWidget {
   }
 }
 
+class _TasteProfileSettingsCard extends StatefulWidget {
+  const _TasteProfileSettingsCard({
+    required this.repository,
+    required this.authToken,
+    this.onTap,
+  });
+
+  final RecommendationRepository? repository;
+  final String authToken;
+  final VoidCallback? onTap;
+
+  @override
+  State<_TasteProfileSettingsCard> createState() =>
+      _TasteProfileSettingsCardState();
+}
+
+class _TasteProfileSettingsCardState extends State<_TasteProfileSettingsCard> {
+  Future<RecommendationProfile>? _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _resetFuture();
+  }
+
+  @override
+  void didUpdateWidget(_TasteProfileSettingsCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.repository != widget.repository ||
+        oldWidget.authToken != widget.authToken) {
+      _resetFuture();
+    }
+  }
+
+  void _resetFuture() {
+    final repository = widget.repository;
+    final authToken = widget.authToken.trim();
+    _future = repository == null || authToken.isEmpty
+        ? null
+        : repository.getProfileStatus(authToken: authToken);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final future = _future;
+    if (future == null) {
+      return _card(subtitle: 'Recommendation profile unavailable');
+    }
+
+    return FutureBuilder<RecommendationProfile>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _card(subtitle: 'Checking profile status');
+        }
+        if (snapshot.hasError) {
+          return _card(subtitle: 'Could not load profile status');
+        }
+
+        final profile = snapshot.data;
+        return _card(
+          subtitle: profile == null
+              ? 'Profile status unavailable'
+              : _profileSubtitle(profile),
+        );
+      },
+    );
+  }
+
+  Widget _card({required String subtitle}) {
+    return _SettingsCard(
+      icon: Icons.assignment,
+      iconColor: const Color(0xFF825516),
+      iconBgColor: const Color(0xFFE7EFF8),
+      title: 'Taste Profile',
+      subtitle: subtitle,
+      actionLabel: 'Retake',
+      onTap: widget.onTap,
+    );
+  }
+
+  static String _profileSubtitle(RecommendationProfile profile) {
+    final reason = profile.staleReason.trim();
+    if (reason.isNotEmpty) return reason;
+
+    return switch (profile.status) {
+      RecommendationProfileStatus.active => 'Ready for recommendations',
+      RecommendationProfileStatus.missing =>
+        'Complete the survey to unlock recommendations',
+      RecommendationProfileStatus.pendingGeneration =>
+        'Building your recommendations',
+      RecommendationProfileStatus.stale => 'Refreshing your taste profile',
+      RecommendationProfileStatus.failedGeneration =>
+        'Profile generation failed',
+      RecommendationProfileStatus.unspecified => 'Profile status unavailable',
+    };
+  }
+}
+
 class _SettingsCard extends StatelessWidget {
   const _SettingsCard({
     required this.icon,
@@ -606,7 +720,6 @@ class _SettingsCard extends StatelessWidget {
     required this.iconBgColor,
     required this.title,
     this.subtitle,
-    this.centerTitle = false,
     this.actionLabel,
     this.trailing,
     this.onTap,
@@ -617,7 +730,6 @@ class _SettingsCard extends StatelessWidget {
   final Color iconBgColor;
   final String title;
   final String? subtitle;
-  final bool centerTitle;
   final String? actionLabel;
   final Widget? trailing;
   final VoidCallback? onTap;
@@ -651,7 +763,7 @@ class _SettingsCard extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: Column(
-                crossAxisAlignment: centerTitle ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,

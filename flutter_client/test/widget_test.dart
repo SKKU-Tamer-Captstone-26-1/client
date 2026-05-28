@@ -20,6 +20,8 @@ import 'package:flutter_client/features/chat/presentation/widgets/typing_indicat
 import 'package:flutter_client/features/preference_survey/data/survey_grpc_client.dart';
 import 'package:flutter_client/features/preference_survey/data/survey_grpc_endpoint.dart';
 import 'package:flutter_client/features/preference_survey/models/survey_question.dart';
+import 'package:flutter_client/features/recommendation/data/recommendation_repository.dart';
+import 'package:flutter_client/features/recommendation/models/recommendation_models.dart';
 import 'package:flutter_client/main.dart';
 
 void main() {
@@ -84,7 +86,10 @@ void main() {
     await _signInAndSkipOnboarding(tester);
 
     expect(find.text('OnTheBlock'), findsOneWidget);
-    expect(find.text('The Golden Old Fashioned'), findsOneWidget);
+    expect(
+      find.text('Personalized picks start with your survey'),
+      findsOneWidget,
+    );
     expect(find.text('Local Establishments'), findsOneWidget);
 
     await tester.drag(find.byType(ListView).first, const Offset(0, -600));
@@ -92,6 +97,39 @@ void main() {
 
     expect(find.text('Outdoor Vaults'), findsOneWidget);
     expect(find.text('Neighborhood Buzz'), findsOneWidget);
+  });
+
+  testWidgets('shows personalized beverage recommendations on home', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(
+      tester,
+      recommendationRepository: _FakeRecommendationRepository(),
+    );
+
+    await _signInAndSkipOnboarding(tester);
+
+    expect(find.text('TOP MATCH'), findsOneWidget);
+    expect(find.text('Recommended for you'), findsOneWidget);
+    expect(find.text('Example Bourbon'), findsWidgets);
+    expect(find.text('Matches your vanilla/caramel preference.'), findsWidgets);
+  });
+
+  testWidgets('shows taste profile status on profile screen', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(
+      tester,
+      recommendationRepository: _FakeRecommendationRepository(),
+    );
+
+    await _signInAndSkipOnboarding(tester);
+
+    await tester.tap(find.byIcon(Icons.account_circle));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Taste Profile'), findsOneWidget);
+    expect(find.text('Ready for recommendations'), findsOneWidget);
   });
 
   testWidgets('navigates from home to map screen', (WidgetTester tester) async {
@@ -403,7 +441,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Search bottles, stores, boards'), findsNothing);
-    expect(find.text('The Golden Old Fashioned'), findsOneWidget);
+    expect(
+      find.text('Personalized picks start with your survey'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('typing indicator hides without typing users', (
@@ -528,7 +569,11 @@ Future<void> _skipSurveyAndLocation(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _pumpApp(WidgetTester tester, {ChatPushService? chatPushService}) {
+Future<void> _pumpApp(
+  WidgetTester tester, {
+  ChatPushService? chatPushService,
+  RecommendationRepository? recommendationRepository,
+}) {
   SharedPreferences.setMockInitialValues({});
   return tester.pumpWidget(
     ProviderScope(
@@ -542,9 +587,64 @@ Future<void> _pumpApp(WidgetTester tester, {ChatPushService? chatPushService}) {
         boardRepository: _FakeBoardRepository(),
         chatRepository: _FakeChatRepository(),
         chatPushService: chatPushService ?? _FakeChatPushService(),
+        recommendationRepository: recommendationRepository,
       ),
     ),
   );
+}
+
+class _FakeRecommendationRepository implements RecommendationRepository {
+  @override
+  Future<RecommendationProfile> getProfileStatus({
+    required String authToken,
+  }) async {
+    return const RecommendationProfile(
+      status: RecommendationProfileStatus.active,
+      profileRevision: 1,
+      surveyResponseId: 'survey-1',
+    );
+  }
+
+  @override
+  Future<BeverageRecommendationPage> getBeverageRecommendations({
+    required String authToken,
+    String category = '',
+    int limit = 10,
+    RecommendationBudgetMode budgetMode = RecommendationBudgetMode.soft,
+  }) async {
+    return const BeverageRecommendationPage(
+      requestId: 'rec-req-1',
+      profileStatus: RecommendationProfileStatus.active,
+      profileRevision: 1,
+      recommendations: [
+        BeverageRecommendation(
+          rank: 1,
+          resultId: 'rec-result-1',
+          beverageId: 'bev-1',
+          nameKo: '',
+          nameEn: 'Example Bourbon',
+          category: 'whiskey',
+          score: 0.91,
+          reasonCodes: ['MATCHES_VANILLA_CARAMEL'],
+          explanation: 'Matches your vanilla/caramel preference.',
+          style: 'bourbon',
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<void> recordEvent({
+    required String authToken,
+    required String requestId,
+    required String resultId,
+    required RecommendationEventKind eventType,
+    required String idempotencyKey,
+    Map<String, Object> metadata = const <String, Object>{},
+  }) async {}
+
+  @override
+  Future<void> dispose() async {}
 }
 
 class _FakeChatPushService implements ChatPushService {

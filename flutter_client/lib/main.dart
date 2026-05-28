@@ -29,6 +29,9 @@ import 'features/preference_survey/presentation/survey_screen.dart';
 import 'features/preference_survey/providers/survey_notifier.dart';
 import 'features/profile/profile_setup_screen.dart';
 import 'features/profile/user_page_screen.dart';
+import 'features/recommendation/data/recommendation_grpc_endpoint.dart';
+import 'features/recommendation/data/recommendation_remote_data_source.dart';
+import 'features/recommendation/data/recommendation_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,11 +50,13 @@ class OnTheBlockApp extends ConsumerStatefulWidget {
     this.chatRepository,
     this.chatPushService,
     this.boardRepository,
+    this.recommendationRepository,
   });
 
   final ChatRepository? chatRepository;
   final ChatPushService? chatPushService;
   final BoardRepository? boardRepository;
+  final RecommendationRepository? recommendationRepository;
 
   @override
   ConsumerState<OnTheBlockApp> createState() => _OnTheBlockAppState();
@@ -82,6 +87,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   ChatRepository? _chatRepository;
   ChatPushService? _chatPushService;
   BoardRepository? _boardRepository;
+  RecommendationRepository? _recommendationRepository;
   final Set<String> _locallyHiddenRoomIds = <String>{};
   String? _pendingChatPushRoomId;
   int _chatUnreadCount = 0;
@@ -104,6 +110,16 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         widget.chatRepository ?? GrpcChatRepository(GrpcChatRemoteDataSource());
     _chatPushService = widget.chatPushService ?? FirebaseChatPushService();
     _boardRepository = widget.boardRepository ?? RemoteBoardRepository();
+    final recommendationEndpoint = RecommendationGrpcEndpoint.fromEnvironment();
+    _recommendationRepository =
+        widget.recommendationRepository ??
+        (recommendationEndpoint.isConfigured
+            ? GrpcRecommendationRepository(
+                GrpcRecommendationRemoteDataSource(
+                  endpoint: recommendationEndpoint,
+                ),
+              )
+            : null);
     unawaited(_printDevErrorLogPathAtStartup());
   }
 
@@ -120,6 +136,10 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     final boardRepo = _boardRepository;
     if (boardRepo is RemoteBoardRepository) {
       unawaited(boardRepo.dispose());
+    }
+    final recommendationRepo = _recommendationRepository;
+    if (recommendationRepo != null) {
+      unawaited(recommendationRepo.dispose());
     }
     super.dispose();
   }
@@ -252,6 +272,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       _AppStage.home => HomeScreen(
         onBottomNavSelected: _selectBottomNavItem,
         onProfileSelected: _goToProfile,
+        recommendationRepository: _recommendationRepository,
+        recommendationAuthToken: _currentAuthToken,
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
       ),
       _AppStage.map => MapScreen(
@@ -307,6 +329,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       ),
       _AppStage.profile => UserPageScreen(
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
+        recommendationRepository: _recommendationRepository,
+        recommendationAuthToken: _currentAuthToken,
         onBottomNavSelected: _selectBottomNavItem,
         onRetakeSurvey: () {
           setState(() {
