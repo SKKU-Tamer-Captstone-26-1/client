@@ -6,6 +6,9 @@ import '../../../features/chatbot/presentation/chatbot_modal.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
+import '../../recommendation/data/recommendation_repository.dart';
+import '../../recommendation/models/recommendation_models.dart';
+import '../../recommendation/presentation/recommendation_home_section.dart';
 import '../data/mock_home_data.dart';
 import '../models/home_models.dart';
 
@@ -14,11 +17,15 @@ class HomeScreen extends StatelessWidget {
     super.key,
     this.onBottomNavSelected,
     this.onProfileSelected,
+    this.recommendationRepository,
+    this.recommendationAuthToken = '',
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onProfileSelected;
+  final RecommendationRepository? recommendationRepository;
+  final String recommendationAuthToken;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
@@ -48,16 +55,27 @@ class HomeScreen extends StatelessWidget {
         top: false,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-          children: const [
-            _HeroCard(hero: mockHomeHero),
-            SizedBox(height: 24),
-            _CategoryChips(categories: mockHomeCategories),
-            SizedBox(height: 28),
-            _LocalEstablishmentsSection(items: mockLocalEstablishments),
-            SizedBox(height: 28),
-            _OutdoorVaultsSection(items: mockOutdoorVaults),
-            SizedBox(height: 28),
-            _NeighborhoodBuzzSection(post: mockNeighborhoodPost),
+          children: [
+            _RecommendationHeroCard(
+              repository: recommendationRepository,
+              authToken: recommendationAuthToken,
+            ),
+            const SizedBox(height: 24),
+            const _CategoryChips(categories: mockHomeCategories),
+            if (recommendationRepository != null &&
+                recommendationAuthToken.trim().isNotEmpty) ...[
+              const SizedBox(height: 28),
+              RecommendationHomeSection(
+                repository: recommendationRepository,
+                authToken: recommendationAuthToken,
+              ),
+            ],
+            const SizedBox(height: 28),
+            const _LocalEstablishmentsSection(items: mockLocalEstablishments),
+            const SizedBox(height: 28),
+            const _OutdoorVaultsSection(items: mockOutdoorVaults),
+            const SizedBox(height: 28),
+            const _NeighborhoodBuzzSection(post: mockNeighborhoodPost),
           ],
         ),
       ),
@@ -65,87 +83,304 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.hero});
+class _RecommendationHeroCard extends StatefulWidget {
+  const _RecommendationHeroCard({
+    required this.repository,
+    required this.authToken,
+  });
 
-  final HomeHero hero;
+  final RecommendationRepository? repository;
+  final String authToken;
+
+  @override
+  State<_RecommendationHeroCard> createState() =>
+      _RecommendationHeroCardState();
+}
+
+class _RecommendationHeroCardState extends State<_RecommendationHeroCard> {
+  Future<_RecommendationHeroData>? _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _resetFuture();
+  }
+
+  @override
+  void didUpdateWidget(_RecommendationHeroCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.repository != widget.repository ||
+        oldWidget.authToken != widget.authToken) {
+      _resetFuture();
+    }
+  }
+
+  void _resetFuture() {
+    final repository = widget.repository;
+    final authToken = widget.authToken.trim();
+    _future = repository == null || authToken.isEmpty
+        ? null
+        : _load(repository: repository, authToken: authToken);
+  }
+
+  Future<_RecommendationHeroData> _load({
+    required RecommendationRepository repository,
+    required String authToken,
+  }) async {
+    final profile = await repository.getProfileStatus(authToken: authToken);
+    if (!profile.isActive) {
+      return _RecommendationHeroData(profile: profile);
+    }
+
+    final page = await repository.getBeverageRecommendations(
+      authToken: authToken,
+      limit: 1,
+      budgetMode: RecommendationBudgetMode.soft,
+    );
+
+    return _RecommendationHeroData(
+      profile: profile,
+      recommendation: page.recommendations.isEmpty
+          ? null
+          : page.recommendations.first,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: SizedBox(
-        height: 240,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            AppNetworkImage(url: hero.imageUrl),
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0x00000000),
-                    Color(0x33000000),
-                    Color(0xCC000000),
-                  ],
-                ),
-              ),
+    final future = _future;
+    if (future == null) {
+      return const _HeroCard(
+        badge: 'Taste profile',
+        title: 'Personalized picks start with your survey',
+        body: 'Complete onboarding to unlock your recommendation engine.',
+        icon: Icons.auto_awesome,
+      );
+    }
+
+    return FutureBuilder<_RecommendationHeroData>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const _HeroCard(
+            badge: 'Recommendation engine',
+            title: 'Finding your match',
+            body: 'Refreshing your taste profile.',
+            icon: Icons.auto_awesome,
+            trailing: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            Positioned(
-              left: 24,
-              right: 24,
-              bottom: 24,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryContainer,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      child: Text(
-                        hero.badge.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ),
+          );
+        }
+        if (snapshot.hasError) {
+          return const _HeroCard(
+            badge: 'Recommendation engine',
+            title: 'Recommendations unavailable',
+            body: 'We could not refresh your personalized hero right now.',
+            icon: Icons.wifi_off,
+          );
+        }
+
+        final data = snapshot.data;
+        final recommendation = data?.recommendation;
+        if (recommendation != null) {
+          return _HeroCard(
+            badge: 'Top match',
+            title: recommendation.displayName,
+            body: recommendation.explanation.trim().isEmpty
+                ? 'Matched from your taste profile.'
+                : recommendation.explanation,
+            detail: _recommendationDetail(recommendation),
+            icon: Icons.local_bar,
+          );
+        }
+
+        final profile = data?.profile;
+        return _HeroCard(
+          badge: 'Taste profile',
+          title: _profileTitle(profile?.status),
+          body: _profileMessage(profile),
+          icon: Icons.auto_awesome,
+        );
+      },
+    );
+  }
+
+  static String _recommendationDetail(BeverageRecommendation recommendation) {
+    final parts = <String>[
+      _formatLabel(recommendation.category),
+      _formatLabel(recommendation.style),
+    ].where((part) => part.isNotEmpty).toList();
+
+    if (recommendation.score > 0) {
+      final score = (recommendation.score * 100).clamp(0, 100).round();
+      parts.add('$score% match');
+    }
+
+    return parts.join(' | ');
+  }
+
+  static String _profileTitle(RecommendationProfileStatus? status) {
+    return switch (status) {
+      RecommendationProfileStatus.missing => 'Taste profile needed',
+      RecommendationProfileStatus.pendingGeneration => 'Building your picks',
+      RecommendationProfileStatus.stale => 'Refreshing your taste profile',
+      RecommendationProfileStatus.failedGeneration => 'Profile refresh failed',
+      RecommendationProfileStatus.active => 'Your profile is ready',
+      _ => 'Recommendations pending',
+    };
+  }
+
+  static String _profileMessage(RecommendationProfile? profile) {
+    final reason = profile?.staleReason.trim() ?? '';
+    if (reason.isNotEmpty) return reason;
+
+    return switch (profile?.status) {
+      RecommendationProfileStatus.missing =>
+        'Complete the survey to unlock personalized bottles.',
+      RecommendationProfileStatus.pendingGeneration =>
+        'Your recommendations are being prepared.',
+      RecommendationProfileStatus.stale =>
+        'Your older profile is being updated.',
+      RecommendationProfileStatus.failedGeneration =>
+        'Your recommendation profile could not be generated.',
+      RecommendationProfileStatus.active =>
+        'Your profile is ready, but there are no bottles to show yet.',
+      _ => 'Your recommendation profile is not active yet.',
+    };
+  }
+
+  static String _formatLabel(String rawValue) {
+    final value = rawValue.trim();
+    if (value.isEmpty) return '';
+
+    return value
+        .split(RegExp(r'[_\-\s]+'))
+        .where((part) => part.isNotEmpty)
+        .map((part) => part[0].toUpperCase() + part.substring(1))
+        .join(' ');
+  }
+}
+
+class _RecommendationHeroData {
+  const _RecommendationHeroData({required this.profile, this.recommendation});
+
+  final RecommendationProfile profile;
+  final BeverageRecommendation? recommendation;
+}
+
+class _HeroCard extends StatelessWidget {
+  const _HeroCard({
+    required this.badge,
+    required this.title,
+    required this.body,
+    required this.icon,
+    this.detail = '',
+    this.trailing,
+  });
+
+  final String badge;
+  final String title;
+  final String body;
+  final String detail;
+  final IconData icon;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return Container(
+      constraints: const BoxConstraints(minHeight: 184),
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: palette.outlineVariant.withValues(alpha: 0.7),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 16,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.primaryContainer,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    hero.title,
+                  child: Text(
+                    badge.toUpperCase(),
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Taste : ${hero.taste}\nSmell : ${hero.smell}',
-                    style: const TextStyle(
-                      color: Color(0xFFE7E5E4),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      height: 1.35,
+                ),
+              ),
+              const Spacer(),
+              trailing ??
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: palette.surfaceContainerLow,
+                      shape: BoxShape.circle,
                     ),
+                    child: Icon(icon, color: palette.secondary, size: 22),
                   ),
-                ],
+            ],
+          ),
+          const SizedBox(height: 18),
+          Text(
+            title,
+            style: TextStyle(
+              color: palette.onSurface,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              height: 1.08,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            body,
+            style: TextStyle(
+              color: palette.secondary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              height: 1.35,
+            ),
+          ),
+          if (detail.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              detail,
+              style: TextStyle(
+                color: AppColors.primaryContainer,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
-        ),
+        ],
       ),
     );
   }
