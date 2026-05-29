@@ -12,8 +12,9 @@ import 'core/config/app_config.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/providers/auth_repository_provider.dart';
-import 'features/board/data/board_repository.dart';
 import 'features/board/models/board_models.dart';
+import 'features/board/presentation/board_create_post_screen.dart';
+import 'features/board/presentation/board_detail_screen.dart';
 import 'features/board/presentation/board_screen.dart';
 import 'features/chat/data/chat_push_service.dart';
 import 'features/chat/data/chat_remote_data_source.dart';
@@ -27,10 +28,8 @@ import 'features/map/presentation/map_screen.dart';
 import 'features/location/presentation/location_screen.dart';
 import 'features/preference_survey/presentation/survey_intro_screen.dart';
 import 'features/preference_survey/presentation/survey_screen.dart';
-import 'features/preference_survey/providers/survey_notifier.dart';
 import 'features/profile/profile_setup_screen.dart';
 import 'features/profile/user_page_screen.dart';
-import 'features/recommendation/data/recommendation_grpc_endpoint.dart';
 import 'features/recommendation/data/recommendation_remote_data_source.dart';
 import 'features/recommendation/data/recommendation_repository.dart';
 
@@ -50,14 +49,12 @@ class OnTheBlockApp extends ConsumerStatefulWidget {
     super.key,
     this.chatRepository,
     this.chatPushService,
-    this.boardRepository,
     this.recommendationRepository,
     this.enableDefaultRecommendationRepository = true,
   });
 
   final ChatRepository? chatRepository;
   final ChatPushService? chatPushService;
-  final BoardRepository? boardRepository;
   final RecommendationRepository? recommendationRepository;
   final bool enableDefaultRecommendationRepository;
 
@@ -84,11 +81,11 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
 
   _AppStage _stage = _AppStage.login;
   _AppStage _previousStage = _AppStage.home;
+  BoardPost? _selectedBoardPost;
   bool _isRetaking = false;
   GroupchatRoomSummary _selectedGroupchatRoom = _emptyRoom;
   ChatRepository? _chatRepository;
   ChatPushService? _chatPushService;
-  BoardRepository? _boardRepository;
   RecommendationRepository? _recommendationRepository;
   final Set<String> _locallyHiddenRoomIds = <String>{};
   String? _pendingChatPushRoomId;
@@ -111,8 +108,6 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     _chatRepository =
         widget.chatRepository ?? GrpcChatRepository(GrpcChatRemoteDataSource());
     _chatPushService = widget.chatPushService ?? FirebaseChatPushService();
-    _boardRepository = widget.boardRepository ?? RemoteBoardRepository();
-    final recommendationEndpoint = RecommendationGrpcEndpoint.fromEnvironment();
     _recommendationRepository =
         widget.recommendationRepository ??
         (widget.enableDefaultRecommendationRepository &&
@@ -136,10 +131,6 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     if (repo != null) {
       unawaited(repo.dispose());
     }
-    final boardRepo = _boardRepository;
-    if (boardRepo is RemoteBoardRepository) {
-      unawaited(boardRepo.dispose());
-    }
     final recommendationRepo = _recommendationRepository;
     if (recommendationRepo != null) {
       unawaited(recommendationRepo.dispose());
@@ -154,22 +145,19 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   Future<void> _handleGoogleSignIn() async {
     final session = await ref.read(authRepositoryProvider).googleLogin();
     if (!mounted) return;
-    ref
-        .read(authProvider.notifier)
-        .setSession(
-          accessToken: session.accessToken,
-          refreshToken: session.refreshToken,
-          userId: session.user.userId,
-          user: session.user,
-          isNewUser: session.isNewUser,
-        );
+    ref.read(authProvider.notifier).setSession(
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+      userId: session.user.userId,
+      user: session.user,
+      isNewUser: session.isNewUser,
+    );
     setState(() {
       if (session.isNewUser) {
         _stage = _AppStage.profileSetup;
       } else if (!session.user.onboardingCompleted) {
-        _stage = kBypassSurvey
-            ? _AppStage.locationSetup
-            : _AppStage.surveyIntro;
+        _stage =
+            kBypassSurvey ? _AppStage.locationSetup : _AppStage.surveyIntro;
       } else {
         _stage = _AppStage.home;
       }
@@ -202,16 +190,13 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         userId: ref.read(authProvider).userId ?? '',
         onComplete: () {
           if (kBypassSurvey) {
-            ref
-                .read(authProvider.notifier)
-                .markSurveyCompleted(
-                  surveyId: ref.read(authProvider).user?.surveyId ?? '',
-                );
+            ref.read(authProvider.notifier).markSurveyCompleted(
+              surveyId: ref.read(authProvider).user?.surveyId ?? '',
+            );
           }
           setState(() {
-            _stage = kBypassSurvey
-                ? _AppStage.locationSetup
-                : _AppStage.surveyIntro;
+            _stage =
+                kBypassSurvey ? _AppStage.locationSetup : _AppStage.surveyIntro;
           });
         },
       ),
@@ -222,7 +207,6 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       ),
       _AppStage.surveyIntro => SurveyIntroScreen(
         onStartSurvey: () {
-          ref.read(surveyProvider.notifier).reset();
           setState(() {
             _stage = _AppStage.survey;
           });
@@ -245,16 +229,6 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
           });
         },
         onCompleted: () {
-          setState(() {
-            if (_isRetaking) {
-              _isRetaking = false;
-              _stage = _AppStage.home;
-            } else {
-              _stage = _AppStage.locationSetup;
-            }
-          });
-        },
-        onSkipAll: () {
           setState(() {
             if (_isRetaking) {
               _isRetaking = false;
@@ -288,8 +262,17 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         onBottomNavSelected: _selectBottomNavItem,
         onProfileSelected: _goToProfile,
         onBoardChatRequested: _openBoardChat,
-        boardRepository: _boardRepository,
+        onCreatePostRequested: _openBoardCreatePost,
+        onPostSelected: _openBoardDetail,
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
+      ),
+      _AppStage.boardCreatePost => BoardCreatePostScreen(
+        onCancel: () => setState(() => _stage = _AppStage.board),
+        onPostCreated: _handlePostCreated,
+      ),
+      _AppStage.boardDetail => BoardDetailScreen(
+        post: _selectedBoardPost!,
+        onBack: () => setState(() => _stage = _AppStage.board),
       ),
       _AppStage.chat => GroupchatListScreen(
         chatRepository: _chatRepository,
@@ -323,7 +306,6 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
             _locallyHiddenRoomIds.add(roomId);
           });
         },
-        onRoomRead: () => unawaited(_refreshChatUnreadCount()),
       ),
       _AppStage.collection => CollectionScreen(
         onBottomNavSelected: _selectBottomNavItem,
@@ -528,10 +510,44 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     await _refreshChatUnreadCount();
   }
 
+  void _openBoardCreatePost() {
+    setState(() {
+      _stage = _AppStage.boardCreatePost;
+    });
+  }
+
+  void _openBoardDetail(BoardPost post) {
+    setState(() {
+      _selectedBoardPost = post;
+      _stage = _AppStage.boardDetail;
+    });
+  }
+
+  Future<void> _handlePostCreated(
+    BoardPost post, {
+    required bool createChat,
+  }) async {
+    if (!mounted) return;
+    if (createChat) {
+      try {
+        await _openBoardChat(post);
+        return;
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _stage = _AppStage.board);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Post created, but chat creation failed: $e')),
+        );
+        return;
+      }
+    }
+    setState(() => _stage = _AppStage.board);
+  }
+
   Future<void> _openBoardChat(BoardPost post) async {
     final repo = _chatRepository;
     final authToken = _currentAuthToken;
-    final boardId = post.postId.trim();
+    final boardId = post.boardId.trim();
     if (repo == null || authToken.trim().isEmpty || boardId.isEmpty) {
       throw StateError('Missing chat repository, auth token, or board id.');
     }
@@ -539,7 +555,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     final room = await repo.getOrCreateBoardChatRoom(
       boardId: boardId,
       title: post.title,
-      boardOwnerUserId: post.authorId,
+      boardOwnerUserId: post.boardOwnerUserId,
       authToken: authToken,
     );
     if (!mounted) {
@@ -613,12 +629,12 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   }
 
   Future<void> _saveNeighborhoodAndFinish(String neighborhood) async {
-    final userId = ref.read(authProvider).userId;
-    if (userId != null) {
+    final auth = ref.read(authProvider);
+    if (auth.userId != null) {
       try {
         final user = await ref
             .read(authRepositoryProvider)
-            .updateNeighborhood(userId, neighborhood);
+            .updateNeighborhood(auth.accessToken ?? '', neighborhood);
         if (mounted) ref.read(authProvider.notifier).updateUser(user);
       } catch (_) {
         // Non-fatal: proceed to complete onboarding even if neighborhood save fails.
@@ -628,10 +644,12 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   }
 
   Future<void> _finishOnboarding() async {
-    final userId = ref.read(authProvider).userId;
-    if (userId != null) {
+    final auth = ref.read(authProvider);
+    if (auth.userId != null) {
       try {
-        await ref.read(authRepositoryProvider).completeOnboarding(userId);
+        await ref
+            .read(authRepositoryProvider)
+            .completeOnboarding(auth.accessToken ?? '');
         if (mounted) ref.read(authProvider.notifier).markOnboardingCompleted();
       } catch (_) {
         // Non-fatal: allow user into the app even if the flag fails to persist.
@@ -647,14 +665,13 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   Future<void> _handleLogout() async {
     final auth = ref.read(authProvider);
     final authToken = auth.accessToken;
-    final userId = auth.userId;
 
     if (authToken != null) {
       await _unregisterChatPush(authToken);
     }
-    if (userId != null) {
+    if (authToken != null) {
       try {
-        await ref.read(authRepositoryProvider).logout(userId);
+        await ref.read(authRepositoryProvider).logout(authToken);
       } catch (error) {
         if (kDebugMode) {
           debugPrint('AUTH_LOGOUT_FAILED: $error');
@@ -693,6 +710,8 @@ enum _AppStage {
   home,
   map,
   board,
+  boardCreatePost,
+  boardDetail,
   chat,
   groupchatRoom,
   collection,
