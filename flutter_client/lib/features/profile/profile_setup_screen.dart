@@ -88,13 +88,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final userId = ref.read(authProvider).userId!;
+      final authToken = ref.read(authProvider).accessToken ?? '';
       final repo = ref.read(authRepositoryProvider);
 
       String profileImageUrl = '';
       if (_pickedImage != null) {
         final (:uploadUrl, :objectUrl) =
-            await repo.generateProfileUploadUrl(userId);
+            await repo.generateProfileUploadUrl(authToken);
         final uploadRes = await http.put(
           Uri.parse(uploadUrl),
           headers: {'Content-Type': 'image/jpeg'},
@@ -106,7 +106,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
         profileImageUrl = objectUrl;
       }
 
-      final updatedUser = await repo.updateProfile(userId, nickname, profileImageUrl);
+      final updatedUser = await repo.updateProfile(authToken, nickname, profileImageUrl);
       ref.read(authProvider.notifier).updateUser(updatedUser);
       widget.onComplete();
     } catch (e) {

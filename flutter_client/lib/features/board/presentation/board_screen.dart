@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
@@ -8,100 +7,53 @@ import '../../../features/chatbot/presentation/chatbot_modal.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
-import '../data/board_repository.dart';
-import '../data/mock_board_data.dart';
 import '../models/board_models.dart';
+import '../providers/board_repository_provider.dart';
 
-class BoardScreen extends StatefulWidget {
+const _kBoardCategories = [
+  '#AllPosts',
+  '#TastingNotes',
+  '#Questions',
+  '#NearbyDrops',
+  '#Events',
+  '#TradeBoard',
+];
+
+class BoardScreen extends ConsumerWidget {
   const BoardScreen({
     super.key,
     this.onBottomNavSelected,
     this.onProfileSelected,
     this.onBoardChatRequested,
-    this.boardRepository,
+    this.onCreatePostRequested,
+    this.onPostSelected,
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onProfileSelected;
   final ValueChanged<BoardPost>? onBoardChatRequested;
-  final BoardRepository? boardRepository;
+  final VoidCallback? onCreatePostRequested;
+  final ValueChanged<BoardPost>? onPostSelected;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
-  State<BoardScreen> createState() => _BoardScreenState();
-}
-
-class _BoardScreenState extends State<BoardScreen> {
-  List<BoardPost> _posts = mockBoardPosts;
-  bool _isRefreshing = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.boardRepository != null) {
-      _isRefreshing = true;
-      unawaited(_loadPosts());
-    }
-  }
-
-  @override
-  void didUpdateWidget(BoardScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.boardRepository != widget.boardRepository &&
-        widget.boardRepository != null) {
-      unawaited(_loadPosts());
-    }
-  }
-
-  Future<void> _loadPosts() async {
-    final repository = widget.boardRepository;
-    if (repository == null) {
-      return;
-    }
-
-    if (!_isRefreshing && mounted) {
-      setState(() {
-        _isRefreshing = true;
-      });
-    }
-
-    try {
-      final page = await repository.listPosts(pageSize: 20);
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _posts = page.posts;
-        _isRefreshing = false;
-      });
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isRefreshing = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final postsAsync = ref.watch(boardPostsProvider);
     final palette = context.palette;
-    final posts = _posts;
 
     return Scaffold(
       backgroundColor: palette.surfaceContainerLow,
       appBar: AppTopAppBar(
         onNotificationBoardSelected: () {
-          widget.onBottomNavSelected?.call(AppBottomNavItem.board);
+          onBottomNavSelected?.call(AppBottomNavItem.board);
         },
-        onProfileSelected: widget.onProfileSelected,
+        onProfileSelected: onProfileSelected,
       ),
       bottomNavigationBar: AppBottomNavBar(
         currentItem: AppBottomNavItem.board,
-        onItemSelected: widget.onBottomNavSelected,
-        badgeCounts: widget.bottomNavBadgeCounts,
+        onItemSelected: onBottomNavSelected,
+        badgeCounts: bottomNavBadgeCounts,
       ),
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
@@ -118,7 +70,7 @@ class _BoardScreenState extends State<BoardScreen> {
           const SizedBox(height: 12),
           FloatingActionButton(
             heroTag: 'board-create-post',
-            onPressed: () {},
+            onPressed: onCreatePostRequested,
             tooltip: 'Write post',
             backgroundColor: AppColors.primaryContainer,
             foregroundColor: Colors.white,
@@ -129,60 +81,70 @@ class _BoardScreenState extends State<BoardScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: RefreshIndicator(
-          color: AppColors.primaryContainer,
-          onRefresh: _loadPosts,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              if (_isRefreshing)
-                const SliverToBoxAdapter(
-                  child: LinearProgressIndicator(
-                    minHeight: 2,
-                    color: AppColors.primaryContainer,
+        child: CustomScrollView(
+          slivers: [
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 20, 16, 18),
+                child: _BoardCategoryChips(categories: _kBoardCategories),
+              ),
+            ),
+            postsAsync.when(
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => SliverFillRemaining(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'Failed to load posts',
+                      style: TextStyle(color: palette.secondary),
+                    ),
                   ),
                 ),
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(16, 20, 16, 18),
-                  child: _BoardCategoryChips(categories: mockBoardCategories),
-                ),
               ),
-              if (posts.isEmpty)
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _EmptyBoardState(),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
-                  sliver: SliverLayoutBuilder(
+              data: (posts) => SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+                sliver: SliverToBoxAdapter(
+                  child: LayoutBuilder(
                     builder: (context, constraints) {
-                      final crossAxisCount = constraints.crossAxisExtent >= 900
+                      final crossAxisCount = constraints.maxWidth >= 900
                           ? 3
-                          : constraints.crossAxisExtent >= 620
+                          : constraints.maxWidth >= 620
                           ? 2
                           : 1;
+                      const spacing = 20.0;
+                      final cardWidth = crossAxisCount == 1
+                          ? constraints.maxWidth
+                          : (constraints.maxWidth -
+                                  spacing * (crossAxisCount - 1)) /
+                              crossAxisCount;
 
-                      return SliverGrid(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: crossAxisCount,
-                          crossAxisSpacing: 20,
-                          mainAxisSpacing: 20,
-                          mainAxisExtent: 392,
-                        ),
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          return _BoardPostCard(
-                            post: posts[index],
-                            onChatRequested: widget.onBoardChatRequested,
-                          );
-                        }, childCount: posts.length),
+                      return Wrap(
+                        spacing: spacing,
+                        runSpacing: spacing,
+                        children: posts
+                            .map(
+                              (post) => SizedBox(
+                                width: cardWidth,
+                                child: _BoardPostCard(
+                                  post: post,
+                                  onChatRequested: onBoardChatRequested,
+                                  onTap: onPostSelected != null
+                                      ? () => onPostSelected!(post)
+                                      : null,
+                                ),
+                              ),
+                            )
+                            .toList(),
                       );
                     },
                   ),
                 ),
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -248,58 +210,65 @@ class _BoardCategoryChips extends StatelessWidget {
 }
 
 class _BoardPostCard extends StatelessWidget {
-  const _BoardPostCard({required this.post, this.onChatRequested});
+  const _BoardPostCard({required this.post, this.onChatRequested, this.onTap});
 
   final BoardPost post;
   final ValueChanged<BoardPost>? onChatRequested;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final imageUrl = _primaryImageUrl(post);
-    final hasImage = imageUrl != null;
+    final hasImage = post.imageUrl != null;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: palette.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE9ECEF)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (hasImage)
-              SizedBox(
-                height: 164,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    AppNetworkImage(url: imageUrl),
-                    Positioned(
-                      top: 16,
-                      left: 16,
-                      child: _CategoryBadge(label: _categoryLabel(post)),
-                    ),
-                  ],
+    final bodyPreview = post.body.length > 100
+        ? '${post.body.substring(0, 100)}...'
+        : post.body;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: palette.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE9ECEF)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x08000000),
+              blurRadius: 10,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (hasImage)
+                SizedBox(
+                  height: 164,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      AppNetworkImage(url: post.imageUrl!),
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        child: _CategoryBadge(label: post.category),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            Expanded(
-              child: Padding(
+              Padding(
                 padding: EdgeInsets.fromLTRB(20, hasImage ? 18 : 24, 20, 18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     if (!hasImage) ...[
-                      _CategoryBadge(label: _categoryLabel(post)),
+                      _CategoryBadge(label: post.category),
                       const SizedBox(height: 16),
                     ],
                     Text(
@@ -315,9 +284,7 @@ class _BoardPostCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      post.body ?? post.content,
-                      maxLines: hasImage ? 3 : 5,
-                      overflow: TextOverflow.ellipsis,
+                      bodyPreview,
                       style: TextStyle(
                         color: palette.secondary,
                         fontSize: 14,
@@ -336,7 +303,7 @@ class _BoardPostCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
-                              post.location!.name,
+                              post.location!,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: AppColors.primaryContainer,
@@ -348,37 +315,14 @@ class _BoardPostCard extends StatelessWidget {
                         ],
                       ),
                     ],
-                    const Spacer(),
-                    const Divider(height: 24, color: Color(0xFFF4F4F5)),
-                    _PostMetaRow(post: post, onChatRequested: onChatRequested),
+                    const SizedBox(height: 14),
+                    const Divider(height: 1, color: Color(0xFFF4F4F5)),
+                    const SizedBox(height: 14),
+                    _PostMetaRow(post: post),
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyBoardState extends StatelessWidget {
-  const _EmptyBoardState();
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Text(
-          'No board posts yet.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: palette.secondary,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+            ],
           ),
         ),
       ),
@@ -415,21 +359,19 @@ class _CategoryBadge extends StatelessWidget {
 }
 
 class _PostMetaRow extends StatelessWidget {
-  const _PostMetaRow({required this.post, this.onChatRequested});
+  const _PostMetaRow({required this.post});
 
   final BoardPost post;
-  final ValueChanged<BoardPost>? onChatRequested;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final timeLabel = post.timeAgo ?? _relativeTimeLabel(post.createdAt);
 
     return Row(
       children: [
         ClipOval(
           child: AppNetworkImage(
-            url: post.authorAvatarUrl ?? post.authorProfileImageUrl,
+            url: post.authorAvatarUrl,
             width: 24,
             height: 24,
           ),
@@ -437,7 +379,7 @@ class _PostMetaRow extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: Text(
-            '${post.author ?? post.authorNickname}  •  $timeLabel',
+            '${post.author}  •  ${post.timeAgo}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -449,89 +391,8 @@ class _PostMetaRow extends StatelessWidget {
         ),
         _PostMetric(icon: Icons.forum, value: post.commentCount),
         const SizedBox(width: 10),
-        _PostMetric(
-          icon: Icons.favorite,
-          value: post.favoriteCount ?? post.likeCount,
-        ),
-        const SizedBox(width: 8),
-        _BoardChatButton(
-          onPressed: onChatRequested == null
-              ? null
-              : () => onChatRequested!(post),
-        ),
+        _PostMetric(icon: Icons.favorite, value: post.favoriteCount),
       ],
-    );
-  }
-}
-
-String? _primaryImageUrl(BoardPost post) {
-  if (post.imageUrl != null && post.imageUrl!.trim().isNotEmpty) {
-    return post.imageUrl;
-  }
-  if (post.imageUrls.isEmpty) {
-    return null;
-  }
-  final firstImageUrl = post.imageUrls.first.trim();
-  return firstImageUrl.isEmpty ? null : firstImageUrl;
-}
-
-String _categoryLabel(BoardPost post) {
-  final category = post.category;
-  if (category != null && category.trim().isNotEmpty) {
-    return category;
-  }
-
-  return switch (post.boardType) {
-    'free' => 'Question',
-    'BOARD_TYPE_FREE' => 'Question',
-    'flash_meetup' => 'Nearby Drop',
-    'BOARD_TYPE_FLASH_MEETUP' => 'Nearby Drop',
-    'info' => 'Tasting Note',
-    'BOARD_TYPE_INFO' => 'Tasting Note',
-    _ => 'Board',
-  };
-}
-
-String _relativeTimeLabel(DateTime createdAt) {
-  final elapsed = DateTime.now().difference(createdAt);
-  if (elapsed.inMinutes < 1) {
-    return 'now';
-  }
-  if (elapsed.inHours < 1) {
-    return '${elapsed.inMinutes}m ago';
-  }
-  if (elapsed.inDays < 1) {
-    return '${elapsed.inHours}h ago';
-  }
-  if (elapsed.inDays < 7) {
-    return '${elapsed.inDays}d ago';
-  }
-  return '${createdAt.month}/${createdAt.day}/${createdAt.year}';
-}
-
-class _BoardChatButton extends StatelessWidget {
-  const _BoardChatButton({this.onPressed});
-
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: 'Open board chat',
-      child: IconButton.filled(
-        onPressed: onPressed,
-        icon: const Icon(Icons.chat_bubble_outline, size: 16),
-        style: IconButton.styleFrom(
-          backgroundColor: AppColors.primaryContainer,
-          disabledBackgroundColor: context.palette.outlineVariant,
-          foregroundColor: Colors.white,
-          disabledForegroundColor: context.palette.secondary,
-          minimumSize: const Size.square(32),
-          fixedSize: const Size.square(32),
-          padding: EdgeInsets.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-      ),
     );
   }
 }

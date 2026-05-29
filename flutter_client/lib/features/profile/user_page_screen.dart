@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
@@ -14,8 +13,6 @@ import '../auth/models/auth_models.dart';
 import '../auth/providers/auth_provider.dart';
 import '../auth/providers/auth_repository_provider.dart';
 import '../location/presentation/location_screen.dart';
-import '../recommendation/data/recommendation_repository.dart';
-import '../recommendation/models/recommendation_models.dart';
 
 class UserPageScreen extends ConsumerWidget {
   const UserPageScreen({
@@ -24,8 +21,6 @@ class UserPageScreen extends ConsumerWidget {
     this.onBottomNavSelected,
     this.onRetakeSurvey,
     this.onLogout,
-    this.recommendationRepository,
-    this.recommendationAuthToken = '',
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
@@ -33,8 +28,6 @@ class UserPageScreen extends ConsumerWidget {
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onRetakeSurvey;
   final VoidCallback? onLogout;
-  final RecommendationRepository? recommendationRepository;
-  final String recommendationAuthToken;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
@@ -80,8 +73,6 @@ class UserPageScreen extends ConsumerWidget {
             _MySettingsSection(
               onRetakeSurvey: onRetakeSurvey,
               onLogout: onLogout,
-              recommendationRepository: recommendationRepository,
-              recommendationAuthToken: recommendationAuthToken,
             ),
           ],
         ),
@@ -130,10 +121,11 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
                         if (newNickname.isEmpty) return;
                         setDialogState(() => isSaving = true);
                         try {
-                          final userId = ref.read(authProvider).userId!;
+                          final authToken =
+                              ref.read(authProvider).accessToken ?? '';
                           final updated = await ref
                               .read(authRepositoryProvider)
-                              .updateProfile(userId, newNickname, '');
+                              .updateProfile(authToken, newNickname, '');
                           if (ctx.mounted) {
                             Navigator.pop(ctx);
                             ref.read(authProvider.notifier).updateUser(updated);
@@ -191,13 +183,12 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
 
     setState(() => _isUploading = true);
     try {
-      final userId = ref.read(authProvider).userId!;
+      final authToken = ref.read(authProvider).accessToken ?? '';
       final nickname = widget.user?.nickname ?? '';
       final repo = ref.read(authRepositoryProvider);
 
-      final (:uploadUrl, :objectUrl) = await repo.generateProfileUploadUrl(
-        userId,
-      );
+      final (:uploadUrl, :objectUrl) =
+          await repo.generateProfileUploadUrl(authToken);
       final uploadRes = await http.put(
         Uri.parse(uploadUrl),
         headers: {'Content-Type': 'image/jpeg'},
@@ -207,7 +198,7 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
         throw Exception('Image upload failed (${uploadRes.statusCode})');
       }
 
-      final updated = await repo.updateProfile(userId, nickname, objectUrl);
+      final updated = await repo.updateProfile(authToken, nickname, objectUrl);
       ref.read(authProvider.notifier).updateUser(updated);
     } catch (e) {
       if (mounted) {
@@ -325,23 +316,10 @@ class _AlcoholScoreCard extends StatelessWidget {
 
   final int alcoholScore;
 
-  static String _titleForScore(int score) {
-    if (score >= 96) return 'Spirytus';
-    if (score >= 75) return 'Overproof';
-    if (score >= 60) return 'Absinthe';
-    if (score >= 40) return 'Whiskey';
-    if (score >= 25) return 'Liqueur';
-    if (score >= 18) return 'Port';
-    if (score >= 12) return 'Wine';
-    if (score >= 5) return 'Beer';
-    return 'Mocktail';
-  }
-
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
     final progress = (alcoholScore / 100.0).clamp(0.0, 1.0);
-    final title = _titleForScore(alcoholScore);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -370,9 +348,9 @@ class _AlcoholScoreCard extends StatelessWidget {
                   color: const Color(0xFFFFDDB9),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: Text(
-                  title,
-                  style: const TextStyle(
+                child: const Text(
+                  'Beer',
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF663E00),
@@ -505,21 +483,13 @@ class _PointsCard extends StatelessWidget {
 }
 
 class _MySettingsSection extends ConsumerWidget {
-  const _MySettingsSection({
-    this.onRetakeSurvey,
-    this.onLogout,
-    this.recommendationRepository,
-    this.recommendationAuthToken = '',
-  });
+  const _MySettingsSection({this.onRetakeSurvey, this.onLogout});
 
   final VoidCallback? onRetakeSurvey;
   final VoidCallback? onLogout;
-  final RecommendationRepository? recommendationRepository;
-  final String recommendationAuthToken;
 
   Future<void> _openLocationUpdate(BuildContext context, WidgetRef ref) async {
-    final userId = ref.read(authProvider).userId;
-    if (userId == null) return;
+    if (ref.read(authProvider).userId == null) return;
 
     String? saved;
     await Navigator.of(context).push<void>(
@@ -536,12 +506,11 @@ class _MySettingsSection extends ConsumerWidget {
 
     if (saved != null && context.mounted) {
       try {
+        final authToken = ref.read(authProvider).accessToken ?? '';
         final updated = await ref
             .read(authRepositoryProvider)
-            .updateNeighborhood(userId, saved!);
-        if (context.mounted) {
-          ref.read(authProvider.notifier).updateUser(updated);
-        }
+            .updateNeighborhood(authToken, saved!);
+        if (context.mounted) ref.read(authProvider.notifier).updateUser(updated);
       } catch (_) {}
     }
   }
@@ -573,9 +542,13 @@ class _MySettingsSection extends ConsumerWidget {
           onTap: () => _openLocationUpdate(context, ref),
         ),
         const SizedBox(height: 12),
-        _TasteProfileSettingsCard(
-          repository: recommendationRepository,
-          authToken: recommendationAuthToken,
+        _SettingsCard(
+          icon: Icons.assignment,
+          iconColor: const Color(0xFF825516),
+          iconBgColor: const Color(0xFFE7EFF8),
+          title: 'Taste Profile',
+          subtitle: 'Prefers Whiskey, Gin',
+          actionLabel: 'Retake',
           onTap: onRetakeSurvey,
         ),
         const SizedBox(height: 12),
@@ -585,20 +558,7 @@ class _MySettingsSection extends ConsumerWidget {
           iconBgColor: const Color(0xFFE7EFF8),
           title: 'Help & Support',
           trailing: Icon(Icons.chevron_right, color: context.palette.secondary),
-          onTap: () async {
-            final userEmail = ref.read(authProvider).user?.email ?? '';
-            final uri = Uri(
-              scheme: 'mailto',
-              path: 'kimgoondo00@gmail.com',
-              queryParameters: {
-                'subject': '[On The Block] Help & Support',
-                'body': 'Account: $userEmail\n\n',
-              },
-            );
-            if (await canLaunchUrl(uri)) {
-              await launchUrl(uri);
-            }
-          },
+          onTap: () {},
         ),
         const SizedBox(height: 12),
         _SettingsCard(
@@ -611,105 +571,6 @@ class _MySettingsSection extends ConsumerWidget {
         ),
       ],
     );
-  }
-}
-
-class _TasteProfileSettingsCard extends StatefulWidget {
-  const _TasteProfileSettingsCard({
-    required this.repository,
-    required this.authToken,
-    this.onTap,
-  });
-
-  final RecommendationRepository? repository;
-  final String authToken;
-  final VoidCallback? onTap;
-
-  @override
-  State<_TasteProfileSettingsCard> createState() =>
-      _TasteProfileSettingsCardState();
-}
-
-class _TasteProfileSettingsCardState extends State<_TasteProfileSettingsCard> {
-  Future<RecommendationProfile>? _future;
-
-  @override
-  void initState() {
-    super.initState();
-    _resetFuture();
-  }
-
-  @override
-  void didUpdateWidget(_TasteProfileSettingsCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.repository != widget.repository ||
-        oldWidget.authToken != widget.authToken) {
-      _resetFuture();
-    }
-  }
-
-  void _resetFuture() {
-    final repository = widget.repository;
-    final authToken = widget.authToken.trim();
-    _future = repository == null || authToken.isEmpty
-        ? null
-        : repository.getProfileStatus(authToken: authToken);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final future = _future;
-    if (future == null) {
-      return _card(subtitle: 'Recommendation profile unavailable');
-    }
-
-    return FutureBuilder<RecommendationProfile>(
-      future: future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _card(subtitle: 'Checking profile status');
-        }
-        if (snapshot.hasError) {
-          return _card(subtitle: 'Could not load profile status');
-        }
-
-        final profile = snapshot.data;
-        return _card(
-          subtitle: profile == null
-              ? 'Profile status unavailable'
-              : _profileSubtitle(profile),
-        );
-      },
-    );
-  }
-
-  Widget _card({required String subtitle}) {
-    return _SettingsCard(
-      icon: Icons.assignment,
-      iconColor: const Color(0xFF825516),
-      iconBgColor: const Color(0xFFE7EFF8),
-      title: 'Taste Profile',
-      subtitle: subtitle,
-      actionLabel: 'Retake',
-      onTap: widget.onTap,
-    );
-  }
-
-  static String _profileSubtitle(RecommendationProfile profile) {
-    final reason = profile.staleReason.trim();
-    if (reason.isNotEmpty) return reason;
-
-    return switch (profile.status) {
-      RecommendationProfileStatus.active => 'Ready for recommendations',
-      RecommendationProfileStatus.missing =>
-        'Complete the survey to unlock recommendations',
-      RecommendationProfileStatus.pendingGeneration =>
-        'Building your recommendations',
-      RecommendationProfileStatus.stale => 'Refreshing your taste profile',
-      RecommendationProfileStatus.failedGeneration =>
-        'Profile generation failed',
-      RecommendationProfileStatus.unspecified => 'Profile status unavailable',
-    };
   }
 }
 

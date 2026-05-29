@@ -7,11 +7,11 @@ import 'grpc_gen/auth/v1/auth.pbgrpc.dart';
 abstract class AuthRemoteDataSource {
   Future<GoogleLoginResponse> googleLogin();
   Future<RefreshTokenResponse> refreshToken(String token);
-  Future<UpdateProfileResponse> updateProfile(String userId, String nickname, String profileImageUrl);
-  Future<GenerateProfileUploadUrlResponse> generateProfileUploadUrl(String userId);
-  Future<UpdateNeighborhoodResponse> updateNeighborhood(String userId, String neighborhood);
-  Future<CompleteOnboardingResponse> completeOnboarding(String userId);
-  Future<void> logout(String userId);
+  Future<UpdateProfileResponse> updateProfile(String authToken, String nickname, String profileImageUrl);
+  Future<GenerateProfileUploadUrlResponse> generateProfileUploadUrl(String authToken);
+  Future<UpdateNeighborhoodResponse> updateNeighborhood(String authToken, String neighborhood);
+  Future<CompleteOnboardingResponse> completeOnboarding(String authToken);
+  Future<void> logout(String authToken);
   Future<void> dispose();
 }
 
@@ -67,42 +67,55 @@ class GrpcAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UpdateProfileResponse> updateProfile(String userId, String nickname, String profileImageUrl) {
+  Future<UpdateProfileResponse> updateProfile(String authToken, String nickname, String profileImageUrl) {
     return _client.updateProfile(
       UpdateProfileRequest()
-        ..userId = userId
         ..nickname = nickname
         ..profileImageUrl = profileImageUrl,
+      options: _authenticatedOptions(authToken),
     );
   }
 
   @override
-  Future<GenerateProfileUploadUrlResponse> generateProfileUploadUrl(String userId) {
+  Future<GenerateProfileUploadUrlResponse> generateProfileUploadUrl(String authToken) {
     return _client.generateProfileUploadUrl(
-      GenerateProfileUploadUrlRequest()..userId = userId,
+      GenerateProfileUploadUrlRequest(),
+      options: _authenticatedOptions(authToken),
     );
   }
 
   @override
-  Future<UpdateNeighborhoodResponse> updateNeighborhood(String userId, String neighborhood) {
+  Future<UpdateNeighborhoodResponse> updateNeighborhood(String authToken, String neighborhood) {
     return _client.updateNeighborhood(
-      UpdateNeighborhoodRequest()
-        ..userId = userId
-        ..neighborhood = neighborhood,
+      UpdateNeighborhoodRequest()..neighborhood = neighborhood,
+      options: _authenticatedOptions(authToken),
     );
   }
 
   @override
-  Future<CompleteOnboardingResponse> completeOnboarding(String userId) {
+  Future<CompleteOnboardingResponse> completeOnboarding(String authToken) {
     return _client.completeOnboarding(
-      CompleteOnboardingRequest()..userId = userId,
+      CompleteOnboardingRequest(),
+      options: _authenticatedOptions(authToken),
     );
   }
 
   @override
-  Future<void> logout(String userId) async {
+  Future<void> logout(String authToken) async {
     await _googleSignIn.signOut();
-    await _client.logout(LogoutRequest()..userId = userId);
+    await _client.logout(
+      LogoutRequest(),
+      options: _authenticatedOptions(authToken),
+    );
+  }
+
+  CallOptions _authenticatedOptions(String authToken) {
+    return CallOptions(
+      timeout: const Duration(seconds: 30),
+      metadata: authToken.trim().isEmpty
+          ? const <String, String>{}
+          : <String, String>{'authorization': 'Bearer $authToken'},
+    );
   }
 
   @override

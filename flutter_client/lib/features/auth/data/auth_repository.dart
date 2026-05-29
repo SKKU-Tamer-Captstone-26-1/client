@@ -18,30 +18,30 @@ class AuthRepository {
   }
 
   Future<AuthUser> updateProfile(
-    String userId,
+    String authToken,
     String nickname,
     String profileImageUrl,
   ) async {
-    final res = await _dataSource.updateProfile(userId, nickname, profileImageUrl);
+    final res = await _dataSource.updateProfile(authToken, nickname, profileImageUrl);
     return _toAuthUser(res.user);
   }
 
-  Future<({String uploadUrl, String objectUrl})> generateProfileUploadUrl(String userId) async {
-    final res = await _dataSource.generateProfileUploadUrl(userId);
+  Future<({String uploadUrl, String objectUrl})> generateProfileUploadUrl(String authToken) async {
+    final res = await _dataSource.generateProfileUploadUrl(authToken);
     return (uploadUrl: res.uploadUrl, objectUrl: res.objectUrl);
   }
 
-  Future<AuthUser> updateNeighborhood(String userId, String neighborhood) async {
-    final res = await _dataSource.updateNeighborhood(userId, neighborhood);
+  Future<AuthUser> updateNeighborhood(String authToken, String neighborhood) async {
+    final res = await _dataSource.updateNeighborhood(authToken, neighborhood);
     return _toAuthUser(res.user);
   }
 
-  Future<AuthUser> completeOnboarding(String userId) async {
-    final res = await _dataSource.completeOnboarding(userId);
+  Future<AuthUser> completeOnboarding(String authToken) async {
+    final res = await _dataSource.completeOnboarding(authToken);
     return _toAuthUser(res.user);
   }
 
-  Future<void> logout(String userId) => _dataSource.logout(userId);
+  Future<void> logout(String authToken) => _dataSource.logout(authToken);
 
   Future<void> dispose() => _dataSource.dispose();
 

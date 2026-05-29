@@ -1,216 +1,224 @@
 import '../models/board_models.dart';
 import 'board_remote_data_source.dart';
+import 'grpc_gen/board/v1/board.pb.dart';
 
 abstract class BoardRepository {
-  Future<BoardPostPage> listPosts({
-    String boardType = '',
+  Future<List<BoardPost>> listPosts({
+    String authToken = '',
+    BoardType boardType = BoardType.BOARD_TYPE_UNSPECIFIED,
     String query = '',
-    String userId = '',
     int page = 1,
     int pageSize = 20,
   });
 
-  Future<BoardPost> getPost({required String postId, String userId = ''});
+  Future<BoardPost> getPost({required String postId, String authToken = ''});
 
   Future<BoardPost> createPost({
-    required String userId,
-    required String boardType,
+    required String authToken,
+    required BoardType boardType,
     required String title,
     required String content,
     List<String> imageUrls = const [],
-    String? locationName,
-    String? locationAddress,
-    double? latitude,
-    double? longitude,
-    required String accessToken,
   });
 
-  Future<BoardPost> updatePost({
-    required String postId,
-    required String userId,
-    String? title,
-    String? content,
-    bool updateImages = false,
-    List<String> imageUrls = const [],
-    required String accessToken,
-  });
-
-  Future<void> deletePost({
-    required String postId,
-    required String accessToken,
-  });
+  Future<void> deletePost({required String authToken, required String postId});
 
   Future<({bool liked, int likeCount})> likePost({
+    required String authToken,
     required String postId,
-    required String accessToken,
-  });
-
-  Future<BoardCommentPage> listComments({
-    required String postId,
-    String userId = '',
-    int page = 1,
-    int pageSize = 20,
-  });
-
-  Future<BoardComment> createComment({
-    required String postId,
-    required String content,
-    String parentCommentId = '',
-    required String accessToken,
-  });
-
-  Future<BoardComment> updateComment({
-    required String commentId,
-    required String content,
-    required String accessToken,
-  });
-
-  Future<void> deleteComment({
-    required String commentId,
-    required String accessToken,
   });
 
   Future<({bool liked, int likeCount})> likeComment({
+    required String authToken,
     required String commentId,
-    required String accessToken,
   });
+
+  Future<List<BoardComment>> listComments({
+    required String postId,
+    String authToken = '',
+    int page = 1,
+    int pageSize = 50,
+  });
+
+  Future<BoardComment> createComment({
+    required String authToken,
+    required String postId,
+    required String content,
+    String parentCommentId = '',
+  });
+
+  Future<void> dispose();
 }
 
-class RemoteBoardRepository implements BoardRepository {
-  RemoteBoardRepository({BoardRemoteDataSource? dataSource})
-      : _dataSource = dataSource ?? GrpcBoardRemoteDataSource();
+class GrpcBoardRepository implements BoardRepository {
+  GrpcBoardRepository(this._remote);
 
-  final BoardRemoteDataSource _dataSource;
+  final BoardRemoteDataSource _remote;
 
   @override
-  Future<BoardPostPage> listPosts({
-    String boardType = '',
+  Future<List<BoardPost>> listPosts({
+    String authToken = '',
+    BoardType boardType = BoardType.BOARD_TYPE_UNSPECIFIED,
     String query = '',
-    String userId = '',
     int page = 1,
     int pageSize = 20,
-  }) => _dataSource.listPosts(
-        boardType: boardType,
-        query: query,
-        userId: userId,
-        page: page,
-        pageSize: pageSize,
-      );
+  }) async {
+    final res = await _remote.listPosts(
+      authToken: authToken,
+      boardType: boardType,
+      query: query,
+      page: page,
+      pageSize: pageSize,
+    );
+    return res.posts.map(_toPost).toList();
+  }
 
   @override
-  Future<BoardPost> getPost({required String postId, String userId = ''}) =>
-      _dataSource.getPost(postId: postId, userId: userId);
+  Future<BoardPost> getPost({
+    required String postId,
+    String authToken = '',
+  }) async {
+    final res = await _remote.getPost(postId: postId, authToken: authToken);
+    return _toPost(res.post);
+  }
 
   @override
   Future<BoardPost> createPost({
-    required String userId,
-    required String boardType,
+    required String authToken,
+    required BoardType boardType,
     required String title,
     required String content,
     List<String> imageUrls = const [],
-    String? locationName,
-    String? locationAddress,
-    double? latitude,
-    double? longitude,
-    required String accessToken,
-  }) => _dataSource.createPost(
-        userId: userId,
-        boardType: boardType,
-        title: title,
-        content: content,
-        imageUrls: imageUrls,
-        locationName: locationName,
-        locationAddress: locationAddress,
-        latitude: latitude,
-        longitude: longitude,
-        accessToken: accessToken,
-      );
-
-  @override
-  Future<BoardPost> updatePost({
-    required String postId,
-    required String userId,
-    String? title,
-    String? content,
-    bool updateImages = false,
-    List<String> imageUrls = const [],
-    required String accessToken,
-  }) => _dataSource.updatePost(
-        postId: postId,
-        userId: userId,
-        title: title,
-        content: content,
-        updateImages: updateImages,
-        imageUrls: imageUrls,
-        accessToken: accessToken,
-      );
+  }) async {
+    final res = await _remote.createPost(
+      authToken: authToken,
+      boardType: boardType,
+      title: title,
+      content: content,
+      imageUrls: imageUrls,
+    );
+    return _toPost(res.post);
+  }
 
   @override
   Future<void> deletePost({
+    required String authToken,
     required String postId,
-    required String accessToken,
-  }) => _dataSource.deletePost(postId: postId, accessToken: accessToken);
+  }) {
+    return _remote.deletePost(authToken: authToken, postId: postId);
+  }
 
   @override
   Future<({bool liked, int likeCount})> likePost({
+    required String authToken,
     required String postId,
-    required String accessToken,
-  }) => _dataSource.likePost(postId: postId, accessToken: accessToken);
-
-  @override
-  Future<BoardCommentPage> listComments({
-    required String postId,
-    String userId = '',
-    int page = 1,
-    int pageSize = 20,
-  }) => _dataSource.listComments(
-        postId: postId,
-        userId: userId,
-        page: page,
-        pageSize: pageSize,
-      );
-
-  @override
-  Future<BoardComment> createComment({
-    required String postId,
-    required String content,
-    String parentCommentId = '',
-    required String accessToken,
-  }) => _dataSource.createComment(
-        postId: postId,
-        content: content,
-        parentCommentId: parentCommentId,
-        accessToken: accessToken,
-      );
-
-  @override
-  Future<BoardComment> updateComment({
-    required String commentId,
-    required String content,
-    required String accessToken,
-  }) => _dataSource.updateComment(
-        commentId: commentId,
-        content: content,
-        accessToken: accessToken,
-      );
-
-  @override
-  Future<void> deleteComment({
-    required String commentId,
-    required String accessToken,
-  }) => _dataSource.deleteComment(
-        commentId: commentId,
-        accessToken: accessToken,
-      );
+  }) async {
+    final res = await _remote.likePost(authToken: authToken, postId: postId);
+    return (liked: res.liked, likeCount: res.likeCount);
+  }
 
   @override
   Future<({bool liked, int likeCount})> likeComment({
+    required String authToken,
     required String commentId,
-    required String accessToken,
-  }) => _dataSource.likeComment(
-        commentId: commentId,
-        accessToken: accessToken,
-      );
+  }) async {
+    final res =
+        await _remote.likeComment(authToken: authToken, commentId: commentId);
+    return (liked: res.liked, likeCount: res.likeCount);
+  }
 
-  Future<void> dispose() => _dataSource.dispose();
+  @override
+  Future<List<BoardComment>> listComments({
+    required String postId,
+    String authToken = '',
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    final res = await _remote.listComments(
+      postId: postId,
+      authToken: authToken,
+      page: page,
+      pageSize: pageSize,
+    );
+    return res.comments.map(_toComment).toList();
+  }
+
+  @override
+  Future<BoardComment> createComment({
+    required String authToken,
+    required String postId,
+    required String content,
+    String parentCommentId = '',
+  }) async {
+    final res = await _remote.createComment(
+      authToken: authToken,
+      postId: postId,
+      content: content,
+      parentCommentId: parentCommentId,
+    );
+    return _toComment(res.comment);
+  }
+
+  @override
+  Future<void> dispose() => _remote.dispose();
+
+  static BoardPost _toPost(PostResponse p) {
+    return BoardPost(
+      boardId: p.postId,
+      boardOwnerUserId: p.authorId,
+      category: _boardTypeLabel(p.boardType),
+      title: p.title,
+      body: p.content,
+      author: p.authorNickname.isNotEmpty ? p.authorNickname : 'Unknown',
+      timeAgo: p.hasCreatedAt() ? _timeAgo(p.createdAt.toDateTime()) : '',
+      commentCount: p.commentCount,
+      favoriteCount: p.likeCount,
+      isLiked: p.isLiked,
+      authorAvatarUrl: p.authorProfileImageUrl,
+      imageUrls: p.imageUrls,
+      location: p.hasLocation() && p.location.name.isNotEmpty
+          ? p.location.name
+          : null,
+    );
+  }
+
+  static BoardComment _toComment(CommentResponse c) {
+    return BoardComment(
+      commentId: c.commentId,
+      postId: c.postId,
+      parentCommentId: c.parentCommentId,
+      authorId: c.authorId,
+      authorNickname: c.authorNickname.isNotEmpty ? c.authorNickname : 'Unknown',
+      authorProfileImageUrl: c.authorProfileImageUrl,
+      content: c.content,
+      likeCount: c.likeCount,
+      isLiked: c.isLiked,
+      isDeleted: c.isDeleted,
+      timeAgo: c.hasCreatedAt() ? _timeAgo(c.createdAt.toDateTime()) : '',
+      replies: c.replies.map(_toComment).toList(),
+    );
+  }
+
+  static String _boardTypeLabel(BoardType type) {
+    switch (type) {
+      case BoardType.BOARD_TYPE_FREE:
+        return 'Free';
+      case BoardType.BOARD_TYPE_FLASH_MEETUP:
+        return 'Flash Meetup';
+      case BoardType.BOARD_TYPE_INFO:
+        return 'Info';
+      default:
+        return 'General';
+    }
+  }
+
+  static String _timeAgo(DateTime createdAt) {
+    final diff = DateTime.now().difference(createdAt.toLocal());
+    if (diff.inDays >= 365) return '${diff.inDays ~/ 365}y ago';
+    if (diff.inDays >= 30) return '${diff.inDays ~/ 30}mo ago';
+    if (diff.inDays >= 1) return '${diff.inDays}d ago';
+    if (diff.inHours >= 1) return '${diff.inHours}h ago';
+    if (diff.inMinutes >= 1) return '${diff.inMinutes}m ago';
+    return 'just now';
+  }
 }
