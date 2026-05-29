@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
 
@@ -10,11 +12,15 @@ class KakaoMapView extends StatefulWidget {
     required this.places,
     required this.selectedPlace,
     required this.onPlaceSelected,
+    this.onViewportChanged,
   });
 
   final List<MapPlace> places;
   final MapPlace selectedPlace;
   final ValueChanged<MapPlace> onPlaceSelected;
+
+  /// Called when camera stops moving. Provides the new visible bounds.
+  final void Function(LatLngBounds bounds)? onViewportChanged;
 
   @override
   State<KakaoMapView> createState() => _KakaoMapViewState();
@@ -22,6 +28,9 @@ class KakaoMapView extends StatefulWidget {
 
 class _KakaoMapViewState extends State<KakaoMapView> {
   KakaoMapController? _controller;
+  StreamSubscription<LabelClickEvent>? _markerClickSub;
+  StreamSubscription<CameraMoveEndEvent>? _cameraSub;
+  final Set<String> _addedMarkerIds = {};
 
   @override
   void didUpdateWidget(covariant KakaoMapView oldWidget) {
@@ -29,6 +38,16 @@ class _KakaoMapViewState extends State<KakaoMapView> {
     if (oldWidget.selectedPlace.id != widget.selectedPlace.id) {
       _moveToSelectedPlace();
     }
+    if (oldWidget.places != widget.places) {
+      _syncMarkers();
+    }
+  }
+
+  @override
+  void dispose() {
+    _markerClickSub?.cancel();
+    _cameraSub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -36,55 +55,76 @@ class _KakaoMapViewState extends State<KakaoMapView> {
     const kakaoMapApiKey = String.fromEnvironment('KAKAO_MAP_API_KEY');
     const hasKakaoMapApiKey = kakaoMapApiKey != '';
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (hasKakaoMapApiKey)
-          KakaoMap(
-            initialPosition: LatLng(
-              latitude: widget.selectedPlace.latitude,
-              longitude: widget.selectedPlace.longitude,
-            ),
-            initialLevel: 15,
-            onMapCreated: (controller) {
-              _controller = controller;
-              _addMockMarkers();
-            },
-          )
-        else
+    if (!hasKakaoMapApiKey) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
           const _KakaoMapConfigurationPlaceholder(),
-        Positioned.fill(
-          child: _MockMarkerOverlay(
-            places: widget.places,
-            selectedPlace: widget.selectedPlace,
-            onPlaceSelected: widget.onPlaceSelected,
+          Positioned.fill(
+            child: _MockMarkerOverlay(
+              places: widget.places,
+              selectedPlace: widget.selectedPlace,
+              onPlaceSelected: widget.onPlaceSelected,
+            ),
           ),
-        ),
-      ],
+        ],
+      );
+    }
+
+    return KakaoMap(
+      initialPosition: LatLng(
+        latitude: widget.selectedPlace.latitude,
+        longitude: widget.selectedPlace.longitude,
+      ),
+      initialLevel: 7,
+      onMapCreated: _onMapCreated,
     );
   }
 
-  Future<void> _addMockMarkers() async {
-    final controller = _controller;
-    if (controller == null) {
-      return;
-    }
+  void _onMapCreated(KakaoMapController controller) {
+    _controller = controller;
 
-    for (final place in widget.places) {
-      await controller.addMarker(
-        markerOption: MarkerOption(
-          id: place.id,
-          latLng: LatLng(latitude: place.latitude, longitude: place.longitude),
-        ),
+    _markerClickSub = controller.onLabelClickedStream.listen((event) {
+      final tapped = widget.places.firstWhere(
+        (p) => p.id == event.labelId,
+        orElse: () => widget.selectedPlace,
       );
+      widget.onPlaceSelected(tapped);
+    });
+
+    _cameraSub = controller.onCameraMoveEndStream.listen((_) async {
+      final bounds = await controller.getViewportBounds();
+      if (bounds != null) {
+        widget.onViewportChanged?.call(bounds);
+      }
+    });
+
+    _syncMarkers();
+  }
+
+  Future<void> _syncMarkers() async {
+    final controller = _controller;
+    if (controller == null) return;
+
+    final newPlaces = widget.places.where((p) => !_addedMarkerIds.contains(p.id)).toList();
+    if (newPlaces.isEmpty) return;
+
+    final options = newPlaces
+        .map((p) => MarkerOption(
+              id: p.id,
+              latLng: LatLng(latitude: p.latitude, longitude: p.longitude),
+            ))
+        .toList();
+
+    await controller.addMarkers(markerOptions: options);
+    for (final p in newPlaces) {
+      _addedMarkerIds.add(p.id);
     }
   }
 
   Future<void> _moveToSelectedPlace() async {
     final controller = _controller;
-    if (controller == null) {
-      return;
-    }
+    if (controller == null) return;
 
     await controller.moveCamera(
       cameraUpdate: CameraUpdate.fromLatLng(
@@ -147,7 +187,7 @@ class _KakaoMapConfigurationPlaceholder extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Run with --dart-define=KAKAO_MAP_API_KEY=... to render the Kakao map engine. Mock markers and cards use local app data.',
+                'Run with --dart-define=KAKAO_MAP_API_KEY=... to render the Kakao map engine.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: palette.onSurfaceVariant,
