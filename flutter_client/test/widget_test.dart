@@ -8,8 +8,10 @@ import 'package:flutter_client/features/auth/data/auth_remote_data_source.dart';
 import 'package:flutter_client/features/auth/data/grpc_gen/auth/v1/auth.pbgrpc.dart';
 import 'package:flutter_client/features/auth/providers/auth_repository_provider.dart';
 import 'package:flutter_client/features/board/data/board_repository.dart';
+import 'package:flutter_client/features/board/data/grpc_gen/board/v1/board.pb.dart' show BoardType;
 import 'package:flutter_client/features/board/data/mock_board_data.dart';
 import 'package:flutter_client/features/board/models/board_models.dart';
+import 'package:flutter_client/features/board/providers/board_repository_provider.dart';
 import 'package:flutter_client/features/chat/data/chat_push_service.dart';
 import 'package:flutter_client/features/chat/data/chat_repository.dart';
 import 'package:flutter_client/features/chat/data/grpc_gen/chat/v1/chat.pb.dart';
@@ -582,9 +584,9 @@ Future<void> _pumpApp(
           _FakeAuthRemoteDataSource(),
         ),
         surveyGrpcClientProvider.overrideWithValue(_FakeSurveyGrpcClient()),
+        boardRepositoryProvider.overrideWithValue(_FakeBoardRepository()),
       ],
       child: OnTheBlockApp(
-        boardRepository: _FakeBoardRepository(),
         chatRepository: _FakeChatRepository(),
         chatPushService: chatPushService ?? _FakeChatPushService(),
         recommendationRepository: recommendationRepository,
@@ -770,126 +772,80 @@ class _FakeSurveyGrpcClient extends SurveyGrpcClient {
 
 class _FakeBoardRepository implements BoardRepository {
   @override
-  Future<BoardPostPage> listPosts({
-    String boardType = '',
+  Future<List<BoardPost>> listPosts({
+    String authToken = '',
+    BoardType boardType = BoardType.BOARD_TYPE_UNSPECIFIED,
     String query = '',
-    String userId = '',
     int page = 1,
     int pageSize = 20,
   }) async {
-    return BoardPostPage(
-      posts: mockBoardPosts,
-      pagination: BoardPagination(
-        totalCount: mockBoardPosts.length,
-        page: page,
-        pageSize: pageSize,
-        hasNext: false,
-      ),
-    );
+    return mockBoardPosts;
   }
 
   @override
   Future<BoardPost> getPost({
     required String postId,
-    String userId = '',
+    String authToken = '',
   }) async {
-    return mockBoardPosts.firstWhere((post) => post.postId == postId);
+    return mockBoardPosts.firstWhere((post) => post.boardId == postId);
   }
 
   @override
   Future<BoardPost> createPost({
-    required String userId,
-    required String boardType,
+    required String authToken,
+    required BoardType boardType,
     required String title,
     required String content,
     List<String> imageUrls = const [],
-    String? locationName,
-    String? locationAddress,
-    double? latitude,
-    double? longitude,
-    required String accessToken,
   }) async {
     return mockBoardPosts.first;
   }
 
   @override
-  Future<BoardPost> updatePost({
-    required String postId,
-    required String userId,
-    String? title,
-    String? content,
-    bool updateImages = false,
-    List<String> imageUrls = const [],
-    required String accessToken,
-  }) async {
-    return getPost(postId: postId, userId: userId);
-  }
-
-  @override
   Future<void> deletePost({
+    required String authToken,
     required String postId,
-    required String accessToken,
   }) async {}
 
   @override
   Future<({bool liked, int likeCount})> likePost({
+    required String authToken,
     required String postId,
-    required String accessToken,
   }) async {
     final post = await getPost(postId: postId);
-    return (liked: true, likeCount: post.likeCount + 1);
+    return (liked: true, likeCount: post.favoriteCount + 1);
   }
 
   @override
-  Future<BoardCommentPage> listComments({
+  Future<List<BoardComment>> listComments({
     required String postId,
-    String userId = '',
+    String authToken = '',
     int page = 1,
-    int pageSize = 20,
+    int pageSize = 50,
   }) async {
-    return BoardCommentPage(
-      comments: const <BoardComment>[],
-      pagination: BoardPagination(
-        totalCount: 0,
-        page: page,
-        pageSize: pageSize,
-        hasNext: false,
-      ),
-    );
+    return const <BoardComment>[];
   }
 
   @override
   Future<BoardComment> createComment({
+    required String authToken,
     required String postId,
     required String content,
     String parentCommentId = '',
-    required String accessToken,
   }) async {
     return _fakeComment(postId: postId, content: content);
   }
 
   @override
-  Future<BoardComment> updateComment({
-    required String commentId,
-    required String content,
-    required String accessToken,
-  }) async {
-    return _fakeComment(commentId: commentId, content: content);
-  }
-
-  @override
-  Future<void> deleteComment({
-    required String commentId,
-    required String accessToken,
-  }) async {}
-
-  @override
   Future<({bool liked, int likeCount})> likeComment({
+    required String authToken,
     required String commentId,
-    required String accessToken,
   }) async {
     return (liked: true, likeCount: 1);
   }
+
+  @override
+  Future<void> dispose() async {}
 
   BoardComment _fakeComment({
     String commentId = 'comment-1',
@@ -907,9 +863,8 @@ class _FakeBoardRepository implements BoardRepository {
       likeCount: 0,
       isLiked: false,
       isDeleted: false,
+      timeAgo: 'just now',
       replies: const <BoardComment>[],
-      createdAt: DateTime(2025, 5, 12),
-      updatedAt: DateTime(2025, 5, 12),
     );
   }
 }
