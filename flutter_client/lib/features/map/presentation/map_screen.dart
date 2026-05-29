@@ -49,7 +49,13 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _loadInitialPosition() async {
     final gps = await _resolveGpsPosition();
+    final usingFallback = gps == null;
     final position = gps ?? _fallbackPosition;
+    debugPrint(
+      '[MapScreen] initial position: '
+      'lat=${position.latitude}, lon=${position.longitude} '
+      '(${usingFallback ? "fallback" : "GPS"})',
+    );
     if (!mounted) return;
     setState(() {
       _initialPosition = position;
@@ -61,7 +67,10 @@ class _MapScreenState extends State<MapScreen> {
   Future<LatLng?> _resolveGpsPosition() async {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return null;
+      if (!serviceEnabled) {
+        debugPrint('[MapScreen] location service disabled');
+        return null;
+      }
 
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -69,17 +78,27 @@ class _MapScreenState extends State<MapScreen> {
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
+        debugPrint('[MapScreen] location permission: $permission');
         return null;
       }
 
+      // Try last known position first (instant)
+      final last = await Geolocator.getLastKnownPosition();
+      if (last != null) {
+        debugPrint('[MapScreen] using last known position');
+        return LatLng(latitude: last.latitude, longitude: last.longitude);
+      }
+
+      // Fall back to fresh fix with longer timeout
       final pos = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 8),
+          timeLimit: Duration(seconds: 15),
         ),
       );
       return LatLng(latitude: pos.latitude, longitude: pos.longitude);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[MapScreen] GPS error: $e');
       return null;
     }
   }

@@ -68,7 +68,7 @@ class _KakaoMapViewState extends State<KakaoMapView> {
 
     return KakaoMap(
       initialPosition: widget.initialPosition,
-      initialLevel: 5,
+      initialLevel: 3,
       onMapCreated: _onMapCreated,
     );
   }
