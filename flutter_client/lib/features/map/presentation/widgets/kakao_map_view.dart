@@ -9,17 +9,15 @@ import '../../models/map_place.dart';
 class KakaoMapView extends StatefulWidget {
   const KakaoMapView({
     super.key,
+    required this.initialPosition,
     required this.places,
-    required this.selectedPlace,
     required this.onPlaceSelected,
     this.onViewportChanged,
   });
 
+  final LatLng initialPosition;
   final List<MapPlace> places;
-  final MapPlace selectedPlace;
   final ValueChanged<MapPlace> onPlaceSelected;
-
-  /// Called when camera stops moving. Provides the new visible bounds.
   final void Function(LatLngBounds bounds)? onViewportChanged;
 
   @override
@@ -35,9 +33,6 @@ class _KakaoMapViewState extends State<KakaoMapView> {
   @override
   void didUpdateWidget(covariant KakaoMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.selectedPlace.id != widget.selectedPlace.id) {
-      _moveToSelectedPlace();
-    }
     if (oldWidget.places != widget.places) {
       _syncMarkers();
     }
@@ -60,23 +55,20 @@ class _KakaoMapViewState extends State<KakaoMapView> {
         fit: StackFit.expand,
         children: [
           const _KakaoMapConfigurationPlaceholder(),
-          Positioned.fill(
-            child: _MockMarkerOverlay(
-              places: widget.places,
-              selectedPlace: widget.selectedPlace,
-              onPlaceSelected: widget.onPlaceSelected,
+          if (widget.places.isNotEmpty)
+            Positioned.fill(
+              child: _MockMarkerOverlay(
+                places: widget.places,
+                onPlaceSelected: widget.onPlaceSelected,
+              ),
             ),
-          ),
         ],
       );
     }
 
     return KakaoMap(
-      initialPosition: LatLng(
-        latitude: widget.selectedPlace.latitude,
-        longitude: widget.selectedPlace.longitude,
-      ),
-      initialLevel: 7,
+      initialPosition: widget.initialPosition,
+      initialLevel: 5,
       onMapCreated: _onMapCreated,
     );
   }
@@ -87,7 +79,7 @@ class _KakaoMapViewState extends State<KakaoMapView> {
     _markerClickSub = controller.onLabelClickedStream.listen((event) {
       final tapped = widget.places.firstWhere(
         (p) => p.id == event.labelId,
-        orElse: () => widget.selectedPlace,
+        orElse: () => widget.places.first,
       );
       widget.onPlaceSelected(tapped);
     });
@@ -99,14 +91,28 @@ class _KakaoMapViewState extends State<KakaoMapView> {
       }
     });
 
-    _syncMarkers();
+    // Defer until native SDK fires onMapReady
+    _syncMarkersWithRetry();
+  }
+
+  Future<void> _syncMarkersWithRetry() async {
+    for (var attempt = 0; attempt < 10; attempt++) {
+      try {
+        await _syncMarkers();
+        return;
+      } catch (_) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+    }
   }
 
   Future<void> _syncMarkers() async {
     final controller = _controller;
     if (controller == null) return;
 
-    final newPlaces = widget.places.where((p) => !_addedMarkerIds.contains(p.id)).toList();
+    final newPlaces = widget.places
+        .where((p) => !_addedMarkerIds.contains(p.id))
+        .toList();
     if (newPlaces.isEmpty) return;
 
     final options = newPlaces
@@ -120,25 +126,6 @@ class _KakaoMapViewState extends State<KakaoMapView> {
     for (final p in newPlaces) {
       _addedMarkerIds.add(p.id);
     }
-  }
-
-  Future<void> _moveToSelectedPlace() async {
-    final controller = _controller;
-    if (controller == null) return;
-
-    await controller.moveCamera(
-      cameraUpdate: CameraUpdate.fromLatLng(
-        LatLng(
-          latitude: widget.selectedPlace.latitude,
-          longitude: widget.selectedPlace.longitude,
-        ),
-      ),
-      animation: const CameraAnimation(
-        duration: 500,
-        autoElevation: true,
-        isConsecutive: false,
-      ),
-    );
   }
 }
 
@@ -170,11 +157,7 @@ class _KakaoMapConfigurationPlaceholder extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.map,
-                color: AppColors.primaryContainer,
-                size: 36,
-              ),
+              const Icon(Icons.map, color: AppColors.primaryContainer, size: 36),
               const SizedBox(height: 10),
               Text(
                 'Kakao Map baseline',
@@ -206,12 +189,10 @@ class _KakaoMapConfigurationPlaceholder extends StatelessWidget {
 class _MockMarkerOverlay extends StatelessWidget {
   const _MockMarkerOverlay({
     required this.places,
-    required this.selectedPlace,
     required this.onPlaceSelected,
   });
 
   final List<MapPlace> places;
-  final MapPlace selectedPlace;
   final ValueChanged<MapPlace> onPlaceSelected;
 
   @override
@@ -226,13 +207,12 @@ class _MockMarkerOverlay extends StatelessWidget {
       ignoring: false,
       child: Stack(
         children: [
-          for (var index = 0; index < places.length; index++)
+          for (var i = 0; i < places.length && i < 3; i++)
             Align(
-              alignment: positions[index % positions.length],
+              alignment: positions[i],
               child: _MockMarkerButton(
-                place: places[index],
-                isSelected: places[index].id == selectedPlace.id,
-                onPressed: () => onPlaceSelected(places[index]),
+                place: places[i],
+                onPressed: () => onPlaceSelected(places[i]),
               ),
             ),
         ],
@@ -242,14 +222,9 @@ class _MockMarkerOverlay extends StatelessWidget {
 }
 
 class _MockMarkerButton extends StatelessWidget {
-  const _MockMarkerButton({
-    required this.place,
-    required this.isSelected,
-    required this.onPressed,
-  });
+  const _MockMarkerButton({required this.place, required this.onPressed});
 
   final MapPlace place;
-  final bool isSelected;
   final VoidCallback onPressed;
 
   @override
@@ -259,33 +234,24 @@ class _MockMarkerButton extends StatelessWidget {
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.circular(999),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
+        child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryContainer : Colors.white,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(999),
             boxShadow: const [
-              BoxShadow(
-                color: Color(0x33000000),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
+              BoxShadow(color: Color(0x33000000), blurRadius: 10, offset: Offset(0, 4)),
             ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.location_on,
-                color: isSelected ? Colors.white : AppColors.primaryContainer,
-                size: 18,
-              ),
+              const Icon(Icons.location_on, color: AppColors.primaryContainer, size: 18),
               const SizedBox(width: 4),
               Text(
                 place.name,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF151C23),
+                style: const TextStyle(
+                  color: Color(0xFF151C23),
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                 ),
