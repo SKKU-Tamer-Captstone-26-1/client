@@ -2,6 +2,20 @@ import '../models/auth_models.dart';
 import 'auth_remote_data_source.dart';
 import 'grpc_gen/auth/v1/auth.pb.dart';
 
+class PublicUserProfile {
+  const PublicUserProfile({
+    required this.userId,
+    this.nickname,
+    this.profileImageUrl,
+    this.alcoholScore = 0,
+  });
+
+  final String userId;
+  final String? nickname;
+  final String? profileImageUrl;
+  final int alcoholScore;
+}
+
 class AuthRepository {
   const AuthRepository(this._dataSource);
 
@@ -39,6 +53,16 @@ class AuthRepository {
   Future<AuthUser> completeOnboarding(String userId) async {
     final res = await _dataSource.completeOnboarding(userId);
     return _toAuthUser(res.user);
+  }
+
+  Future<PublicUserProfile> getUser(String userId) async {
+    final res = await _dataSource.getUser(userId);
+    return PublicUserProfile(
+      userId: res.userId,
+      nickname: res.nickname.isEmpty ? null : res.nickname,
+      profileImageUrl: res.profileImageUrl.isEmpty ? null : res.profileImageUrl,
+      alcoholScore: res.alcoholScore,
+    );
   }
 
   Future<void> logout(String userId) => _dataSource.logout(userId);
