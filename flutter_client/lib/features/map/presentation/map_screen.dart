@@ -121,16 +121,18 @@ class _MapScreenState extends State<MapScreen> {
     if (_markersLoading) return;
     setState(() => _markersLoading = true);
     try {
+      debugPrint('[MapScreen] fetching markers bbox=$minLon,$minLat,$maxLon,$maxLat');
       final markers = await _api.fetchMarkers(
         minLon: minLon,
         minLat: minLat,
         maxLon: maxLon,
         maxLat: maxLat,
       );
+      debugPrint('[MapScreen] fetched ${markers.length} markers');
       if (!mounted) return;
       if (markers.isNotEmpty) setState(() => _places = markers);
-    } catch (_) {
-      // map-service 미실행 시 현재 markers 유지
+    } catch (e) {
+      debugPrint('[MapScreen] fetchMarkers error: $e');
     } finally {
       if (mounted) setState(() => _markersLoading = false);
     }
@@ -263,6 +265,13 @@ class _MapSearchBar extends StatelessWidget {
   }
 }
 
+const _chipColors = [
+  Color(0xFFFF7E36), // Bar — primary orange
+  Color(0xFFC4963A), // Pub — amber
+  Color(0xFF4F7ED4), // Liquor Shop — steel blue
+  Color(0xFF5CA874), // Outdoor — sage green
+];
+
 class _MapFilterChips extends StatelessWidget {
   const _MapFilterChips({required this.labels, required this.palette});
   final List<String> labels;
@@ -278,13 +287,16 @@ class _MapFilterChips extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           final isSelected = index == 0;
+          final chipColor = index < _chipColors.length
+              ? _chipColors[index]
+              : AppColors.primaryContainer;
           return DecoratedBox(
             decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primaryContainer
-                  : palette.surfaceContainerLowest,
+              color: isSelected ? chipColor : palette.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(999),
-              border: isSelected ? null : Border.all(color: palette.outlineVariant),
+              border: isSelected
+                  ? null
+                  : Border.all(color: chipColor.withValues(alpha: 0.6)),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -292,7 +304,7 @@ class _MapFilterChips extends StatelessWidget {
                 child: Text(
                   labels[index],
                   style: TextStyle(
-                    color: isSelected ? Colors.white : palette.onSurfaceVariant,
+                    color: isSelected ? Colors.white : chipColor,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
