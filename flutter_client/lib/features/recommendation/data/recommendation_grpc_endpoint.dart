@@ -12,7 +12,10 @@ class RecommendationGrpcEndpoint {
   bool get isConfigured => host.trim().isNotEmpty;
 
   static RecommendationGrpcEndpoint fromEnvironment() {
-    const host = String.fromEnvironment('RECOMMENDATION_GRPC_HOST');
+    const host = String.fromEnvironment(
+      'RECOMMENDATION_GRPC_HOST',
+      defaultValue: 'recommendation-service-vcuepibcwq-du.a.run.app',
+    );
     const portValue = String.fromEnvironment(
       'RECOMMENDATION_GRPC_PORT',
       defaultValue: '443',

@@ -51,12 +51,14 @@ class OnTheBlockApp extends ConsumerStatefulWidget {
     this.chatPushService,
     this.boardRepository,
     this.recommendationRepository,
+    this.enableDefaultRecommendationRepository = true,
   });
 
   final ChatRepository? chatRepository;
   final ChatPushService? chatPushService;
   final BoardRepository? boardRepository;
   final RecommendationRepository? recommendationRepository;
+  final bool enableDefaultRecommendationRepository;
 
   @override
   ConsumerState<OnTheBlockApp> createState() => _OnTheBlockAppState();
@@ -113,7 +115,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     final recommendationEndpoint = RecommendationGrpcEndpoint.fromEnvironment();
     _recommendationRepository =
         widget.recommendationRepository ??
-        (recommendationEndpoint.isConfigured
+        (widget.enableDefaultRecommendationRepository &&
+                recommendationEndpoint.isConfigured
             ? GrpcRecommendationRepository(
                 GrpcRecommendationRemoteDataSource(
                   endpoint: recommendationEndpoint,
@@ -274,6 +277,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         onProfileSelected: _goToProfile,
         recommendationRepository: _recommendationRepository,
         recommendationAuthToken: _currentAuthToken,
+        hasCompletedSurvey:
+            ref.read(authProvider).user?.surveyId?.trim().isNotEmpty ?? false,
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
       ),
       _AppStage.map => MapScreen(
