@@ -1620,7 +1620,7 @@ class _ChatProfileBottomSheetState
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 48),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 96),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
