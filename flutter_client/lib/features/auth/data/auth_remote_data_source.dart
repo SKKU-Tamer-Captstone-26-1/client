@@ -11,6 +11,7 @@ abstract class AuthRemoteDataSource {
   Future<GenerateProfileUploadUrlResponse> generateProfileUploadUrl(String userId);
   Future<UpdateNeighborhoodResponse> updateNeighborhood(String userId, String neighborhood);
   Future<CompleteOnboardingResponse> completeOnboarding(String userId);
+  Future<GetUserResponse> getUser(String userId);
   Future<void> logout(String userId);
   Future<void> dispose();
 }
@@ -97,6 +98,11 @@ class GrpcAuthRemoteDataSource implements AuthRemoteDataSource {
     return _client.completeOnboarding(
       CompleteOnboardingRequest()..userId = userId,
     );
+  }
+
+  @override
+  Future<GetUserResponse> getUser(String userId) {
+    return _client.getUser(GetUserRequest()..userId = userId);
   }
 
   @override
