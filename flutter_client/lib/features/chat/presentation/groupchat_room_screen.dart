@@ -11,8 +11,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_network_image.dart';
+import '../../auth/data/auth_repository.dart';
+import '../../auth/providers/auth_repository_provider.dart';
 import '../data/chat_repository.dart';
 import '../data/mock_groupchat_data.dart';
 import '../models/groupchat_models.dart';
@@ -1553,7 +1557,7 @@ String _alcoholTierLabel(int score) {
   return 'Master Blender';
 }
 
-class _ChatProfileBottomSheet extends StatelessWidget {
+class _ChatProfileBottomSheet extends ConsumerStatefulWidget {
   const _ChatProfileBottomSheet({
     this.senderId,
     this.senderName,
@@ -1565,11 +1569,47 @@ class _ChatProfileBottomSheet extends StatelessWidget {
   final String? avatarUrl;
 
   @override
+  ConsumerState<_ChatProfileBottomSheet> createState() =>
+      _ChatProfileBottomSheetState();
+}
+
+class _ChatProfileBottomSheetState
+    extends ConsumerState<_ChatProfileBottomSheet> {
+  PublicUserProfile? _profile;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.senderId != null) _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _loading = true);
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final profile = await repo.getUser(widget.senderId!);
+      if (mounted) setState(() => _profile = profile);
+    } catch (_) {
+      // fall back to local mock data on error
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final name = (senderName?.trim().isNotEmpty == true) ? senderName! : 'Member';
-    final url = avatarUrl?.trim() ?? '';
-    final score = _mockAlcoholScore(senderName);
+
+    final name = _profile?.nickname?.trim().isNotEmpty == true
+        ? _profile!.nickname!
+        : (widget.senderName?.trim().isNotEmpty == true
+            ? widget.senderName!
+            : 'Member');
+    final url =
+        (_profile?.profileImageUrl ?? widget.avatarUrl)?.trim() ?? '';
+    final score =
+        _profile != null ? _profile!.alcoholScore : _mockAlcoholScore(widget.senderName);
     final tierLabel = _alcoholTierLabel(score);
 
     return DecoratedBox(
@@ -1614,34 +1654,48 @@ class _ChatProfileBottomSheet extends StatelessWidget {
                       border: Border.all(color: Colors.white, width: 4),
                     ),
                     child: ClipOval(
-                      child: url.isNotEmpty
-                          ? AppNetworkImage(url: url, width: 120, height: 120)
-                          : ColoredBox(
+                      child: _loading
+                          ? ColoredBox(
                               color: palette.surfaceContainerLow,
-                              child: Center(
-                                child: Text(
-                                  _avatarInitial(senderName),
-                                  style: TextStyle(
-                                    color: palette.onSurfaceVariant,
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.w700,
+                              child: const SizedBox.expand(),
+                            )
+                          : url.isNotEmpty
+                              ? AppNetworkImage(url: url, width: 120, height: 120)
+                              : ColoredBox(
+                                  color: palette.surfaceContainerLow,
+                                  child: Center(
+                                    child: Text(
+                                      _avatarInitial(widget.senderName),
+                                      style: TextStyle(
+                                        color: palette.onSurfaceVariant,
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 // Nickname
-                Text(
-                  name,
-                  style: const TextStyle(
-                    color: Color(0xFF151C23),
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                _loading
+                    ? Container(
+                        width: 120,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: palette.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      )
+                    : Text(
+                        name,
+                        style: const TextStyle(
+                          color: Color(0xFF151C23),
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                 const SizedBox(height: 32),
                 // Score header row
                 Row(
