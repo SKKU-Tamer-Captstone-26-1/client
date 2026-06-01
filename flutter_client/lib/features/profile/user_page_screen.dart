@@ -82,6 +82,7 @@ class UserPageScreen extends ConsumerWidget {
               onLogout: onLogout,
               recommendationRepository: recommendationRepository,
               recommendationAuthToken: recommendationAuthToken,
+              hasCompletedSurvey: user?.surveyId?.trim().isNotEmpty ?? false,
             ),
           ],
         ),
@@ -510,12 +511,14 @@ class _MySettingsSection extends ConsumerWidget {
     this.onLogout,
     this.recommendationRepository,
     this.recommendationAuthToken = '',
+    this.hasCompletedSurvey = false,
   });
 
   final VoidCallback? onRetakeSurvey;
   final VoidCallback? onLogout;
   final RecommendationRepository? recommendationRepository;
   final String recommendationAuthToken;
+  final bool hasCompletedSurvey;
 
   Future<void> _openLocationUpdate(BuildContext context, WidgetRef ref) async {
     final userId = ref.read(authProvider).userId;
@@ -576,6 +579,7 @@ class _MySettingsSection extends ConsumerWidget {
         _TasteProfileSettingsCard(
           repository: recommendationRepository,
           authToken: recommendationAuthToken,
+          hasCompletedSurvey: hasCompletedSurvey,
           onTap: onRetakeSurvey,
         ),
         const SizedBox(height: 12),
@@ -618,11 +622,13 @@ class _TasteProfileSettingsCard extends StatefulWidget {
   const _TasteProfileSettingsCard({
     required this.repository,
     required this.authToken,
+    required this.hasCompletedSurvey,
     this.onTap,
   });
 
   final RecommendationRepository? repository;
   final String authToken;
+  final bool hasCompletedSurvey;
   final VoidCallback? onTap;
 
   @override
@@ -643,7 +649,8 @@ class _TasteProfileSettingsCardState extends State<_TasteProfileSettingsCard> {
   void didUpdateWidget(_TasteProfileSettingsCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.repository != widget.repository ||
-        oldWidget.authToken != widget.authToken) {
+        oldWidget.authToken != widget.authToken ||
+        oldWidget.hasCompletedSurvey != widget.hasCompletedSurvey) {
       _resetFuture();
     }
   }
@@ -677,7 +684,10 @@ class _TasteProfileSettingsCardState extends State<_TasteProfileSettingsCard> {
         return _card(
           subtitle: profile == null
               ? 'Profile status unavailable'
-              : _profileSubtitle(profile),
+              : _profileSubtitle(
+                  profile,
+                  hasCompletedSurvey: widget.hasCompletedSurvey,
+                ),
         );
       },
     );
@@ -695,14 +705,19 @@ class _TasteProfileSettingsCardState extends State<_TasteProfileSettingsCard> {
     );
   }
 
-  static String _profileSubtitle(RecommendationProfile profile) {
+  static String _profileSubtitle(
+    RecommendationProfile profile, {
+    required bool hasCompletedSurvey,
+  }) {
     final reason = profile.staleReason.trim();
     if (reason.isNotEmpty) return reason;
 
     return switch (profile.status) {
       RecommendationProfileStatus.active => 'Ready for recommendations',
       RecommendationProfileStatus.missing =>
-        'Complete the survey to unlock recommendations',
+        hasCompletedSurvey
+            ? 'Survey saved; recommendation profile not ready'
+            : 'Complete the survey to unlock recommendations',
       RecommendationProfileStatus.pendingGeneration =>
         'Building your recommendations',
       RecommendationProfileStatus.stale => 'Refreshing your taste profile',

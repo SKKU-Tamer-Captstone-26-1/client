@@ -4,6 +4,16 @@ import 'grpc_gen/google/protobuf/timestamp.pb.dart' as timestamppb;
 import 'grpc_gen/recommendation/v1/recommendation.pb.dart' as pb;
 import 'recommendation_remote_data_source.dart';
 
+const Set<String> _recommendationEventMetadataAllowlist = <String>{
+  'client_platform',
+  'app_version',
+  'surface',
+  'session_id_hash',
+  'list_position',
+  'visible_ms',
+  'source',
+};
+
 abstract class RecommendationRepository {
   Future<RecommendationProfile> getProfileStatus({required String authToken});
 
@@ -157,6 +167,9 @@ class GrpcRecommendationRepository implements RecommendationRepository {
   static structpb.Struct _metadataToProto(Map<String, Object> metadata) {
     final struct = structpb.Struct();
     for (final entry in metadata.entries) {
+      if (!_recommendationEventMetadataAllowlist.contains(entry.key)) {
+        continue;
+      }
       final value = entry.value;
       if (value is String) {
         struct.fields[entry.key] = structpb.Value()..stringValue = value;

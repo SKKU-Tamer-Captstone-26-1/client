@@ -102,17 +102,231 @@ void main() {
   testWidgets('shows personalized beverage recommendations on home', (
     WidgetTester tester,
   ) async {
-    await _pumpApp(
-      tester,
-      recommendationRepository: _FakeRecommendationRepository(),
-    );
+    final repository = _FakeRecommendationRepository();
+
+    await _pumpApp(tester, recommendationRepository: repository);
 
     await _signInAndSkipOnboarding(tester);
+    await tester.pump();
 
     expect(find.text('TOP MATCH'), findsOneWidget);
     expect(find.text('Recommended for you'), findsOneWidget);
+    expect(find.text('예시 버번'), findsWidgets);
     expect(find.text('Example Bourbon'), findsWidgets);
     expect(find.text('Matches your vanilla/caramel preference.'), findsWidgets);
+    expect(find.textContaining('%'), findsNothing);
+    expect(repository.profileStatusCalls, 1);
+    expect(repository.beverageRecommendationCalls, 1);
+    expect(repository.lastAuthToken, 'access-token');
+    expect(repository.lastCategory, '');
+    expect(repository.lastLimit, 10);
+    expect(repository.lastBudgetMode, RecommendationBudgetMode.soft);
+    expect(
+      repository.events.single.eventType,
+      RecommendationEventKind.impression,
+    );
+    expect(
+      repository.events.single.metadata.keys,
+      unorderedEquals([
+        'client_platform',
+        'app_version',
+        'surface',
+        'session_id_hash',
+        'list_position',
+        'visible_ms',
+        'source',
+      ]),
+    );
+    expect(
+      repository.events.single.metadata['surface'],
+      'home_recommendations',
+    );
+    expect(
+      repository.events.single.metadata['source'],
+      'recommendation_service',
+    );
+    expect(
+      repository.events.single.idempotencyKey,
+      contains(':rec-result-1:impression'),
+    );
+  });
+
+  testWidgets('renders long recommendation metadata without card overflow', (
+    WidgetTester tester,
+  ) async {
+    final repository = _FakeRecommendationRepository(
+      recommendations: const [
+        BeverageRecommendation(
+          rank: 1,
+          resultId: 'rec-result-laphroaig',
+          beverageId: 'bev-laphroaig',
+          nameKo: '라프로익 10년',
+          nameEn: 'Laphroaig 10 Year Old',
+          category: 'whiskey',
+          score: 0.91,
+          reasonCodes: [
+            'CATEGORY_MATCH',
+            'SMOKY_PEATED_MATCH',
+            'BEGINNER_FRIENDLY',
+          ],
+          explanation:
+              '라프로익 10년 is recommended because your taste profile leans smoky and peated.',
+          style: 'single malt scotch whisky',
+        ),
+        BeverageRecommendation(
+          rank: 2,
+          resultId: 'rec-result-jameson',
+          beverageId: 'bev-jameson',
+          nameKo: '제임슨 아이리시 위스키',
+          nameEn: 'Jameson Irish Whiskey',
+          category: 'whiskey',
+          score: 0.86,
+          reasonCodes: ['BEGINNER_FRIENDLY', 'CATEGORY_MATCH', 'SMOOTH_FINISH'],
+          explanation:
+              'Jameson Irish Whiskey is recommended because it is smooth and approachable.',
+          style: 'irish whiskey',
+        ),
+      ],
+    );
+
+    await _pumpApp(tester, recommendationRepository: repository);
+    await _signInAndSkipOnboarding(tester);
+    await tester.pump();
+
+    expect(find.text('라프로익 10년'), findsWidgets);
+    expect(find.text('Laphroaig 10 Year Old'), findsOneWidget);
+    expect(find.text('single malt scotch whisky'), findsOneWidget);
+    expect(find.text('Category Match'), findsWidgets);
+    expect(find.textContaining('recommended because'), findsWidgets);
+  });
+
+  testWidgets('records recommendation save and dismiss events from cards', (
+    WidgetTester tester,
+  ) async {
+    final repository = _FakeRecommendationRepository();
+
+    await _pumpApp(tester, recommendationRepository: repository);
+    await _signInAndSkipOnboarding(tester);
+    await tester.pump();
+
+    await tester.tap(find.byTooltip('Save recommendation').first);
+    await tester.pump();
+    await tester.tap(find.byTooltip('Dismiss recommendation').first);
+    await tester.pump();
+
+    expect(
+      repository.events.map((event) => event.eventType),
+      containsAllInOrder([
+        RecommendationEventKind.impression,
+        RecommendationEventKind.save,
+        RecommendationEventKind.dismiss,
+      ]),
+    );
+  });
+
+  testWidgets('records recommendation click events from cards', (
+    WidgetTester tester,
+  ) async {
+    final repository = _FakeRecommendationRepository();
+
+    await _pumpApp(tester, recommendationRepository: repository);
+    await _signInAndSkipOnboarding(tester);
+    await tester.pump();
+
+    await tester.tap(find.text('예시 버번').last);
+    await tester.pump();
+
+    expect(
+      repository.events.map((event) => event.eventType),
+      containsAllInOrder([
+        RecommendationEventKind.impression,
+        RecommendationEventKind.click,
+      ]),
+    );
+    expect(
+      repository.events.last.idempotencyKey,
+      contains(':rec-result-1:click'),
+    );
+  });
+
+  testWidgets('shows saved-survey missing profile without requesting beverages', (
+    WidgetTester tester,
+  ) async {
+    final repository = _FakeRecommendationRepository(
+      profileStatus: RecommendationProfileStatus.missing,
+    );
+
+    await _pumpApp(tester, recommendationRepository: repository);
+    await _signInAndSkipOnboarding(tester);
+
+    expect(find.text('Recommendation profile not ready'), findsOneWidget);
+    expect(
+      find.text(
+        'Your survey is saved, but the recommendation profile has not been generated yet.',
+      ),
+      findsOneWidget,
+    );
+    expect(repository.profileStatusCalls, 1);
+    expect(repository.beverageRecommendationCalls, 0);
+  });
+
+  testWidgets(
+    'shows pending recommendation profile without requesting beverages',
+    (WidgetTester tester) async {
+      final repository = _FakeRecommendationRepository(
+        profileStatus: RecommendationProfileStatus.pendingGeneration,
+      );
+
+      await _pumpApp(tester, recommendationRepository: repository);
+      await _signInAndSkipOnboarding(tester);
+
+      expect(find.text('Building your picks'), findsOneWidget);
+      expect(
+        find.text('Your recommendations are being prepared.'),
+        findsOneWidget,
+      );
+      expect(repository.profileStatusCalls, 1);
+      expect(repository.beverageRecommendationCalls, 0);
+    },
+  );
+
+  testWidgets(
+    'shows failed recommendation profile without requesting beverages',
+    (WidgetTester tester) async {
+      final repository = _FakeRecommendationRepository(
+        profileStatus: RecommendationProfileStatus.failedGeneration,
+      );
+
+      await _pumpApp(tester, recommendationRepository: repository);
+      await _signInAndSkipOnboarding(tester);
+
+      expect(find.text('Profile refresh failed'), findsOneWidget);
+      expect(
+        find.text('Your recommendation profile could not be generated.'),
+        findsOneWidget,
+      );
+      expect(repository.profileStatusCalls, 1);
+      expect(repository.beverageRecommendationCalls, 0);
+    },
+  );
+
+  testWidgets('shows empty recommendations state for active empty profile', (
+    WidgetTester tester,
+  ) async {
+    final repository = _FakeRecommendationRepository(
+      recommendations: const <BeverageRecommendation>[],
+    );
+
+    await _pumpApp(tester, recommendationRepository: repository);
+    await _signInAndSkipOnboarding(tester);
+
+    expect(find.text('No recommendations yet'), findsOneWidget);
+    expect(
+      find.text('Your profile is ready, but there are no bottles to show.'),
+      findsOneWidget,
+    );
+    expect(repository.profileStatusCalls, 1);
+    expect(repository.beverageRecommendationCalls, 1);
   });
 
   testWidgets('shows taste profile status on profile screen', (
@@ -131,6 +345,29 @@ void main() {
     expect(find.text('Taste Profile'), findsOneWidget);
     expect(find.text('Ready for recommendations'), findsOneWidget);
   });
+
+  testWidgets(
+    'shows saved-survey profile generation status on profile screen',
+    (WidgetTester tester) async {
+      await _pumpApp(
+        tester,
+        recommendationRepository: _FakeRecommendationRepository(
+          profileStatus: RecommendationProfileStatus.missing,
+        ),
+      );
+
+      await _signInAndSkipOnboarding(tester);
+
+      await tester.tap(find.byIcon(Icons.account_circle));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Taste Profile'), findsOneWidget);
+      expect(
+        find.text('Survey saved; recommendation profile not ready'),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('navigates from home to map screen', (WidgetTester tester) async {
     await _pumpApp(tester);
@@ -588,18 +825,52 @@ Future<void> _pumpApp(
         chatRepository: _FakeChatRepository(),
         chatPushService: chatPushService ?? _FakeChatPushService(),
         recommendationRepository: recommendationRepository,
+        enableDefaultRecommendationRepository: false,
       ),
     ),
   );
 }
 
 class _FakeRecommendationRepository implements RecommendationRepository {
+  _FakeRecommendationRepository({
+    this.profileStatus = RecommendationProfileStatus.active,
+    List<BeverageRecommendation> recommendations = const [
+      BeverageRecommendation(
+        rank: 1,
+        resultId: 'rec-result-1',
+        beverageId: 'bev-1',
+        nameKo: '예시 버번',
+        nameEn: 'Example Bourbon',
+        category: 'whiskey',
+        score: 0.91,
+        reasonCodes: ['MATCHES_VANILLA_CARAMEL'],
+        explanation: 'Matches your vanilla/caramel preference.',
+        style: 'bourbon',
+      ),
+    ],
+  }) : recommendations = List<BeverageRecommendation>.unmodifiable(
+         recommendations,
+       );
+
+  final RecommendationProfileStatus profileStatus;
+  final List<BeverageRecommendation> recommendations;
+  final List<_RecordedRecommendationEvent> events =
+      <_RecordedRecommendationEvent>[];
+  int profileStatusCalls = 0;
+  int beverageRecommendationCalls = 0;
+  String lastAuthToken = '';
+  String lastCategory = '';
+  int lastLimit = 0;
+  RecommendationBudgetMode? lastBudgetMode;
+
   @override
   Future<RecommendationProfile> getProfileStatus({
     required String authToken,
   }) async {
-    return const RecommendationProfile(
-      status: RecommendationProfileStatus.active,
+    profileStatusCalls += 1;
+    lastAuthToken = authToken;
+    return RecommendationProfile(
+      status: profileStatus,
       profileRevision: 1,
       surveyResponseId: 'survey-1',
     );
@@ -612,24 +883,16 @@ class _FakeRecommendationRepository implements RecommendationRepository {
     int limit = 10,
     RecommendationBudgetMode budgetMode = RecommendationBudgetMode.soft,
   }) async {
-    return const BeverageRecommendationPage(
+    beverageRecommendationCalls += 1;
+    lastAuthToken = authToken;
+    lastCategory = category;
+    lastLimit = limit;
+    lastBudgetMode = budgetMode;
+    return BeverageRecommendationPage(
       requestId: 'rec-req-1',
       profileStatus: RecommendationProfileStatus.active,
       profileRevision: 1,
-      recommendations: [
-        BeverageRecommendation(
-          rank: 1,
-          resultId: 'rec-result-1',
-          beverageId: 'bev-1',
-          nameKo: '',
-          nameEn: 'Example Bourbon',
-          category: 'whiskey',
-          score: 0.91,
-          reasonCodes: ['MATCHES_VANILLA_CARAMEL'],
-          explanation: 'Matches your vanilla/caramel preference.',
-          style: 'bourbon',
-        ),
-      ],
+      recommendations: recommendations,
     );
   }
 
@@ -641,10 +904,39 @@ class _FakeRecommendationRepository implements RecommendationRepository {
     required RecommendationEventKind eventType,
     required String idempotencyKey,
     Map<String, Object> metadata = const <String, Object>{},
-  }) async {}
+  }) async {
+    events.add(
+      _RecordedRecommendationEvent(
+        authToken: authToken,
+        requestId: requestId,
+        resultId: resultId,
+        eventType: eventType,
+        idempotencyKey: idempotencyKey,
+        metadata: Map<String, Object>.unmodifiable(metadata),
+      ),
+    );
+  }
 
   @override
   Future<void> dispose() async {}
+}
+
+class _RecordedRecommendationEvent {
+  const _RecordedRecommendationEvent({
+    required this.authToken,
+    required this.requestId,
+    required this.resultId,
+    required this.eventType,
+    required this.idempotencyKey,
+    required this.metadata,
+  });
+
+  final String authToken;
+  final String requestId;
+  final String resultId;
+  final RecommendationEventKind eventType;
+  final String idempotencyKey;
+  final Map<String, Object> metadata;
 }
 
 class _FakeChatPushService implements ChatPushService {

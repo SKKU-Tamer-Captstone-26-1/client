@@ -7,7 +7,6 @@ import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
 import '../../recommendation/data/recommendation_repository.dart';
-import '../../recommendation/models/recommendation_models.dart';
 import '../../recommendation/presentation/recommendation_home_section.dart';
 import '../data/mock_home_data.dart';
 import '../models/home_models.dart';
@@ -19,6 +18,7 @@ class HomeScreen extends StatelessWidget {
     this.onProfileSelected,
     this.recommendationRepository,
     this.recommendationAuthToken = '',
+    this.hasCompletedSurvey = false,
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
@@ -26,6 +26,7 @@ class HomeScreen extends StatelessWidget {
   final VoidCallback? onProfileSelected;
   final RecommendationRepository? recommendationRepository;
   final String recommendationAuthToken;
+  final bool hasCompletedSurvey;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
@@ -56,20 +57,23 @@ class HomeScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           children: [
-            _RecommendationHeroCard(
-              repository: recommendationRepository,
-              authToken: recommendationAuthToken,
-            ),
-            const SizedBox(height: 24),
-            const _CategoryChips(categories: mockHomeCategories),
             if (recommendationRepository != null &&
-                recommendationAuthToken.trim().isNotEmpty) ...[
-              const SizedBox(height: 28),
+                recommendationAuthToken.trim().isNotEmpty)
               RecommendationHomeSection(
                 repository: recommendationRepository,
                 authToken: recommendationAuthToken,
+                hasCompletedSurvey: hasCompletedSurvey,
+              )
+            else
+              const _HeroCard(
+                badge: 'Taste profile',
+                title: 'Personalized picks start with your survey',
+                body:
+                    'Complete onboarding to unlock your recommendation engine.',
+                icon: Icons.auto_awesome,
               ),
-            ],
+            const SizedBox(height: 24),
+            const _CategoryChips(categories: mockHomeCategories),
             const SizedBox(height: 28),
             const _LocalEstablishmentsSection(items: mockLocalEstablishments),
             const SizedBox(height: 28),
@@ -83,210 +87,18 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _RecommendationHeroCard extends StatefulWidget {
-  const _RecommendationHeroCard({
-    required this.repository,
-    required this.authToken,
-  });
-
-  final RecommendationRepository? repository;
-  final String authToken;
-
-  @override
-  State<_RecommendationHeroCard> createState() =>
-      _RecommendationHeroCardState();
-}
-
-class _RecommendationHeroCardState extends State<_RecommendationHeroCard> {
-  Future<_RecommendationHeroData>? _future;
-
-  @override
-  void initState() {
-    super.initState();
-    _resetFuture();
-  }
-
-  @override
-  void didUpdateWidget(_RecommendationHeroCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.repository != widget.repository ||
-        oldWidget.authToken != widget.authToken) {
-      _resetFuture();
-    }
-  }
-
-  void _resetFuture() {
-    final repository = widget.repository;
-    final authToken = widget.authToken.trim();
-    _future = repository == null || authToken.isEmpty
-        ? null
-        : _load(repository: repository, authToken: authToken);
-  }
-
-  Future<_RecommendationHeroData> _load({
-    required RecommendationRepository repository,
-    required String authToken,
-  }) async {
-    final profile = await repository.getProfileStatus(authToken: authToken);
-    if (!profile.isActive) {
-      return _RecommendationHeroData(profile: profile);
-    }
-
-    final page = await repository.getBeverageRecommendations(
-      authToken: authToken,
-      limit: 1,
-      budgetMode: RecommendationBudgetMode.soft,
-    );
-
-    return _RecommendationHeroData(
-      profile: profile,
-      recommendation: page.recommendations.isEmpty
-          ? null
-          : page.recommendations.first,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final future = _future;
-    if (future == null) {
-      return const _HeroCard(
-        badge: 'Taste profile',
-        title: 'Personalized picks start with your survey',
-        body: 'Complete onboarding to unlock your recommendation engine.',
-        icon: Icons.auto_awesome,
-      );
-    }
-
-    return FutureBuilder<_RecommendationHeroData>(
-      future: future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const _HeroCard(
-            badge: 'Recommendation engine',
-            title: 'Finding your match',
-            body: 'Refreshing your taste profile.',
-            icon: Icons.auto_awesome,
-            trailing: SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          );
-        }
-        if (snapshot.hasError) {
-          return const _HeroCard(
-            badge: 'Recommendation engine',
-            title: 'Recommendations unavailable',
-            body: 'We could not refresh your personalized hero right now.',
-            icon: Icons.wifi_off,
-          );
-        }
-
-        final data = snapshot.data;
-        final recommendation = data?.recommendation;
-        if (recommendation != null) {
-          return _HeroCard(
-            badge: 'Top match',
-            title: recommendation.displayName,
-            body: recommendation.explanation.trim().isEmpty
-                ? 'Matched from your taste profile.'
-                : recommendation.explanation,
-            detail: _recommendationDetail(recommendation),
-            icon: Icons.local_bar,
-          );
-        }
-
-        final profile = data?.profile;
-        return _HeroCard(
-          badge: 'Taste profile',
-          title: _profileTitle(profile?.status),
-          body: _profileMessage(profile),
-          icon: Icons.auto_awesome,
-        );
-      },
-    );
-  }
-
-  static String _recommendationDetail(BeverageRecommendation recommendation) {
-    final parts = <String>[
-      _formatLabel(recommendation.category),
-      _formatLabel(recommendation.style),
-    ].where((part) => part.isNotEmpty).toList();
-
-    if (recommendation.score > 0) {
-      final score = (recommendation.score * 100).clamp(0, 100).round();
-      parts.add('$score% match');
-    }
-
-    return parts.join(' | ');
-  }
-
-  static String _profileTitle(RecommendationProfileStatus? status) {
-    return switch (status) {
-      RecommendationProfileStatus.missing => 'Taste profile needed',
-      RecommendationProfileStatus.pendingGeneration => 'Building your picks',
-      RecommendationProfileStatus.stale => 'Refreshing your taste profile',
-      RecommendationProfileStatus.failedGeneration => 'Profile refresh failed',
-      RecommendationProfileStatus.active => 'Your profile is ready',
-      _ => 'Recommendations pending',
-    };
-  }
-
-  static String _profileMessage(RecommendationProfile? profile) {
-    final reason = profile?.staleReason.trim() ?? '';
-    if (reason.isNotEmpty) return reason;
-
-    return switch (profile?.status) {
-      RecommendationProfileStatus.missing =>
-        'Complete the survey to unlock personalized bottles.',
-      RecommendationProfileStatus.pendingGeneration =>
-        'Your recommendations are being prepared.',
-      RecommendationProfileStatus.stale =>
-        'Your older profile is being updated.',
-      RecommendationProfileStatus.failedGeneration =>
-        'Your recommendation profile could not be generated.',
-      RecommendationProfileStatus.active =>
-        'Your profile is ready, but there are no bottles to show yet.',
-      _ => 'Your recommendation profile is not active yet.',
-    };
-  }
-
-  static String _formatLabel(String rawValue) {
-    final value = rawValue.trim();
-    if (value.isEmpty) return '';
-
-    return value
-        .split(RegExp(r'[_\-\s]+'))
-        .where((part) => part.isNotEmpty)
-        .map((part) => part[0].toUpperCase() + part.substring(1))
-        .join(' ');
-  }
-}
-
-class _RecommendationHeroData {
-  const _RecommendationHeroData({required this.profile, this.recommendation});
-
-  final RecommendationProfile profile;
-  final BeverageRecommendation? recommendation;
-}
-
 class _HeroCard extends StatelessWidget {
   const _HeroCard({
     required this.badge,
     required this.title,
     required this.body,
     required this.icon,
-    this.detail = '',
-    this.trailing,
   });
 
   final String badge;
   final String title;
   final String body;
-  final String detail;
   final IconData icon;
-  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -337,16 +149,15 @@ class _HeroCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              trailing ??
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: palette.surfaceContainerLow,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon, color: palette.secondary, size: 22),
-                  ),
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: palette.surfaceContainerLow,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: palette.secondary, size: 22),
+              ),
             ],
           ),
           const SizedBox(height: 18),
@@ -369,17 +180,6 @@ class _HeroCard extends StatelessWidget {
               height: 1.35,
             ),
           ),
-          if (detail.trim().isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(
-              detail,
-              style: TextStyle(
-                color: AppColors.primaryContainer,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
         ],
       ),
     );
