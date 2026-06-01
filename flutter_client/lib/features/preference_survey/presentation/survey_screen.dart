@@ -22,9 +22,11 @@ class SurveyScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(surveyProvider);
     final notifier = ref.read(surveyProvider.notifier);
+    final palette = context.palette;
 
     if (state.error != null) {
       return Scaffold(
+        backgroundColor: palette.surfaceContainerLowest,
         body: Center(child: Text('Failed to load questions: ${state.error}')),
       );
     }
@@ -38,12 +40,14 @@ class SurveyScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: palette.surfaceContainerLowest,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: palette.surfaceContainerLowest,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        shape: Border(bottom: BorderSide(color: palette.outlineVariant)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: palette.onSurface),
           onPressed: state.isFirst
               ? (onBack ?? () => Navigator.of(context).maybePop())
               : notifier.previous,
@@ -156,11 +160,12 @@ class _ProgressHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final palette = context.palette;
     final total = state.totalVisible;
     final current = state.currentIndex;
 
     return Container(
-      color: Colors.white,
+      color: palette.surfaceContainerLowest,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Row(
         children: List.generate(total * 2 - 1, (i) {
@@ -312,10 +317,11 @@ class _BottomControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final palette = context.palette;
     final canAdvance = state.isReadyToAdvance;
 
     return Container(
-      color: Colors.white,
+      color: palette.surfaceContainerLowest,
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: SafeArea(
         top: false,

@@ -24,6 +24,8 @@ class UserPageScreen extends ConsumerWidget {
     this.onBottomNavSelected,
     this.onRetakeSurvey,
     this.onLogout,
+    this.isDarkMode = false,
+    this.onThemeToggle,
     this.recommendationRepository,
     this.recommendationAuthToken = '',
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
@@ -33,6 +35,8 @@ class UserPageScreen extends ConsumerWidget {
   final ValueChanged<AppBottomNavItem>? onBottomNavSelected;
   final VoidCallback? onRetakeSurvey;
   final VoidCallback? onLogout;
+  final bool isDarkMode;
+  final VoidCallback? onThemeToggle;
   final RecommendationRepository? recommendationRepository;
   final String recommendationAuthToken;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
@@ -59,7 +63,6 @@ class UserPageScreen extends ConsumerWidget {
             color: AppColors.primaryContainer,
             fontWeight: FontWeight.w900,
             fontSize: 20,
-            letterSpacing: -0.5,
           ),
         ),
         centerTitle: true,
@@ -80,6 +83,8 @@ class UserPageScreen extends ConsumerWidget {
             _MySettingsSection(
               onRetakeSurvey: onRetakeSurvey,
               onLogout: onLogout,
+              isDarkMode: isDarkMode,
+              onThemeToggle: onThemeToggle,
               recommendationRepository: recommendationRepository,
               recommendationAuthToken: recommendationAuthToken,
               hasCompletedSurvey: user?.surveyId?.trim().isNotEmpty ?? false,
@@ -509,6 +514,8 @@ class _MySettingsSection extends ConsumerWidget {
   const _MySettingsSection({
     this.onRetakeSurvey,
     this.onLogout,
+    this.isDarkMode = false,
+    this.onThemeToggle,
     this.recommendationRepository,
     this.recommendationAuthToken = '',
     this.hasCompletedSurvey = false,
@@ -516,6 +523,8 @@ class _MySettingsSection extends ConsumerWidget {
 
   final VoidCallback? onRetakeSurvey;
   final VoidCallback? onLogout;
+  final bool isDarkMode;
+  final VoidCallback? onThemeToggle;
   final RecommendationRepository? recommendationRepository;
   final String recommendationAuthToken;
   final bool hasCompletedSurvey;
@@ -552,6 +561,7 @@ class _MySettingsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final neighborhood = ref.watch(authProvider).user?.neighborhood;
+    final palette = context.palette;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -569,11 +579,16 @@ class _MySettingsSection extends ConsumerWidget {
         _SettingsCard(
           icon: Icons.location_on,
           iconColor: AppColors.primaryContainer,
-          iconBgColor: const Color(0xFFE7EFF8),
+          iconBgColor: AppColors.primaryContainer.withValues(alpha: 0.12),
           title: 'My Neighborhood',
           subtitle: neighborhood ?? 'Not set',
           actionLabel: 'Update',
           onTap: () => _openLocationUpdate(context, ref),
+        ),
+        const SizedBox(height: 12),
+        _ThemeSettingsCard(
+          isDarkMode: isDarkMode,
+          onThemeToggle: onThemeToggle,
         ),
         const SizedBox(height: 12),
         _TasteProfileSettingsCard(
@@ -585,10 +600,10 @@ class _MySettingsSection extends ConsumerWidget {
         const SizedBox(height: 12),
         _SettingsCard(
           icon: Icons.help_outline,
-          iconColor: const Color(0xFF5F5E5E),
-          iconBgColor: const Color(0xFFE7EFF8),
+          iconColor: palette.secondary,
+          iconBgColor: palette.surfaceContainerLow,
           title: 'Help & Support',
-          trailing: Icon(Icons.chevron_right, color: context.palette.secondary),
+          trailing: Icon(Icons.chevron_right, color: palette.secondary),
           onTap: () async {
             final userEmail = ref.read(authProvider).user?.email ?? '';
             final uri = Uri(
@@ -608,12 +623,44 @@ class _MySettingsSection extends ConsumerWidget {
         _SettingsCard(
           icon: Icons.logout,
           iconColor: AppColors.primaryContainer,
-          iconBgColor: const Color(0xFFFFD8C7),
+          iconBgColor: AppColors.primaryContainer.withValues(alpha: 0.14),
           title: 'Log Out',
-          trailing: Icon(Icons.chevron_right, color: context.palette.secondary),
+          trailing: Icon(Icons.chevron_right, color: palette.secondary),
           onTap: onLogout,
         ),
       ],
+    );
+  }
+}
+
+class _ThemeSettingsCard extends StatelessWidget {
+  const _ThemeSettingsCard({
+    required this.isDarkMode,
+    required this.onThemeToggle,
+  });
+
+  final bool isDarkMode;
+  final VoidCallback? onThemeToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return _SettingsCard(
+      icon: isDarkMode ? Icons.dark_mode : Icons.light_mode,
+      iconColor: AppColors.primaryContainer,
+      iconBgColor: AppColors.primaryContainer.withValues(alpha: 0.12),
+      title: 'Appearance',
+      subtitle: isDarkMode ? 'Dark mode' : 'Light mode',
+      onTap: onThemeToggle,
+      trailing: Switch.adaptive(
+        value: isDarkMode,
+        onChanged: onThemeToggle == null ? null : (_) => onThemeToggle!(),
+        activeThumbColor: AppColors.primaryContainer,
+        activeTrackColor: AppColors.primaryContainer.withValues(alpha: 0.32),
+        inactiveThumbColor: palette.secondary,
+        inactiveTrackColor: palette.surfaceContainerLow,
+      ),
     );
   }
 }
@@ -696,8 +743,8 @@ class _TasteProfileSettingsCardState extends State<_TasteProfileSettingsCard> {
   Widget _card({required String subtitle}) {
     return _SettingsCard(
       icon: Icons.assignment,
-      iconColor: const Color(0xFF825516),
-      iconBgColor: const Color(0xFFE7EFF8),
+      iconColor: AppColors.primaryContainer,
+      iconBgColor: AppColors.primaryContainer.withValues(alpha: 0.12),
       title: 'Taste Profile',
       subtitle: subtitle,
       actionLabel: 'Retake',
@@ -753,73 +800,80 @@ class _SettingsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: palette.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: palette.outlineVariant.withValues(alpha: 0.5),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: palette.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: palette.outlineVariant.withValues(alpha: 0.5),
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: iconColor, size: 22),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: palette.onSurface,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle!,
-                      style: TextStyle(fontSize: 13, color: palette.secondary),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (actionLabel != null)
-              OutlinedButton(
-                onPressed: onTap,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: palette.secondary,
-                  side: BorderSide(color: palette.outlineVariant),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  shape: const StadiumBorder(),
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  shape: BoxShape.circle,
                 ),
-                child: Text(actionLabel!),
+                child: Icon(icon, color: iconColor, size: 22),
               ),
-            ?trailing,
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: palette.onSurface,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: palette.secondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (actionLabel != null)
+                OutlinedButton(
+                  onPressed: onTap,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: palette.secondary,
+                    side: BorderSide(color: palette.outlineVariant),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    shape: const StadiumBorder(),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(actionLabel!),
+                ),
+              ?trailing,
+            ],
+          ),
         ),
       ),
     );

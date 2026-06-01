@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/app_theme_toggle_button.dart';
 import 'widgets/google_sign_in_button.dart';
 import 'widgets/login_brand_header.dart';
 
@@ -26,13 +27,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleSignIn() async {
     if (_isSigningIn) return;
-    setState(() { _isSigningIn = true; _error = null; });
+    setState(() {
+      _isSigningIn = true;
+      _error = null;
+    });
     try {
       await widget.onGoogleSignIn?.call();
     } catch (e) {
-      if (mounted) setState(() { _error = e.toString(); });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+        });
+      }
     } finally {
-      if (mounted) setState(() { _isSigningIn = false; });
+      if (mounted) {
+        setState(() {
+          _isSigningIn = false;
+        });
+      }
     }
   }
 
@@ -50,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
               alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: _ThemeToggleButton(
+                child: AppThemeToggleButton(
                   isDarkMode: widget.isDarkMode,
                   onPressed: widget.onThemeToggle,
                 ),
@@ -82,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 48),
                       GoogleSignInButton(
-                        onPressed: _isSigningIn ? () {} : _handleSignIn,
+                        onPressed: _isSigningIn ? null : _handleSignIn,
                         isLoading: _isSigningIn,
                       ),
                       if (_error != null) ...[
@@ -90,7 +102,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text(
                           _error!,
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                       const SizedBox(height: 48),
@@ -196,30 +211,6 @@ class _BackgroundAccents extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ThemeToggleButton extends StatelessWidget {
-  const _ThemeToggleButton({required this.isDarkMode, required this.onPressed});
-
-  final bool isDarkMode;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-
-    return IconButton(
-      onPressed: onPressed,
-      tooltip: isDarkMode ? 'Switch to light mode' : 'Switch to dark mode',
-      style: IconButton.styleFrom(
-        backgroundColor: palette.surfaceContainerLow,
-        foregroundColor: palette.onSurface,
-        side: BorderSide(color: palette.outlineVariant),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-      icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
     );
   }
 }

@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  static const lightSurfaceContainerLow = Color(0xFFEDF4FD);
-  static const lightSurfaceContainerLowest = Color(0xFFFFFFFF);
-  static const lightOnSurface = Color(0xFF151C23);
-  static const lightOnSurfaceVariant = Color(0xFF584238);
-  static const lightSecondary = Color(0xFF5F5E5E);
-  static const lightOutlineVariant = Color(0xFFDFC0B3);
-  static const lightFooterText = Color(0xFF94A3B8);
-  static const lightDecorativeTertiary = Color(0xFFD09854);
+  static const lightSurfaceContainerLow = Color(0xFFF6F1EA);
+  static const lightSurfaceContainerLowest = Color(0xFFFFFCF8);
+  static const lightOnSurface = Color(0xFF241A14);
+  static const lightOnSurfaceVariant = Color(0xFF6F6258);
+  static const lightSecondary = Color(0xFF756A61);
+  static const lightOutlineVariant = Color(0xFFE4D5C8);
+  static const lightFooterText = Color(0xFFA1978F);
+  static const lightDecorativeTertiary = Color(0xFFB8844F);
 
-  static const darkSurfaceContainerLow = Color(0xFF293138);
-  static const darkSurfaceContainerLowest = Color(0xFF151C23);
-  static const darkOnSurface = Color(0xFFEAF2FA);
-  static const darkOnSurfaceVariant = Color(0xFFD9C3B8);
-  static const darkSecondary = Color(0xFFC8C6C5);
-  static const darkOutlineVariant = Color(0xFF5D493F);
-  static const darkFooterText = Color(0xFF8A969F);
-  static const darkDecorativeTertiary = Color(0xFFF8BB73);
+  static const darkSurfaceContainerLow = Color(0xFF241F1B);
+  static const darkSurfaceContainerLowest = Color(0xFF17120F);
+  static const darkOnSurface = Color(0xFFF7EFE7);
+  static const darkOnSurfaceVariant = Color(0xFFD8C9BD);
+  static const darkSecondary = Color(0xFFBDB0A5);
+  static const darkOutlineVariant = Color(0xFF493C34);
+  static const darkFooterText = Color(0xFF95877C);
+  static const darkDecorativeTertiary = Color(0xFFD5A15F);
 
   static const primaryContainer = Color(0xFFFF7E36);
   static const darkPrimaryContainer = Color(0xFFFFB693);

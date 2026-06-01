@@ -47,7 +47,8 @@ class _LocationScreenState extends State<LocationScreen> {
       });
     } catch (e) {
       setState(() {
-        _error = 'No results found. Try a more specific city, district, or neighborhood name.';
+        _error =
+            'No results found. Try a more specific city, district, or neighborhood name.';
         _isLoading = false;
       });
     }
@@ -100,9 +101,10 @@ class _LocationScreenState extends State<LocationScreen> {
       'https://dapi.kakao.com/v2/local/search/address.json',
     ).replace(queryParameters: {'query': query, 'size': '1'});
 
-    final res = await http.get(uri, headers: {
-      'Authorization': 'KakaoAK $kKakaoRestApiKey',
-    });
+    final res = await http.get(
+      uri,
+      headers: {'Authorization': 'KakaoAK $kKakaoRestApiKey'},
+    );
 
     if (res.statusCode != 200) {
       throw Exception('Kakao API error: ${res.statusCode}');
@@ -129,9 +131,10 @@ class _LocationScreenState extends State<LocationScreen> {
     final uri = Uri.parse(
       'https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=$lng&y=$lat',
     );
-    final res = await http.get(uri, headers: {
-      'Authorization': 'KakaoAK $kKakaoRestApiKey',
-    });
+    final res = await http.get(
+      uri,
+      headers: {'Authorization': 'KakaoAK $kKakaoRestApiKey'},
+    );
 
     if (res.statusCode != 200) {
       throw Exception('Kakao API error: ${res.statusCode}');
@@ -142,10 +145,12 @@ class _LocationScreenState extends State<LocationScreen> {
     if (docs.isEmpty) throw Exception('No region found');
 
     // Prefer 법정동 (region_type == 'B'), fallback to first entry.
-    final region = (docs.firstWhere(
-      (d) => (d as Map<String, dynamic>)['region_type'] == 'B',
-      orElse: () => docs.first,
-    )) as Map<String, dynamic>;
+    final region =
+        (docs.firstWhere(
+              (d) => (d as Map<String, dynamic>)['region_type'] == 'B',
+              orElse: () => docs.first,
+            ))
+            as Map<String, dynamic>;
 
     final d1 = (region['region_1depth_name'] as String? ?? '').trim();
     final d2 = (region['region_2depth_name'] as String? ?? '').trim();
@@ -165,12 +170,15 @@ class _LocationScreenState extends State<LocationScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final palette = context.palette;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: palette.surfaceContainerLowest,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: palette.surfaceContainerLowest,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        shape: Border(bottom: BorderSide(color: palette.outlineVariant)),
         title: const Text(
           'Select My Neighborhood',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -178,152 +186,194 @@ class _LocationScreenState extends State<LocationScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Select My Neighborhood',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Search by city, district, or neighborhood name,\nor use your current location.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _textController,
-                      enabled: _confirmed == null,
-                      keyboardType: TextInputType.text,
-                      onSubmitted: (_) => _searchByText(),
-                      style: const TextStyle(
-                        color: Colors.black87,
-                        fontSize: 14,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final minHeight = constraints.maxHeight > 56
+                ? constraints.maxHeight - 56
+                : 0.0;
+
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: minHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Select My Neighborhood',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w800),
                       ),
-                      decoration: InputDecoration(
-                        hintText: '예) 수원시 장안구 율전동',
-                        hintStyle: TextStyle(
-                          fontSize: 13,
-                          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
+                      const SizedBox(height: 8),
+                      Text(
+                        'Search by city, district, or neighborhood name,\nor use your current location.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: colorScheme.onSurfaceVariant,
+                          height: 1.5,
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: (_isLoading || _confirmed != null) ? null : _searchByText,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primaryContainer,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      const SizedBox(height: 32),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _textController,
+                              enabled: _confirmed == null,
+                              keyboardType: TextInputType.text,
+                              onSubmitted: (_) => _searchByText(),
+                              style: TextStyle(
+                                color: palette.onSurface,
+                                fontSize: 14,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: '예) 수원시 장안구 율전동',
+                                hintStyle: TextStyle(
+                                  fontSize: 13,
+                                  color: colorScheme.onSurfaceVariant
+                                      .withValues(alpha: 0.6),
+                                ),
+                                filled: true,
+                                fillColor: palette.surfaceContainerLowest,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: palette.outlineVariant,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(
+                                    color: palette.outlineVariant,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.primaryContainer,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: (_isLoading || _confirmed != null)
+                                ? null
+                                : _searchByText,
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.primaryContainer,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('Search'),
+                          ),
+                        ],
                       ),
-                    ),
-                    child: const Text('Search'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(child: Divider(color: colorScheme.outlineVariant)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text(
-                      'or',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(color: colorScheme.outlineVariant),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              'or',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(color: colorScheme.outlineVariant),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: colorScheme.outlineVariant)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              OutlinedButton.icon(
-                onPressed: (_isLoading || _confirmed != null) ? null : _detectByGps,
-                icon: const Icon(Icons.my_location, size: 18),
-                label: const Text('Use My Current Location'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                      const SizedBox(height: 16),
+                      OutlinedButton.icon(
+                        onPressed: (_isLoading || _confirmed != null)
+                            ? null
+                            : _detectByGps,
+                        icon: const Icon(Icons.my_location, size: 18),
+                        label: const Text('Use My Current Location'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      if (_isLoading)
+                        const Center(child: CircularProgressIndicator())
+                      else if (_confirmed != null)
+                        _ConfirmedLocation(
+                          location: _confirmed!,
+                          onReset: _reset,
+                        )
+                      else if (_error != null)
+                        Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: colorScheme.error,
+                          ),
+                        ),
+                      const Spacer(),
+                      FilledButton.icon(
+                        onPressed: _confirmed != null
+                            ? () => widget.onSave?.call(_confirmed!)
+                            : null,
+                        icon: const Icon(Icons.check),
+                        label: const Text('Save & Continue'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primaryContainer,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              colorScheme.surfaceContainerHigh,
+                          disabledForegroundColor: colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.55),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: const StadiumBorder(),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton.icon(
+                        onPressed: widget.onSkip,
+                        icon: const Icon(Icons.close, size: 16),
+                        label: const Text('Skip'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: colorScheme.secondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 28),
-              if (_isLoading)
-                const Center(child: CircularProgressIndicator())
-              else if (_confirmed != null)
-                _ConfirmedLocation(
-                  location: _confirmed!,
-                  onReset: _reset,
-                )
-              else if (_error != null)
-                Text(
-                  _error!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: colorScheme.error,
-                  ),
-                ),
-              const Spacer(),
-              FilledButton.icon(
-                onPressed: _confirmed != null
-                    ? () => widget.onSave?.call(_confirmed!)
-                    : null,
-                icon: const Icon(Icons.check),
-                label: const Text('Save & Continue'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primaryContainer,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: colorScheme.surfaceContainerHigh,
-                  disabledForegroundColor:
-                      colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: const StadiumBorder(),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextButton.icon(
-                onPressed: widget.onSkip,
-                icon: const Icon(Icons.close, size: 16),
-                label: const Text('Skip'),
-                style: TextButton.styleFrom(
-                  foregroundColor: colorScheme.secondary,
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -338,12 +388,16 @@ class _ConfirmedLocation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.primaryContainer.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.primaryContainer.withValues(alpha: 0.4)),
+        border: Border.all(
+          color: AppColors.primaryContainer.withValues(alpha: 0.4),
+        ),
       ),
       child: Row(
         children: [
@@ -352,7 +406,8 @@ class _ConfirmedLocation extends StatelessWidget {
           Expanded(
             child: Text(
               location,
-              style: const TextStyle(
+              style: TextStyle(
+                color: palette.onSurface,
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),

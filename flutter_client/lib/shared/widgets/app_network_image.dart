@@ -35,7 +35,9 @@ class AppNetworkImage extends StatelessWidget {
       errorBuilder: (context, error, stackTrace) {
         return ColoredBox(
           color: palette.surfaceContainerLow,
-          child: Icon(Icons.image_not_supported, color: palette.secondary),
+          child: Center(
+            child: Icon(Icons.image_not_supported, color: palette.secondary),
+          ),
         );
       },
     );

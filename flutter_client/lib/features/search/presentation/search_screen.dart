@@ -167,7 +167,15 @@ class _SuggestionSection extends StatelessWidget {
           children: [
             for (final suggestion in suggestions)
               ActionChip(
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Search for "$suggestion" is not wired yet.',
+                      ),
+                    ),
+                  );
+                },
                 label: Text(suggestion),
                 labelStyle: const TextStyle(
                   color: AppColors.primaryContainer,

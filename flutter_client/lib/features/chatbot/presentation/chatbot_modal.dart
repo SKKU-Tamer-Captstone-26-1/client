@@ -349,7 +349,8 @@ class _ChatInput extends StatelessWidget {
           child: Row(
             children: [
               IconButton(
-                onPressed: () {},
+                onPressed: null,
+                tooltip: 'Attachments unavailable in demo guide',
                 icon: Icon(Icons.attach_file, color: palette.secondary),
               ),
               Expanded(
@@ -361,10 +362,15 @@ class _ChatInput extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 6),
                 child: IconButton.filled(
-                  onPressed: () {},
+                  onPressed: null,
+                  tooltip: 'Guide chat is demo-only',
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.primaryContainer,
+                    disabledBackgroundColor: palette.surfaceContainerLow,
                     foregroundColor: Colors.white,
+                    disabledForegroundColor: palette.secondary.withValues(
+                      alpha: 0.48,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

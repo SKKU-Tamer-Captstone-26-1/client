@@ -118,7 +118,13 @@ class _BoardScreenState extends State<BoardScreen> {
           const SizedBox(height: 12),
           FloatingActionButton(
             heroTag: 'board-create-post',
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Post writing is not available in this build.'),
+                ),
+              );
+            },
             tooltip: 'Write post',
             backgroundColor: AppColors.primaryContainer,
             foregroundColor: Colors.white,
@@ -213,7 +219,7 @@ class _BoardCategoryChips extends StatelessWidget {
               color: isSelected
                   ? AppColors.primaryContainer
                   : palette.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(999),
               border: isSelected
                   ? null
                   : Border.all(color: palette.outlineVariant),
@@ -263,7 +269,9 @@ class _BoardPostCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE9ECEF)),
+        border: Border.all(
+          color: palette.outlineVariant.withValues(alpha: 0.52),
+        ),
         boxShadow: const [
           BoxShadow(
             color: Color(0x08000000),
@@ -349,7 +357,10 @@ class _BoardPostCard extends StatelessWidget {
                       ),
                     ],
                     const Spacer(),
-                    const Divider(height: 24, color: Color(0xFFF4F4F5)),
+                    Divider(
+                      height: 24,
+                      color: palette.outlineVariant.withValues(alpha: 0.48),
+                    ),
                     _PostMetaRow(post: post, onChatRequested: onChatRequested),
                   ],
                 ),

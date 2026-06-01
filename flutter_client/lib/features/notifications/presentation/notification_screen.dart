@@ -4,15 +4,48 @@ import '../../../core/theme/app_colors.dart';
 import '../data/mock_notifications.dart';
 import '../models/notification_models.dart';
 
-class NotificationScreen extends StatelessWidget {
+class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key, this.onBoardNotificationSelected});
 
   final VoidCallback? onBoardNotificationSelected;
 
   @override
+  State<NotificationScreen> createState() => _NotificationScreenState();
+}
+
+class _NotificationScreenState extends State<NotificationScreen> {
+  final Set<int> _readNotificationIndexes = <int>{};
+
+  List<AppNotification> get _notifications {
+    return [
+      for (final (index, notification) in mockNotifications.indexed)
+        AppNotification(
+          title: notification.title,
+          body: notification.body,
+          timeLabel: notification.timeLabel,
+          icon: notification.icon,
+          targetType: notification.targetType,
+          targetId: notification.targetId,
+          isUnread:
+              notification.isUnread &&
+              !_readNotificationIndexes.contains(index),
+        ),
+    ];
+  }
+
+  void _markAllRead() {
+    setState(() {
+      _readNotificationIndexes.addAll(
+        Iterable<int>.generate(mockNotifications.length),
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final unreadCount = mockNotifications
+    final notifications = _notifications;
+    final unreadCount = notifications
         .where((notification) => notification.isUnread)
         .length;
 
@@ -47,7 +80,7 @@ class NotificationScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: unreadCount == 0 ? null : _markAllRead,
             child: const Text(
               'Mark all read',
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
@@ -66,10 +99,11 @@ class NotificationScreen extends StatelessWidget {
               children: [
                 _NotificationSummary(unreadCount: unreadCount),
                 const SizedBox(height: 18),
-                for (final notification in mockNotifications) ...[
+                for (final notification in notifications) ...[
                   _NotificationCard(
                     notification: notification,
-                    onBoardNotificationSelected: onBoardNotificationSelected,
+                    onBoardNotificationSelected:
+                        widget.onBoardNotificationSelected,
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -271,6 +305,13 @@ class _NotificationCard extends StatelessWidget {
     if (notification.targetType == AppNotificationTargetType.boardPost) {
       Navigator.of(context).pop();
       onBoardNotificationSelected?.call();
+      return;
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('This notification does not have a destination yet.'),
+      ),
+    );
   }
 }

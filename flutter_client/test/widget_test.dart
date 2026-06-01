@@ -47,6 +47,16 @@ void main() {
     expect(find.byTooltip('Switch to light mode'), findsOneWidget);
   });
 
+  testWidgets('restores persisted dark theme', (WidgetTester tester) async {
+    await _pumpApp(
+      tester,
+      initialPreferences: const {'on_the_block.theme_mode': 'dark'},
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Switch to light mode'), findsOneWidget);
+  });
+
   testWidgets('moves from login to survey intro and survey steps', (
     WidgetTester tester,
   ) async {
@@ -344,6 +354,15 @@ void main() {
 
     expect(find.text('Taste Profile'), findsOneWidget);
     expect(find.text('Ready for recommendations'), findsOneWidget);
+    expect(find.text('Appearance'), findsOneWidget);
+    expect(find.text('Light mode'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Appearance'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Appearance'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dark mode'), findsOneWidget);
   });
 
   testWidgets(
@@ -810,8 +829,9 @@ Future<void> _pumpApp(
   WidgetTester tester, {
   ChatPushService? chatPushService,
   RecommendationRepository? recommendationRepository,
+  Map<String, Object> initialPreferences = const {},
 }) {
-  SharedPreferences.setMockInitialValues({});
+  SharedPreferences.setMockInitialValues(initialPreferences);
   return tester.pumpWidget(
     ProviderScope(
       overrides: [

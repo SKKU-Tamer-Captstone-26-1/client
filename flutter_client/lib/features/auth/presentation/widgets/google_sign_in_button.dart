@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class GoogleSignInButton extends StatelessWidget {
-  const GoogleSignInButton({super.key, required this.onPressed, this.isLoading = false});
+  const GoogleSignInButton({
+    super.key,
+    required this.onPressed,
+    this.isLoading = false,
+  });
 
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isLoading;
 
   @override
@@ -36,7 +40,10 @@ class GoogleSignInButton extends StatelessWidget {
             ? SizedBox(
                 width: 22,
                 height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2, color: palette.onSurface),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: palette.onSurface,
+                ),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -12,8 +12,7 @@ class SelectNeighborhoodScreen extends StatefulWidget {
       _SelectNeighborhoodScreenState();
 }
 
-class _SelectNeighborhoodScreenState
-    extends State<SelectNeighborhoodScreen> {
+class _SelectNeighborhoodScreenState extends State<SelectNeighborhoodScreen> {
   final _searchController = TextEditingController();
   List<String> _results = [];
   bool _hasSearched = false;
@@ -29,9 +28,11 @@ class _SelectNeighborhoodScreenState
       _hasSearched = query.isNotEmpty;
       // TODO: replace with actual neighborhood API call
       _results = query.isNotEmpty
-          ? ['강남구 역삼동', '강남구 역삼1동', '강남구 역삼2동']
-              .where((e) => e.contains(query))
-              .toList()
+          ? [
+              '강남구 역삼동',
+              '강남구 역삼1동',
+              '강남구 역삼2동',
+            ].where((e) => e.contains(query)).toList()
           : [];
     });
   }
@@ -145,7 +146,11 @@ class _CurrentLocationButton extends StatelessWidget {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: () {
-          // TODO: implement GPS location lookup
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Current-location lookup is not available yet.'),
+            ),
+          );
         },
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primaryContainer,

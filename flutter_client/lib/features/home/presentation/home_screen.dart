@@ -302,7 +302,10 @@ class _LocalEstablishmentsSection extends StatelessWidget {
           title: 'Local Establishments',
           subtitle: 'Highly rated spots in your area',
           action: TextButton(
-            onPressed: () {},
+            onPressed: () => _showUnavailable(
+              context,
+              'Full local directory is not available yet.',
+            ),
             child: const Text(
               'See all',
               style: TextStyle(fontWeight: FontWeight.w800),
@@ -368,6 +371,8 @@ class _LocalEstablishmentCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 item.name,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   color: palette.onSurface,
                                   fontSize: 16,
@@ -462,8 +467,12 @@ class _OutdoorVaultsSection extends StatelessWidget {
           title: 'Outdoor Vaults',
           subtitle: 'Curated outdoor tasting experiences',
           action: IconButton(
-            onPressed: () {},
+            onPressed: () => _showUnavailable(
+              context,
+              'Outdoor experiences are not available yet.',
+            ),
             icon: const Icon(Icons.arrow_forward),
+            tooltip: 'View outdoor experiences',
           ),
         ),
         const SizedBox(height: 16),
@@ -578,7 +587,10 @@ class _OutdoorVaultCard extends StatelessWidget {
                     width: double.infinity,
                     height: 34,
                     child: FilledButton(
-                      onPressed: () {},
+                      onPressed: () => _showUnavailable(
+                        context,
+                        '${item.actionLabel} is not available yet.',
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: item.isPrimaryAction
                             ? AppColors.primaryContainer
@@ -608,6 +620,12 @@ class _OutdoorVaultCard extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showUnavailable(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+  );
 }
 
 class _NeighborhoodBuzzSection extends StatelessWidget {

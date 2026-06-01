@@ -7,7 +7,11 @@ import '../../features/notifications/presentation/notification_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 
 class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const AppTopAppBar({super.key, this.onNotificationBoardSelected, this.onProfileSelected});
+  const AppTopAppBar({
+    super.key,
+    this.onNotificationBoardSelected,
+    this.onProfileSelected,
+  });
 
   final VoidCallback? onNotificationBoardSelected;
   final VoidCallback? onProfileSelected;
@@ -24,8 +28,6 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       automaticallyImplyLeading: false,
-      elevation: 0,
-      scrolledUnderElevation: 0,
       backgroundColor: palette.surfaceContainerLowest,
       foregroundColor: palette.onSurface,
       shape: Border(bottom: BorderSide(color: palette.outlineVariant)),
@@ -62,62 +64,84 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
           },
           icon: const Icon(AppIcons.topAppBarSearch),
           tooltip: 'Search',
+          style: IconButton.styleFrom(
+            fixedSize: const Size.square(40),
+            minimumSize: const Size.square(40),
+            padding: EdgeInsets.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         ),
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => NotificationScreen(
-                      onBoardNotificationSelected: onNotificationBoardSelected,
+        SizedBox(
+          width: 40,
+          height: 40,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => NotificationScreen(
+                        onBoardNotificationSelected:
+                            onNotificationBoardSelected,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(AppIcons.topAppBarNotifications),
+                tooltip: 'Notifications',
+                style: IconButton.styleFrom(
+                  fixedSize: const Size.square(40),
+                  minimumSize: const Size.square(40),
+                  padding: EdgeInsets.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+              Positioned(
+                top: 6,
+                right: 4,
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.error,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: palette.surfaceContainerLowest,
+                      width: 2,
                     ),
                   ),
-                );
-              },
-              icon: const Icon(AppIcons.topAppBarNotifications),
-              tooltip: 'Notifications',
-            ),
-            Positioned(
-              top: 10,
-              right: 8,
-              child: Container(
-                width: 16,
-                height: 16,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.error,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: palette.surfaceContainerLowest,
-                    width: 2,
-                  ),
-                ),
-                child: const Text(
-                  '4',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                    height: 1,
+                  child: const Text(
+                    '4',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      height: 1,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: GestureDetector(
-            onTap: onProfileSelected,
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: palette.surfaceContainerLow,
-              child: Icon(
-                AppIcons.topAppBarProfile,
-                size: 22,
-                color: palette.secondary,
+          padding: const EdgeInsets.only(left: 4, right: 12),
+          child: Material(
+            color: palette.surfaceContainerLow,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onProfileSelected,
+              child: SizedBox(
+                width: 34,
+                height: 34,
+                child: Icon(
+                  AppIcons.topAppBarProfile,
+                  size: 22,
+                  color: palette.secondary,
+                ),
               ),
             ),
           ),

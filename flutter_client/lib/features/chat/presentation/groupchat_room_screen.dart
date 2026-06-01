@@ -1686,7 +1686,13 @@ class _SuggestionChips extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           return OutlinedButton(
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${_chips[index]} is not available yet.'),
+                ),
+              );
+            },
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primaryContainer,
               side: BorderSide(

@@ -657,7 +657,10 @@ class _CartItemCard extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: () => _showCollectionUnavailable(
+                          context,
+                          'Cart editing is not available in this build.',
+                        ),
                         tooltip: 'Remove item',
                         icon: Icon(
                           Icons.delete_outline,
@@ -855,7 +858,7 @@ class _CheckoutBar extends StatelessWidget {
                   width: double.infinity,
                   height: 54,
                   child: FilledButton.icon(
-                    onPressed: () {},
+                    onPressed: null,
                     iconAlignment: IconAlignment.end,
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.primaryContainer,
@@ -881,4 +884,10 @@ class _CheckoutBar extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showCollectionUnavailable(BuildContext context, String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+  );
 }

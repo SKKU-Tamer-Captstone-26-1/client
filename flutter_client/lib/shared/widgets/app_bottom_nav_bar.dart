@@ -23,18 +23,22 @@ class AppBottomNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
         border: Border(top: BorderSide(color: palette.outlineVariant)),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 12,
-            offset: Offset(0, -4),
+            color: Colors.black.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark
+                  ? 0.22
+                  : 0.08,
+            ),
+            blurRadius: 18,
+            offset: const Offset(0, -6),
           ),
         ],
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 64,
+          height: 68,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -74,16 +78,30 @@ class _BottomNavButton extends StatelessWidget {
     return Expanded(
       child: InkWell(
         onTap: onPressed,
+        borderRadius: BorderRadius.circular(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(
-              width: 32,
-              height: 26,
+              width: 48,
+              height: 30,
               child: Stack(
                 clipBehavior: Clip.none,
                 alignment: Alignment.center,
                 children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    width: isSelected ? 42 : 0,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer.withValues(
+                        alpha: Theme.of(context).brightness == Brightness.dark
+                            ? 0.18
+                            : 0.12,
+                      ),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
                   Icon(item.icon, color: color, size: 24),
                   if (badgeCount > 0)
                     Positioned(

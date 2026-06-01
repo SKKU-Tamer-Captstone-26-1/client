@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_mode_controller.dart';
 import 'core/theme/app_icons.dart';
 import 'core/config/app_config.dart';
 import 'features/auth/presentation/login_screen.dart';
@@ -81,7 +82,6 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     avatarUrls: <String>[],
   );
 
-  ThemeMode _themeMode = ThemeMode.light;
   _AppStage _stage = _AppStage.login;
   _AppStage _previousStage = _AppStage.home;
   bool _isRetaking = false;
@@ -148,11 +148,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   }
 
   void _toggleThemeMode() {
-    setState(() {
-      _themeMode = _themeMode == ThemeMode.light
-          ? ThemeMode.dark
-          : ThemeMode.light;
-    });
+    unawaited(ref.read(themeModeControllerProvider.notifier).toggle());
   }
 
   Future<void> _handleGoogleSignIn() async {
@@ -185,17 +181,19 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeControllerProvider);
+
     return MaterialApp(
       title: 'ON THE BLOCK',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: _themeMode,
-      home: _buildStage(),
+      themeMode: themeMode,
+      home: _buildStage(themeMode),
     );
   }
 
-  Widget _buildStage() {
+  Widget _buildStage(ThemeMode themeMode) {
     return switch (_stage) {
       _AppStage.profileSetup => ProfileSetupScreen(
         defaultNickname: ref.read(authProvider).user?.nickname ?? '',
@@ -218,7 +216,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         },
       ),
       _AppStage.login => LoginScreen(
-        isDarkMode: _themeMode == ThemeMode.dark,
+        isDarkMode: themeMode == ThemeMode.dark,
         onThemeToggle: _toggleThemeMode,
         onGoogleSignIn: _handleGoogleSignIn,
       ),
@@ -336,6 +334,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
         recommendationRepository: _recommendationRepository,
         recommendationAuthToken: _currentAuthToken,
+        isDarkMode: themeMode == ThemeMode.dark,
+        onThemeToggle: _toggleThemeMode,
         onBottomNavSelected: _selectBottomNavItem,
         onRetakeSurvey: () {
           setState(() {
