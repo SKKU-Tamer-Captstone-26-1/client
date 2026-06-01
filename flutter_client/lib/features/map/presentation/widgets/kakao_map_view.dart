@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
@@ -24,17 +26,46 @@ class KakaoMapView extends StatefulWidget {
   State<KakaoMapView> createState() => _KakaoMapViewState();
 }
 
+const _layerColors = {
+  'bar': Color(0xFFFF7E36),
+  'pub': Color(0xFFC4963A),
+  'liquor_shop': Color(0xFF4F7ED4),
+  'outdoor_spot': Color(0xFF5CA874),
+  'restaurant': Color(0xFF9C27B0),
+  'convenience_store': Color(0xFF00BCD4),
+  'other': Color(0xFF9E9E9E),
+};
+
+Future<Uint8List> _makeCircleIcon(Color color, {int size = 36}) async {
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  final c = Offset(size / 2, size / 2);
+  final r = size / 2 - 3.0;
+  canvas.drawCircle(c, r + 1, Paint()..color = const Color(0x44000000));
+  canvas.drawCircle(c, r, Paint()..color = color);
+  canvas.drawCircle(c, r, Paint()
+    ..color = Colors.white
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 2.5);
+  final picture = recorder.endRecording();
+  final image = await picture.toImage(size, size);
+  final data = await image.toByteData(format: ui.ImageByteFormat.png);
+  return data!.buffer.asUint8List();
+}
+
 class _KakaoMapViewState extends State<KakaoMapView> {
   KakaoMapController? _controller;
   StreamSubscription<LabelClickEvent>? _markerClickSub;
   StreamSubscription<CameraMoveEndEvent>? _cameraSub;
   final Set<String> _addedMarkerIds = {};
+  bool _markerLayerReady = false;
+  bool _stylesRegistered = false;
 
   @override
   void didUpdateWidget(covariant KakaoMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.places != widget.places) {
-      _syncMarkers();
+      _syncMarkersWithRetry();
     }
   }
 
@@ -84,45 +115,84 @@ class _KakaoMapViewState extends State<KakaoMapView> {
       widget.onPlaceSelected(tapped);
     });
 
-    _cameraSub = controller.onCameraMoveEndStream.listen((_) async {
-      final bounds = await controller.getViewportBounds();
-      if (bounds != null) {
-        widget.onViewportChanged?.call(bounds);
-      }
+    _cameraSub = controller.onCameraMoveEndStream.listen((event) {
+      const halfDeg = 0.05;
+      widget.onViewportChanged?.call(LatLngBounds(
+        southwest: LatLng(
+          latitude: event.latitude - halfDeg,
+          longitude: event.longitude - halfDeg,
+        ),
+        northeast: LatLng(
+          latitude: event.latitude + halfDeg,
+          longitude: event.longitude + halfDeg,
+        ),
+      ));
     });
 
-    // Defer until native SDK fires onMapReady
     _syncMarkersWithRetry();
   }
 
   Future<void> _syncMarkersWithRetry() async {
-    for (var attempt = 0; attempt < 10; attempt++) {
+    for (var attempt = 0; attempt < 15; attempt++) {
       try {
         await _syncMarkers();
         return;
-      } catch (_) {
-        await Future.delayed(const Duration(milliseconds: 300));
+      } catch (e) {
+        debugPrint('[KakaoMapView] _syncMarkers attempt $attempt failed: $e');
+        await Future.delayed(const Duration(milliseconds: 400));
       }
     }
+    debugPrint('[KakaoMapView] _syncMarkersWithRetry gave up after 15 attempts');
   }
 
   Future<void> _syncMarkers() async {
     final controller = _controller;
-    if (controller == null) return;
+    if (controller == null) {
+      throw StateError('controller not ready');
+    }
+
+    if (!_markerLayerReady) {
+      debugPrint('[KakaoMapView] creating marker layer');
+      await controller.addMarkerLayer(
+        layerId: KakaoMapController.defaultLabelLayerId,
+        clickable: true,
+      );
+      _markerLayerReady = true;
+      debugPrint('[KakaoMapView] marker layer created');
+    }
+
+    if (!_stylesRegistered) {
+      debugPrint('[KakaoMapView] registering marker styles');
+      final styles = <MarkerStyle>[];
+      for (final entry in _layerColors.entries) {
+        final bytes = await _makeCircleIcon(entry.value);
+        styles.add(MarkerStyle(
+          styleId: entry.key,
+          perLevels: [MarkerPerLevelStyle.fromBytes(bytes: bytes)],
+        ));
+      }
+      await controller.registerMarkerStyles(styles: styles);
+      _stylesRegistered = true;
+      debugPrint('[KakaoMapView] marker styles registered');
+    }
 
     final newPlaces = widget.places
         .where((p) => !_addedMarkerIds.contains(p.id))
         .toList();
+    debugPrint('[KakaoMapView] _syncMarkers: ${newPlaces.length} new places (total=${widget.places.length})');
     if (newPlaces.isEmpty) return;
 
     final options = newPlaces
         .map((p) => MarkerOption(
               id: p.id,
               latLng: LatLng(latitude: p.latitude, longitude: p.longitude),
+              styleId: _layerColors.containsKey(p.layerCode) ? p.layerCode : 'other',
             ))
         .toList();
 
+    debugPrint('[KakaoMapView] calling addMarkers for ${options.length} markers');
     await controller.addMarkers(markerOptions: options);
+    debugPrint('[KakaoMapView] addMarkers completed');
     for (final p in newPlaces) {
       _addedMarkerIds.add(p.id);
     }
