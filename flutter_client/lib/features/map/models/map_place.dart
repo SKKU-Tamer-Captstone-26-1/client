@@ -6,6 +6,7 @@ class MapPlace {
     required this.id,
     required this.name,
     required this.category,
+    required this.layerCode,
     required this.address,
     required this.distanceLabel,
     required this.rating,
@@ -17,10 +18,12 @@ class MapPlace {
   });
 
   factory MapPlace.fromApiMarker(Map<String, dynamic> json) {
+    final layerCode = json['layerCode'] as String? ?? 'other';
     return MapPlace(
       id: json['id'] as String,
       name: json['label'] as String? ?? '',
-      category: _layerLabel(json['layerCode'] as String? ?? ''),
+      category: _layerLabel(layerCode),
+      layerCode: layerCode,
       address: '',
       distanceLabel: '',
       rating: '',
@@ -47,6 +50,7 @@ class MapPlace {
   final String id;
   final String name;
   final String category;
+  final String layerCode;
   final String address;
   final String distanceLabel;
   final String rating;
