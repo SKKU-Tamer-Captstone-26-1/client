@@ -466,6 +466,7 @@ extension _ChatMessageMapper on ChatMessage {
       sentAt: sentAtDateTime,
       senderName: isOutgoing ? null : _shortUserLabel(senderUserId),
       senderAvatarUrl: null,
+      senderId: isOutgoing ? null : senderUserId,
       deliveryLabel: isOutgoing ? 'Sent' : null,
     );
   }

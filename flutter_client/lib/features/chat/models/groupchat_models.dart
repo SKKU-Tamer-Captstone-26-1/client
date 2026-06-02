@@ -101,6 +101,7 @@ class GroupchatMessage {
     this.fileContentType = '',
     this.senderName,
     this.senderAvatarUrl,
+    this.senderId,
     this.deliveryLabel,
   });
 
@@ -118,6 +119,7 @@ class GroupchatMessage {
   final String fileContentType;
   final String? senderName;
   final String? senderAvatarUrl;
+  final String? senderId;
   final String? deliveryLabel;
 
   bool get isOutgoing => kind == GroupchatMessageKind.outgoing;

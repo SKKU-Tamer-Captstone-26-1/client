@@ -11,8 +11,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/app_network_image.dart';
+import '../../auth/data/auth_repository.dart';
+import '../../auth/providers/auth_repository_provider.dart';
 import '../data/chat_repository.dart';
 import '../data/mock_groupchat_data.dart';
 import '../models/groupchat_models.dart';
@@ -1133,6 +1137,12 @@ class _IncomingMessage extends StatelessWidget {
             _SenderAvatar(
               avatarUrl: message.senderAvatarUrl,
               senderName: message.senderName,
+              onTap: () => _showChatProfile(
+                context,
+                senderId: message.senderId,
+                senderName: message.senderName,
+                avatarUrl: message.senderAvatarUrl,
+              ),
             ),
             const SizedBox(width: 10),
             Flexible(
@@ -1463,40 +1473,50 @@ class _MessageContent extends StatelessWidget {
 }
 
 class _SenderAvatar extends StatelessWidget {
-  const _SenderAvatar({required this.avatarUrl, required this.senderName});
+  const _SenderAvatar({
+    required this.avatarUrl,
+    required this.senderName,
+    this.onTap,
+  });
 
   final String? avatarUrl;
   final String? senderName;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
     final url = avatarUrl?.trim() ?? '';
+
+    final Widget avatar;
     if (url.isNotEmpty) {
-      return ClipRRect(
+      avatar = ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: AppNetworkImage(url: url, width: 40, height: 40),
       );
+    } else {
+      final fallbackChar = _avatarInitial(senderName);
+      avatar = Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: palette.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          fallbackChar,
+          style: TextStyle(
+            color: palette.onSurfaceVariant,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
     }
 
-    final fallbackChar = _avatarInitial(senderName);
-    return Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: palette.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        fallbackChar,
-        style: TextStyle(
-          color: palette.onSurfaceVariant,
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
+    if (onTap == null) return avatar;
+    return GestureDetector(onTap: onTap, child: avatar);
   }
 }
 
@@ -1506,6 +1526,274 @@ String _avatarInitial(String? senderName) {
     return 'M';
   }
   return normalized.substring(0, 1).toUpperCase();
+}
+
+void _showChatProfile(
+  BuildContext context, {
+  String? senderId,
+  String? senderName,
+  String? avatarUrl,
+}) {
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.4),
+    isScrollControlled: true,
+    builder: (_) => _ChatProfileBottomSheet(
+      senderId: senderId,
+      senderName: senderName,
+      avatarUrl: avatarUrl,
+    ),
+  );
+}
+
+int _mockAlcoholScore(String? name) {
+  return ((name ?? '').hashCode.abs() % 79) + 20;
+}
+
+String _alcoholTierLabel(int score) {
+  if (score <= 40) return 'Novice Sipper';
+  if (score <= 65) return 'Draft Enthusiast';
+  if (score <= 82) return 'Barrel Aged';
+  return 'Master Blender';
+}
+
+class _ChatProfileBottomSheet extends ConsumerStatefulWidget {
+  const _ChatProfileBottomSheet({
+    this.senderId,
+    this.senderName,
+    this.avatarUrl,
+  });
+
+  final String? senderId;
+  final String? senderName;
+  final String? avatarUrl;
+
+  @override
+  ConsumerState<_ChatProfileBottomSheet> createState() =>
+      _ChatProfileBottomSheetState();
+}
+
+class _ChatProfileBottomSheetState
+    extends ConsumerState<_ChatProfileBottomSheet> {
+  PublicUserProfile? _profile;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.senderId != null) _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _loading = true);
+    try {
+      final repo = ref.read(authRepositoryProvider);
+      final profile = await repo.getUser(widget.senderId!);
+      if (mounted) setState(() => _profile = profile);
+    } catch (_) {
+      // fall back to local mock data on error
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    final name = _profile?.nickname?.trim().isNotEmpty == true
+        ? _profile!.nickname!
+        : (widget.senderName?.trim().isNotEmpty == true
+            ? widget.senderName!
+            : 'Member');
+    final url =
+        (_profile?.profileImageUrl ?? widget.avatarUrl)?.trim() ?? '';
+    final score =
+        _profile != null ? _profile!.alcoholScore : _mockAlcoholScore(widget.senderName);
+    final tierLabel = _alcoholTierLabel(score);
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 96),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                Container(
+                  width: 48,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD4D4D4),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Avatar
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x26000000),
+                        blurRadius: 16,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 4),
+                    ),
+                    child: ClipOval(
+                      child: _loading
+                          ? ColoredBox(
+                              color: palette.surfaceContainerLow,
+                              child: const SizedBox.expand(),
+                            )
+                          : url.isNotEmpty
+                              ? AppNetworkImage(url: url, width: 120, height: 120)
+                              : ColoredBox(
+                                  color: palette.surfaceContainerLow,
+                                  child: Center(
+                                    child: Text(
+                                      _avatarInitial(widget.senderName),
+                                      style: TextStyle(
+                                        color: palette.onSurfaceVariant,
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Nickname
+                _loading
+                    ? Container(
+                        width: 120,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: palette.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      )
+                    : Text(
+                        name,
+                        style: const TextStyle(
+                          color: Color(0xFF151C23),
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                const SizedBox(height: 32),
+                // Score header row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'ALCOHOL SCORE',
+                      style: TextStyle(
+                        color: Color(0xFF737373),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    Text(
+                      '$score%',
+                      style: const TextStyle(
+                        color: Color(0xFFA04100),
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Progress bar
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: SizedBox(
+                    height: 16,
+                    child: Stack(
+                      children: [
+                        const ColoredBox(
+                          color: Color(0xFFDBE3EC),
+                          child: SizedBox.expand(),
+                        ),
+                        FractionallySizedBox(
+                          widthFactor: score / 100,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFA04100), Color(0xFFFF7E36)],
+                              ),
+                              borderRadius: BorderRadius.circular(999),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x4DA04100),
+                                  blurRadius: 12,
+                                ),
+                              ],
+                            ),
+                            child: const SizedBox.expand(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Tier label
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    tierLabel,
+                    style: const TextStyle(
+                      color: Color(0xFF737373),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Close button
+          Positioned(
+            top: 24,
+            right: 24,
+            child: SizedBox(
+              width: 40,
+              height: 40,
+              child: Material(
+                color: palette.surfaceContainerLow,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Icon(Icons.close, color: palette.secondary, size: 20),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _LiveDropPreview extends StatelessWidget {

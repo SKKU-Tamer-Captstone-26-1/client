@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: auth.proto
+//  source: auth/v1/auth.proto
 //
 // @dart = 2.12
 
@@ -20,7 +20,7 @@ class Role extends $pb.ProtobufEnum {
   static const Role ROLE_BAR = Role._(3, _omitEnumNames ? '' : 'ROLE_BAR');
   static const Role ROLE_REQUE = Role._(4, _omitEnumNames ? '' : 'ROLE_REQUE');
 
-  static const $core.List<Role> values = <Role>[
+  static const $core.List<Role> values = <Role> [
     ROLE_UNSPECIFIED,
     ROLE_NORMAL,
     ROLE_ADMIN,
@@ -38,7 +38,7 @@ class Provider extends $pb.ProtobufEnum {
   static const Provider PROVIDER_UNSPECIFIED = Provider._(0, _omitEnumNames ? '' : 'PROVIDER_UNSPECIFIED');
   static const Provider PROVIDER_GOOGLE = Provider._(1, _omitEnumNames ? '' : 'PROVIDER_GOOGLE');
 
-  static const $core.List<Provider> values = <Provider>[
+  static const $core.List<Provider> values = <Provider> [
     PROVIDER_UNSPECIFIED,
     PROVIDER_GOOGLE,
   ];
@@ -48,5 +48,6 @@ class Provider extends $pb.ProtobufEnum {
 
   const Provider._($core.int v, $core.String n) : super(v, n);
 }
+
 
 const _omitEnumNames = $core.bool.fromEnvironment('protobuf.omit_enum_names');
