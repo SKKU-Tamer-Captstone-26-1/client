@@ -16,6 +16,18 @@ const _fallbackPosition = LatLng(
   longitude: 126.97742215615531,
 );
 
+const _filterLabels = ['All', 'Bar', 'Pub', 'Liquor Shop', 'Outdoor'];
+const _filterLayers = <String?>[null, 'bar', 'pub', 'liquor_shop', 'outdoor_spot'];
+
+// Per-layer chip colors matching marker icon colors.
+const _chipColors = [
+  Color(0xFF6B6B8A), // All
+  Color(0xFFFF7E36), // Bar
+  Color(0xFFC4963A), // Pub
+  Color(0xFF4F7ED4), // Liquor Shop
+  Color(0xFF5CA874), // Outdoor
+];
+
 class MapScreen extends StatefulWidget {
   const MapScreen({
     super.key,
@@ -36,10 +48,17 @@ class _MapScreenState extends State<MapScreen> {
   final _api = MapApiDataSource();
 
   LatLng? _initialPosition;
-  List<MapPlace> _places = const [];
+  List<MapPlace> _allPlaces = const [];
+  int _filterIndex = 0;
   MapPlace? _selectedPlace;
   bool _locationLoading = true;
   bool _markersLoading = false;
+
+  List<MapPlace> get _filteredPlaces {
+    final layer = _filterLayers[_filterIndex];
+    if (layer == null) return _allPlaces;
+    return _allPlaces.where((p) => p.layerCode == layer).toList();
+  }
 
   @override
   void initState() {
@@ -49,13 +68,7 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _loadInitialPosition() async {
     final gps = await _resolveGpsPosition();
-    final usingFallback = gps == null;
     final position = gps ?? _fallbackPosition;
-    debugPrint(
-      '[MapScreen] initial position: '
-      'lat=${position.latitude}, lon=${position.longitude} '
-      '(${usingFallback ? "fallback" : "GPS"})',
-    );
     if (!mounted) return;
     setState(() {
       _initialPosition = position;
@@ -67,10 +80,7 @@ class _MapScreenState extends State<MapScreen> {
   Future<LatLng?> _resolveGpsPosition() async {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        debugPrint('[MapScreen] location service disabled');
-        return null;
-      }
+      if (!serviceEnabled) return null;
 
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -78,18 +88,14 @@ class _MapScreenState extends State<MapScreen> {
       }
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        debugPrint('[MapScreen] location permission: $permission');
         return null;
       }
 
-      // Try last known position first (instant)
       final last = await Geolocator.getLastKnownPosition();
       if (last != null) {
-        debugPrint('[MapScreen] using last known position');
         return LatLng(latitude: last.latitude, longitude: last.longitude);
       }
 
-      // Fall back to fresh fix with longer timeout
       final pos = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
@@ -121,16 +127,14 @@ class _MapScreenState extends State<MapScreen> {
     if (_markersLoading) return;
     setState(() => _markersLoading = true);
     try {
-      debugPrint('[MapScreen] fetching markers bbox=$minLon,$minLat,$maxLon,$maxLat');
       final markers = await _api.fetchMarkers(
         minLon: minLon,
         minLat: minLat,
         maxLon: maxLon,
         maxLat: maxLat,
       );
-      debugPrint('[MapScreen] fetched ${markers.length} markers');
       if (!mounted) return;
-      if (markers.isNotEmpty) setState(() => _places = markers);
+      if (markers.isNotEmpty) setState(() => _allPlaces = markers);
     } catch (e) {
       debugPrint('[MapScreen] fetchMarkers error: $e');
     } finally {
@@ -173,10 +177,10 @@ class _MapScreenState extends State<MapScreen> {
                 Positioned.fill(
                   child: KakaoMapView(
                     initialPosition: _initialPosition!,
-                    places: _places,
-                    onPlaceSelected: (place) =>
-                        setState(() => _selectedPlace = place),
+                    places: _filteredPlaces,
+                    onPlaceSelected: (place) => setState(() => _selectedPlace = place),
                     onViewportChanged: _onViewportChanged,
+                    onMapInteracted: () => setState(() => _selectedPlace = null),
                   ),
                 ),
                 Positioned(
@@ -190,7 +194,17 @@ class _MapScreenState extends State<MapScreen> {
                   left: 16,
                   right: 16,
                   child: _MapFilterChips(
-                    labels: const ['Bar', 'Pub', 'Liquor Shop', 'Outdoor'],
+                    labels: _filterLabels,
+                    selectedIndex: _filterIndex,
+                    onSelected: (i) => setState(() {
+                      _filterIndex = i;
+                      final layer = _filterLayers[i];
+                      if (_selectedPlace != null &&
+                          layer != null &&
+                          _selectedPlace!.layerCode != layer) {
+                        _selectedPlace = null;
+                      }
+                    }),
                     palette: palette,
                   ),
                 ),
@@ -265,16 +279,16 @@ class _MapSearchBar extends StatelessWidget {
   }
 }
 
-const _chipColors = [
-  Color(0xFFFF7E36), // Bar — primary orange
-  Color(0xFFC4963A), // Pub — amber
-  Color(0xFF4F7ED4), // Liquor Shop — steel blue
-  Color(0xFF5CA874), // Outdoor — sage green
-];
-
 class _MapFilterChips extends StatelessWidget {
-  const _MapFilterChips({required this.labels, required this.palette});
+  const _MapFilterChips({
+    required this.labels,
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.palette,
+  });
   final List<String> labels;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
   final AppPalette palette;
 
   @override
@@ -286,27 +300,30 @@ class _MapFilterChips extends StatelessWidget {
         itemCount: labels.length,
         separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
-          final isSelected = index == 0;
+          final isSelected = index == selectedIndex;
           final chipColor = index < _chipColors.length
               ? _chipColors[index]
               : AppColors.primaryContainer;
-          return DecoratedBox(
-            decoration: BoxDecoration(
-              color: isSelected ? chipColor : palette.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(999),
-              border: isSelected
-                  ? null
-                  : Border.all(color: chipColor.withValues(alpha: 0.6)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: Center(
-                child: Text(
-                  labels[index],
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : chipColor,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+          return GestureDetector(
+            onTap: () => onSelected(index),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: isSelected ? chipColor : palette.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(999),
+                border: isSelected
+                    ? null
+                    : Border.all(color: chipColor.withValues(alpha: 0.6)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Center(
+                  child: Text(
+                    labels[index],
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : chipColor,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
