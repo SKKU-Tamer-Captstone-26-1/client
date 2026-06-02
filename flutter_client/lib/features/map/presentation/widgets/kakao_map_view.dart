@@ -1,12 +1,32 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../models/map_place.dart';
+
+// Pre-generated 36x36 circle PNGs (one per layer) — created with Pillow RGBA,
+// ellipse fill, saved as PNG. Avoids K3fCore "unsupported image format" error.
+const _layerIconBase64 = {
+  'bar':
+      'iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAAtElEQVR4nO2YMRaEIAxEM3Moj7eFx/NS2O7blRARwhT+nsx3QsHT7MUH1kn5bMUdvB9dszFSYoQcZ8vcPYuZIj1tMVMmMpOZMpHZzJZpZYQvdRZc0Y6XxVUytUz9lckIlQXrusrWbUgFmhg0MWhi0MSgqQqh8w08gu9s3YYkhbBgbfjJ/GsoUwoXWdory2wJlYxqQzOl4Mx2V4YJUq2Z4cDy8AEX/bjwpcaDtu6clfsd82INTsWaTDxNgvkiAAAAAElFTkSuQmCC',
+  'pub':
+      'iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAAuUlEQVR4nO2YwRGFIAxEw5blpKJfkBUxtqVX5yshIoQ9+K6O2eeGA6PIh02SRvK67NZz/W1Ns1NPiR5yGC3z9N00UqSlLUTKeGYiUsYzG9EytQz3oY4CM9qxsjBLppTJvzIaoTxhXXfZvA2xACEDQgaEDAgZEFYhbbwD9+CczdsQpZBOWJv+ZV4aipTSmyzulUW2pIWMYkMjpdSYba5MB0jVZroD88sLnPfj3IdaX7T15F263zEfUuEAiRxMPBtfCb0AAAAASUVORK5CYII=',
+  'liquor_shop':
+      'iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAAuklEQVR4nO2YwRGFIAxEw9ZjL3T0D3aUXuxHr85XQkQIe/BdHbPPDQdGkQ+bJI3k37Zbz3VdmmannhI95DBa5um7aaRIS1uIlPHMRKSMZzaiZWoZ7kMdBWa0Y2Vhlkwpk39lNEJ5wrrusnkbYgFCBoQMCBkQMiCsQtp4B+7BOZu3IUohnbA2/cu8NBQppTdZ3CuLbEkLGcWGRkqpMdtcmQ6Qqs10B+aXFzjvx7kPtb5o68m7dL9jPqTCAS7kTDynjJbdAAAAAElFTkSuQmCC',
+  'outdoor_spot':
+      'iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAAuUlEQVR4nO2YMRKFIAxEw57SgmP8Y3iMFN5SW+crISKELXytY/a5oWAU+bBJ0kjefrv1XJe1aXbqKdFDDqNlnr6bRoq0tIVIGc9MRMp4ZiNappbhPtRRYEY7VhZmyZQy+VdGI5QnrOsum7chFiBkQMiAkAEhA8IqpI134B6cs3kbohTSCWvTv8xLQ5FSepPFvbLIlrSQUWxopJQas82V6QCp2kx3YH55gfN+nPtQ64u2nrxL9zvmQyocEGxMPBxcYaoAAAAASUVORK5CYII=',
+  'other':
+      'iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAAsklEQVR4nO2YQRKFIAxDS46ag/WqunX+F6gIJQvf1rF5piwYzT7aFBvE3Y/Wc5JDs8tMiRlyWC3z9N2yUmSkLWTKRGYiUyYyG9kyvYzwoc4CO9ppZWGXTC1Tf2UyQr5hXXfZug2pABMDJgZMDJgYMFUhDt6BZ3DN1m1IUogb1safzL+GMqV4k6W9ssyWWMmoNrRSio3ZzZVxgVRvZjjQX17goh8XPtR80daTd+V+x3xYhxO240w86u3sTwAAAABJRU5ErkJggg==',
+};
+
+Uint8List _iconBytesForLayer(String layerCode) {
+  final b64 = _layerIconBase64[layerCode] ?? _layerIconBase64['other']!;
+  return base64Decode(b64);
+}
 
 class KakaoMapView extends StatefulWidget {
   const KakaoMapView({
@@ -15,42 +35,17 @@ class KakaoMapView extends StatefulWidget {
     required this.places,
     required this.onPlaceSelected,
     this.onViewportChanged,
+    this.onMapInteracted,
   });
 
   final LatLng initialPosition;
   final List<MapPlace> places;
   final ValueChanged<MapPlace> onPlaceSelected;
   final void Function(LatLngBounds bounds)? onViewportChanged;
+  final VoidCallback? onMapInteracted;
 
   @override
   State<KakaoMapView> createState() => _KakaoMapViewState();
-}
-
-const _layerColors = {
-  'bar': Color(0xFFFF7E36),
-  'pub': Color(0xFFC4963A),
-  'liquor_shop': Color(0xFF4F7ED4),
-  'outdoor_spot': Color(0xFF5CA874),
-  'restaurant': Color(0xFF9C27B0),
-  'convenience_store': Color(0xFF00BCD4),
-  'other': Color(0xFF9E9E9E),
-};
-
-Future<Uint8List> _makeCircleIcon(Color color, {int size = 36}) async {
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder);
-  final c = Offset(size / 2, size / 2);
-  final r = size / 2 - 3.0;
-  canvas.drawCircle(c, r + 1, Paint()..color = const Color(0x44000000));
-  canvas.drawCircle(c, r, Paint()..color = color);
-  canvas.drawCircle(c, r, Paint()
-    ..color = Colors.white
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 2.5);
-  final picture = recorder.endRecording();
-  final image = await picture.toImage(size, size);
-  final data = await image.toByteData(format: ui.ImageByteFormat.png);
-  return data!.buffer.asUint8List();
 }
 
 class _KakaoMapViewState extends State<KakaoMapView> {
@@ -116,6 +111,7 @@ class _KakaoMapViewState extends State<KakaoMapView> {
     });
 
     _cameraSub = controller.onCameraMoveEndStream.listen((event) {
+      widget.onMapInteracted?.call();
       const halfDeg = 0.05;
       widget.onViewportChanged?.call(LatLngBounds(
         southwest: LatLng(
@@ -147,53 +143,46 @@ class _KakaoMapViewState extends State<KakaoMapView> {
 
   Future<void> _syncMarkers() async {
     final controller = _controller;
-    if (controller == null) {
-      throw StateError('controller not ready');
-    }
+    if (controller == null) throw StateError('controller not ready');
 
     if (!_markerLayerReady) {
-      debugPrint('[KakaoMapView] creating marker layer');
       await controller.addMarkerLayer(
         layerId: KakaoMapController.defaultLabelLayerId,
         clickable: true,
       );
       _markerLayerReady = true;
-      debugPrint('[KakaoMapView] marker layer created');
     }
 
     if (!_stylesRegistered) {
-      debugPrint('[KakaoMapView] registering marker styles');
-      final styles = <MarkerStyle>[];
-      for (final entry in _layerColors.entries) {
-        final bytes = await _makeCircleIcon(entry.value);
-        styles.add(MarkerStyle(
-          styleId: entry.key,
-          perLevels: [MarkerPerLevelStyle.fromBytes(bytes: bytes)],
-        ));
-      }
+      final styles = _layerIconBase64.keys.map((code) {
+        return MarkerStyle(
+          styleId: code,
+          perLevels: [MarkerPerLevelStyle.fromBytes(bytes: _iconBytesForLayer(code))],
+        );
+      }).toList();
       await controller.registerMarkerStyles(styles: styles);
       _stylesRegistered = true;
-      debugPrint('[KakaoMapView] marker styles registered');
     }
 
-    final newPlaces = widget.places
-        .where((p) => !_addedMarkerIds.contains(p.id))
-        .toList();
-    debugPrint('[KakaoMapView] _syncMarkers: ${newPlaces.length} new places (total=${widget.places.length})');
-    if (newPlaces.isEmpty) return;
+    final newIds = widget.places.map((p) => p.id).toSet();
 
-    final options = newPlaces
-        .map((p) => MarkerOption(
-              id: p.id,
-              latLng: LatLng(latitude: p.latitude, longitude: p.longitude),
-              styleId: _layerColors.containsKey(p.layerCode) ? p.layerCode : 'other',
-            ))
-        .toList();
+    final toRemove = _addedMarkerIds.difference(newIds).toList();
+    if (toRemove.isNotEmpty) {
+      await controller.removeMarkers(ids: toRemove);
+      _addedMarkerIds.removeAll(toRemove);
+    }
 
-    debugPrint('[KakaoMapView] calling addMarkers for ${options.length} markers');
+    final toAdd = widget.places.where((p) => !_addedMarkerIds.contains(p.id)).toList();
+    if (toAdd.isEmpty) return;
+
+    final options = toAdd.map((p) => MarkerOption(
+      id: p.id,
+      latLng: LatLng(latitude: p.latitude, longitude: p.longitude),
+      styleId: _layerIconBase64.containsKey(p.layerCode) ? p.layerCode : 'other',
+    )).toList();
+
     await controller.addMarkers(markerOptions: options);
-    debugPrint('[KakaoMapView] addMarkers completed');
-    for (final p in newPlaces) {
+    for (final p in toAdd) {
       _addedMarkerIds.add(p.id);
     }
   }
@@ -242,11 +231,7 @@ class _KakaoMapConfigurationPlaceholder extends StatelessWidget {
               Text(
                 'Run with --dart-define=KAKAO_MAP_API_KEY=... to render the Kakao map engine.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: palette.onSurfaceVariant,
-                  fontSize: 12,
-                  height: 1.4,
-                ),
+                style: TextStyle(color: palette.onSurfaceVariant, fontSize: 12, height: 1.4),
               ),
             ],
           ),
@@ -267,26 +252,23 @@ class _MockMarkerOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final positions = <Alignment>[
-      const Alignment(-0.35, -0.14),
-      const Alignment(0.34, -0.34),
-      const Alignment(0.12, 0.12),
+    const positions = <Alignment>[
+      Alignment(-0.35, -0.14),
+      Alignment(0.34, -0.34),
+      Alignment(0.12, 0.12),
     ];
 
-    return IgnorePointer(
-      ignoring: false,
-      child: Stack(
-        children: [
-          for (var i = 0; i < places.length && i < 3; i++)
-            Align(
-              alignment: positions[i],
-              child: _MockMarkerButton(
-                place: places[i],
-                onPressed: () => onPlaceSelected(places[i]),
-              ),
+    return Stack(
+      children: [
+        for (var i = 0; i < places.length && i < positions.length; i++)
+          Align(
+            alignment: positions[i],
+            child: _MockMarkerButton(
+              place: places[i],
+              onPressed: () => onPlaceSelected(places[i]),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }
