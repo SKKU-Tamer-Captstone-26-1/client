@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
@@ -14,8 +13,6 @@ import '../auth/models/auth_models.dart';
 import '../auth/providers/auth_provider.dart';
 import '../auth/providers/auth_repository_provider.dart';
 import '../location/presentation/location_screen.dart';
-import '../recommendation/data/recommendation_repository.dart';
-import '../recommendation/models/recommendation_models.dart';
 
 class UserPageScreen extends ConsumerWidget {
   const UserPageScreen({
@@ -83,11 +80,14 @@ class UserPageScreen extends ConsumerWidget {
             _MySettingsSection(
               onRetakeSurvey: onRetakeSurvey,
               onLogout: onLogout,
+<<<<<<< HEAD
               isDarkMode: isDarkMode,
               onThemeToggle: onThemeToggle,
               recommendationRepository: recommendationRepository,
               recommendationAuthToken: recommendationAuthToken,
               hasCompletedSurvey: user?.surveyId?.trim().isNotEmpty ?? false,
+=======
+>>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
             ),
           ],
         ),
@@ -136,10 +136,11 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
                         if (newNickname.isEmpty) return;
                         setDialogState(() => isSaving = true);
                         try {
-                          final userId = ref.read(authProvider).userId!;
+                          final authToken =
+                              ref.read(authProvider).accessToken ?? '';
                           final updated = await ref
                               .read(authRepositoryProvider)
-                              .updateProfile(userId, newNickname, '');
+                              .updateProfile(authToken, newNickname, '');
                           if (ctx.mounted) {
                             Navigator.pop(ctx);
                             ref.read(authProvider.notifier).updateUser(updated);
@@ -197,13 +198,12 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
 
     setState(() => _isUploading = true);
     try {
-      final userId = ref.read(authProvider).userId!;
+      final authToken = ref.read(authProvider).accessToken ?? '';
       final nickname = widget.user?.nickname ?? '';
       final repo = ref.read(authRepositoryProvider);
 
-      final (:uploadUrl, :objectUrl) = await repo.generateProfileUploadUrl(
-        userId,
-      );
+      final (:uploadUrl, :objectUrl) =
+          await repo.generateProfileUploadUrl(authToken);
       final uploadRes = await http.put(
         Uri.parse(uploadUrl),
         headers: {'Content-Type': 'image/jpeg'},
@@ -213,7 +213,7 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
         throw Exception('Image upload failed (${uploadRes.statusCode})');
       }
 
-      final updated = await repo.updateProfile(userId, nickname, objectUrl);
+      final updated = await repo.updateProfile(authToken, nickname, objectUrl);
       ref.read(authProvider.notifier).updateUser(updated);
     } catch (e) {
       if (mounted) {
@@ -331,23 +331,10 @@ class _AlcoholScoreCard extends StatelessWidget {
 
   final int alcoholScore;
 
-  static String _titleForScore(int score) {
-    if (score >= 96) return 'Spirytus';
-    if (score >= 75) return 'Overproof';
-    if (score >= 60) return 'Absinthe';
-    if (score >= 40) return 'Whiskey';
-    if (score >= 25) return 'Liqueur';
-    if (score >= 18) return 'Port';
-    if (score >= 12) return 'Wine';
-    if (score >= 5) return 'Beer';
-    return 'Mocktail';
-  }
-
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
     final progress = (alcoholScore / 100.0).clamp(0.0, 1.0);
-    final title = _titleForScore(alcoholScore);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -376,9 +363,9 @@ class _AlcoholScoreCard extends StatelessWidget {
                   color: const Color(0xFFFFDDB9),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: Text(
-                  title,
-                  style: const TextStyle(
+                child: const Text(
+                  'Beer',
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: Color(0xFF663E00),
@@ -511,6 +498,7 @@ class _PointsCard extends StatelessWidget {
 }
 
 class _MySettingsSection extends ConsumerWidget {
+<<<<<<< HEAD
   const _MySettingsSection({
     this.onRetakeSurvey,
     this.onLogout,
@@ -528,10 +516,15 @@ class _MySettingsSection extends ConsumerWidget {
   final RecommendationRepository? recommendationRepository;
   final String recommendationAuthToken;
   final bool hasCompletedSurvey;
+=======
+  const _MySettingsSection({this.onRetakeSurvey, this.onLogout});
+
+  final VoidCallback? onRetakeSurvey;
+  final VoidCallback? onLogout;
+>>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
 
   Future<void> _openLocationUpdate(BuildContext context, WidgetRef ref) async {
-    final userId = ref.read(authProvider).userId;
-    if (userId == null) return;
+    if (ref.read(authProvider).userId == null) return;
 
     String? saved;
     await Navigator.of(context).push<void>(
@@ -548,12 +541,11 @@ class _MySettingsSection extends ConsumerWidget {
 
     if (saved != null && context.mounted) {
       try {
+        final authToken = ref.read(authProvider).accessToken ?? '';
         final updated = await ref
             .read(authRepositoryProvider)
-            .updateNeighborhood(userId, saved!);
-        if (context.mounted) {
-          ref.read(authProvider.notifier).updateUser(updated);
-        }
+            .updateNeighborhood(authToken, saved!);
+        if (context.mounted) ref.read(authProvider.notifier).updateUser(updated);
       } catch (_) {}
     }
   }
@@ -586,6 +578,7 @@ class _MySettingsSection extends ConsumerWidget {
           onTap: () => _openLocationUpdate(context, ref),
         ),
         const SizedBox(height: 12),
+<<<<<<< HEAD
         _ThemeSettingsCard(
           isDarkMode: isDarkMode,
           onThemeToggle: onThemeToggle,
@@ -595,6 +588,15 @@ class _MySettingsSection extends ConsumerWidget {
           repository: recommendationRepository,
           authToken: recommendationAuthToken,
           hasCompletedSurvey: hasCompletedSurvey,
+=======
+        _SettingsCard(
+          icon: Icons.assignment,
+          iconColor: const Color(0xFF825516),
+          iconBgColor: const Color(0xFFE7EFF8),
+          title: 'Taste Profile',
+          subtitle: 'Prefers Whiskey, Gin',
+          actionLabel: 'Retake',
+>>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
           onTap: onRetakeSurvey,
         ),
         const SizedBox(height: 12),
@@ -603,6 +605,7 @@ class _MySettingsSection extends ConsumerWidget {
           iconColor: palette.secondary,
           iconBgColor: palette.surfaceContainerLow,
           title: 'Help & Support',
+<<<<<<< HEAD
           trailing: Icon(Icons.chevron_right, color: palette.secondary),
           onTap: () async {
             final userEmail = ref.read(authProvider).user?.email ?? '';
@@ -618,6 +621,10 @@ class _MySettingsSection extends ConsumerWidget {
               await launchUrl(uri);
             }
           },
+=======
+          trailing: Icon(Icons.chevron_right, color: context.palette.secondary),
+          onTap: () {},
+>>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
         ),
         const SizedBox(height: 12),
         _SettingsCard(
@@ -633,6 +640,7 @@ class _MySettingsSection extends ConsumerWidget {
   }
 }
 
+<<<<<<< HEAD
 class _ThemeSettingsCard extends StatelessWidget {
   const _ThemeSettingsCard({
     required this.isDarkMode,
@@ -775,6 +783,8 @@ class _TasteProfileSettingsCardState extends State<_TasteProfileSettingsCard> {
   }
 }
 
+=======
+>>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
 class _SettingsCard extends StatelessWidget {
   const _SettingsCard({
     required this.icon,

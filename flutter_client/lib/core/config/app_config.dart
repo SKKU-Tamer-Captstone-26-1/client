@@ -9,6 +9,9 @@ const bool kBypassSurvey = bool.fromEnvironment('BYPASS_SURVEY');
 
 const String kKakaoRestApiKey = String.fromEnvironment('KAKAO_REST_API_KEY');
 
+const String kGcsBucket = String.fromEnvironment('GCS_BUCKET', defaultValue: '');
+const String kGcsApiKey = String.fromEnvironment('GCS_API_KEY', defaultValue: '');
+
 const String kSurveyGrpcHost = String.fromEnvironment(
   'SURVEY_GRPC_HOST',
   defaultValue: '10.0.2.2',

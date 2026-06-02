@@ -60,3 +60,6 @@ app.*.map.json
 
 # FVM local SDK link
 .fvm/flutter_sdk
+
+# Local dev config — contains real API keys, never commit
+LOCAL_DEV.md
