@@ -19,10 +19,12 @@ class BoardDetailScreen extends ConsumerStatefulWidget {
     super.key,
     required this.post,
     required this.onBack,
+    required this.onJoinChat,
   });
 
   final BoardPost post;
   final VoidCallback onBack;
+  final Future<void> Function() onJoinChat;
 
   @override
   ConsumerState<BoardDetailScreen> createState() => _BoardDetailScreenState();
@@ -112,6 +114,7 @@ class _BoardDetailScreenState extends ConsumerState<BoardDetailScreen> {
                   hasImage: hasImage,
                   palette: palette,
                   liveCommentCount: liveCommentCount,
+                  onJoinChat: widget.onJoinChat,
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
@@ -209,12 +212,14 @@ class _PostContentCard extends ConsumerStatefulWidget {
     required this.hasImage,
     required this.palette,
     required this.liveCommentCount,
+    required this.onJoinChat,
   });
 
   final BoardPost post;
   final bool hasImage;
   final AppPalette palette;
   final int liveCommentCount;
+  final Future<void> Function() onJoinChat;
 
   @override
   ConsumerState<_PostContentCard> createState() => _PostContentCardState();
@@ -224,12 +229,28 @@ class _PostContentCardState extends ConsumerState<_PostContentCard> {
   late bool _liked;
   late int _likeCount;
   bool _liking = false;
+  bool _joiningChat = false;
 
   @override
   void initState() {
     super.initState();
     _liked = widget.post.isLiked;
     _likeCount = widget.post.favoriteCount;
+  }
+
+  Future<void> _joinChat() async {
+    if (_joiningChat) return;
+    setState(() => _joiningChat = true);
+    try {
+      await widget.onJoinChat();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to join chat: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _joiningChat = false);
+    }
   }
 
   Future<void> _toggleLike() async {
@@ -372,6 +393,40 @@ class _PostContentCardState extends ConsumerState<_PostContentCard> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _joiningChat ? null : _joinChat,
+                icon: _joiningChat
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.chat_bubble_outline, size: 16),
+                label: Text(_joiningChat ? 'Joining...' : 'Join Chat Room'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryContainer,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      AppColors.primaryContainer.withValues(alpha: 0.6),
+                  disabledForegroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  elevation: 0,
+                ),
+              ),
             ),
           ],
         ),

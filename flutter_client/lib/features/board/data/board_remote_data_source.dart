@@ -83,7 +83,7 @@ class GrpcBoardRemoteDataSource implements BoardRemoteDataSource {
   final ClientChannel _channel;
   final BoardServiceClient _client;
 
-  static const _timeout = Duration(seconds: 10);
+  static const _timeout = Duration(seconds: 30);
 
   CallOptions _authOptions(String authToken) => CallOptions(
         metadata: {'authorization': 'Bearer $authToken'},

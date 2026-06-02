@@ -273,6 +273,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
       _AppStage.boardDetail => BoardDetailScreen(
         post: _selectedBoardPost!,
         onBack: () => setState(() => _stage = _AppStage.board),
+        onJoinChat: () => _openBoardChat(_selectedBoardPost!),
       ),
       _AppStage.chat => GroupchatListScreen(
         chatRepository: _chatRepository,
