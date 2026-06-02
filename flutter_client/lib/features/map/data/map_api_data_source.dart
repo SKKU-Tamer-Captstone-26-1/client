@@ -4,12 +4,9 @@ import 'package:http/http.dart' as http;
 
 import '../models/map_place.dart';
 
-// Android emulator: 10.0.2.2 → host machine localhost
-// iOS simulator: 127.0.0.1 works directly
-// Physical device: set MAP_API_BASE_URL to host machine IP
 const _defaultBaseUrl = String.fromEnvironment(
   'MAP_API_BASE_URL',
-  defaultValue: 'http://10.0.2.2:8088',
+  defaultValue: 'http://127.0.0.1:8088',
 );
 
 class MapApiDataSource {
@@ -25,7 +22,7 @@ class MapApiDataSource {
     required double minLat,
     required double maxLon,
     required double maxLat,
-    List<String> layers = const ['bar', 'pub', 'liquor_shop'],
+    List<String> layers = const ['bar', 'pub', 'liquor_shop', 'outdoor_spot'],
     int limit = 500,
     int offset = 0,
   }) async {
