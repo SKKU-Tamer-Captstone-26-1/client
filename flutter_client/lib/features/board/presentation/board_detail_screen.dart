@@ -69,9 +69,9 @@ class _BoardDetailScreenState extends ConsumerState<BoardDetailScreen> {
     } catch (e) {
       if (kDebugMode) debugPrint('COMMENT_CREATE_FAILED: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to post comment: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to post comment: $e')));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -145,7 +145,7 @@ class _BoardDetailScreenState extends ConsumerState<BoardDetailScreen> {
                     padding: EdgeInsets.symmetric(vertical: 32),
                     child: Center(child: CircularProgressIndicator()),
                   ),
-                  error: (_, __) => Padding(
+                  error: (_, _) => Padding(
                     padding: const EdgeInsets.all(24),
                     child: Center(
                       child: Text(
@@ -179,12 +179,13 @@ class _BoardDetailScreenState extends ConsumerState<BoardDetailScreen> {
                     }
                     return Column(
                       children: comments
-                          .map((c) => _CommentThread(
-                                comment: c,
-                                palette: palette,
-                                onReply: (c) =>
-                                    setState(() => _replyingTo = c),
-                              ))
+                          .map(
+                            (c) => _CommentThread(
+                              comment: c,
+                              palette: palette,
+                              onReply: (c) => setState(() => _replyingTo = c),
+                            ),
+                          )
                           .toList(),
                     );
                   },
@@ -245,9 +246,9 @@ class _PostContentCardState extends ConsumerState<_PostContentCard> {
       await widget.onJoinChat();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to join chat: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to join chat: $e')));
     } finally {
       if (mounted) setState(() => _joiningChat = false);
     }
@@ -257,9 +258,9 @@ class _PostContentCardState extends ConsumerState<_PostContentCard> {
     if (_liking) return;
     final authToken = ref.read(authProvider).accessToken ?? '';
     if (authToken.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login required to like.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Login required to like.')));
       return;
     }
     final wasLiked = _liked;
@@ -269,13 +270,22 @@ class _PostContentCardState extends ConsumerState<_PostContentCard> {
       _likeCount += _liked ? 1 : -1;
     });
     try {
-      final result = await ref.read(boardRepositoryProvider).likePost(
-            authToken: authToken,
-            postId: widget.post.boardId,
-          );
-      if (mounted) setState(() { _liked = result.liked; _likeCount = result.likeCount; });
+      final result = await ref
+          .read(boardRepositoryProvider)
+          .likePost(authToken: authToken, postId: widget.post.boardId);
+      if (mounted) {
+        setState(() {
+          _liked = result.liked;
+          _likeCount = result.likeCount;
+        });
+      }
     } catch (_) {
-      if (mounted) setState(() { _liked = wasLiked; _likeCount += wasLiked ? 1 : -1; });
+      if (mounted) {
+        setState(() {
+          _liked = wasLiked;
+          _likeCount += wasLiked ? 1 : -1;
+        });
+      }
     } finally {
       if (mounted) setState(() => _liking = false);
     }
@@ -413,8 +423,8 @@ class _PostContentCardState extends ConsumerState<_PostContentCard> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryContainer,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor:
-                      AppColors.primaryContainer.withValues(alpha: 0.6),
+                  disabledBackgroundColor: AppColors.primaryContainer
+                      .withValues(alpha: 0.6),
                   disabledForegroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
@@ -467,10 +477,7 @@ class _AuthorRow extends StatelessWidget {
               ),
               Text(
                 post.timeAgo,
-                style: TextStyle(
-                  color: palette.footerText,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: palette.footerText, fontSize: 12),
               ),
             ],
           ),
@@ -541,12 +548,14 @@ class _CommentThread extends StatelessWidget {
               padding: const EdgeInsets.only(left: 20, top: 4),
               child: Column(
                 children: comment.replies
-                    .map((r) => _CommentThread(
-                          comment: r,
-                          palette: palette,
-                          onReply: onReply,
-                          depth: depth + 1,
-                        ))
+                    .map(
+                      (r) => _CommentThread(
+                        comment: r,
+                        palette: palette,
+                        onReply: onReply,
+                        depth: depth + 1,
+                      ),
+                    )
                     .toList(),
               ),
             ),
@@ -589,9 +598,9 @@ class _CommentItemState extends ConsumerState<_CommentItem> {
     if (_liking) return;
     final authToken = ref.read(authProvider).accessToken ?? '';
     if (authToken.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login required to like.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Login required to like.')));
       return;
     }
     final wasLiked = _liked;
@@ -601,13 +610,25 @@ class _CommentItemState extends ConsumerState<_CommentItem> {
       _likeCount += _liked ? 1 : -1;
     });
     try {
-      final result = await ref.read(boardRepositoryProvider).likeComment(
+      final result = await ref
+          .read(boardRepositoryProvider)
+          .likeComment(
             authToken: authToken,
             commentId: widget.comment.commentId,
           );
-      if (mounted) setState(() { _liked = result.liked; _likeCount = result.likeCount; });
+      if (mounted) {
+        setState(() {
+          _liked = result.liked;
+          _likeCount = result.likeCount;
+        });
+      }
     } catch (_) {
-      if (mounted) setState(() { _liked = wasLiked; _likeCount += wasLiked ? 1 : -1; });
+      if (mounted) {
+        setState(() {
+          _liked = wasLiked;
+          _likeCount += wasLiked ? 1 : -1;
+        });
+      }
     } finally {
       if (mounted) setState(() => _liking = false);
     }
@@ -654,10 +675,7 @@ class _CommentItemState extends ConsumerState<_CommentItem> {
                 ),
                 Text(
                   comment.timeAgo,
-                  style: TextStyle(
-                    color: palette.footerText,
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: palette.footerText, fontSize: 11),
                 ),
               ],
             ),
@@ -749,11 +767,11 @@ class _PostImagesViewState extends State<_PostImagesView> {
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black,
-        pageBuilder: (_, __, ___) => _FullScreenImageViewer(
+        pageBuilder: (_, _, _) => _FullScreenImageViewer(
           imageUrls: widget.imageUrls,
           initialIndex: initialIndex,
         ),
-        transitionsBuilder: (_, anim, __, child) =>
+        transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
       ),
     );
@@ -862,14 +880,18 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
       if (image == null) {
         color = Colors.white;
       } else {
-        final size = mounted ? MediaQuery.sizeOf(context) : const Size(400, 800);
+        final size = mounted
+            ? MediaQuery.sizeOf(context)
+            : const Size(400, 800);
         final imgAspect = image.width / image.height;
         final vpAspect = size.width / size.height;
         if (imgAspect > vpAspect) {
           // Landscape image: AppBar overlaps black letterbox at top
           color = Colors.white;
         } else {
-          final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+          final byteData = await image.toByteData(
+            format: ui.ImageByteFormat.rawRgba,
+          );
           if (byteData == null) {
             color = Colors.white;
           } else {
@@ -1009,9 +1031,7 @@ class _CommentInputBar extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
-        border: Border(
-          top: BorderSide(color: palette.outlineVariant),
-        ),
+        border: Border(top: BorderSide(color: palette.outlineVariant)),
       ),
       child: SafeArea(
         top: false,

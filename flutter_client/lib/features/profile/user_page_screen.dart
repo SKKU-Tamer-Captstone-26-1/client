@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
@@ -13,6 +14,8 @@ import '../auth/models/auth_models.dart';
 import '../auth/providers/auth_provider.dart';
 import '../auth/providers/auth_repository_provider.dart';
 import '../location/presentation/location_screen.dart';
+import '../recommendation/data/recommendation_repository.dart';
+import '../recommendation/models/recommendation_models.dart';
 
 class UserPageScreen extends ConsumerWidget {
   const UserPageScreen({
@@ -80,14 +83,11 @@ class UserPageScreen extends ConsumerWidget {
             _MySettingsSection(
               onRetakeSurvey: onRetakeSurvey,
               onLogout: onLogout,
-<<<<<<< HEAD
               isDarkMode: isDarkMode,
               onThemeToggle: onThemeToggle,
               recommendationRepository: recommendationRepository,
               recommendationAuthToken: recommendationAuthToken,
               hasCompletedSurvey: user?.surveyId?.trim().isNotEmpty ?? false,
-=======
->>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
             ),
           ],
         ),
@@ -202,8 +202,9 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
       final nickname = widget.user?.nickname ?? '';
       final repo = ref.read(authRepositoryProvider);
 
-      final (:uploadUrl, :objectUrl) =
-          await repo.generateProfileUploadUrl(authToken);
+      final (:uploadUrl, :objectUrl) = await repo.generateProfileUploadUrl(
+        authToken,
+      );
       final uploadRes = await http.put(
         Uri.parse(uploadUrl),
         headers: {'Content-Type': 'image/jpeg'},
@@ -498,7 +499,6 @@ class _PointsCard extends StatelessWidget {
 }
 
 class _MySettingsSection extends ConsumerWidget {
-<<<<<<< HEAD
   const _MySettingsSection({
     this.onRetakeSurvey,
     this.onLogout,
@@ -516,12 +516,6 @@ class _MySettingsSection extends ConsumerWidget {
   final RecommendationRepository? recommendationRepository;
   final String recommendationAuthToken;
   final bool hasCompletedSurvey;
-=======
-  const _MySettingsSection({this.onRetakeSurvey, this.onLogout});
-
-  final VoidCallback? onRetakeSurvey;
-  final VoidCallback? onLogout;
->>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
 
   Future<void> _openLocationUpdate(BuildContext context, WidgetRef ref) async {
     if (ref.read(authProvider).userId == null) return;
@@ -545,7 +539,9 @@ class _MySettingsSection extends ConsumerWidget {
         final updated = await ref
             .read(authRepositoryProvider)
             .updateNeighborhood(authToken, saved!);
-        if (context.mounted) ref.read(authProvider.notifier).updateUser(updated);
+        if (context.mounted) {
+          ref.read(authProvider.notifier).updateUser(updated);
+        }
       } catch (_) {}
     }
   }
@@ -578,7 +574,6 @@ class _MySettingsSection extends ConsumerWidget {
           onTap: () => _openLocationUpdate(context, ref),
         ),
         const SizedBox(height: 12),
-<<<<<<< HEAD
         _ThemeSettingsCard(
           isDarkMode: isDarkMode,
           onThemeToggle: onThemeToggle,
@@ -588,15 +583,6 @@ class _MySettingsSection extends ConsumerWidget {
           repository: recommendationRepository,
           authToken: recommendationAuthToken,
           hasCompletedSurvey: hasCompletedSurvey,
-=======
-        _SettingsCard(
-          icon: Icons.assignment,
-          iconColor: const Color(0xFF825516),
-          iconBgColor: const Color(0xFFE7EFF8),
-          title: 'Taste Profile',
-          subtitle: 'Prefers Whiskey, Gin',
-          actionLabel: 'Retake',
->>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
           onTap: onRetakeSurvey,
         ),
         const SizedBox(height: 12),
@@ -605,7 +591,6 @@ class _MySettingsSection extends ConsumerWidget {
           iconColor: palette.secondary,
           iconBgColor: palette.surfaceContainerLow,
           title: 'Help & Support',
-<<<<<<< HEAD
           trailing: Icon(Icons.chevron_right, color: palette.secondary),
           onTap: () async {
             final userEmail = ref.read(authProvider).user?.email ?? '';
@@ -621,10 +606,6 @@ class _MySettingsSection extends ConsumerWidget {
               await launchUrl(uri);
             }
           },
-=======
-          trailing: Icon(Icons.chevron_right, color: context.palette.secondary),
-          onTap: () {},
->>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
         ),
         const SizedBox(height: 12),
         _SettingsCard(
@@ -640,7 +621,6 @@ class _MySettingsSection extends ConsumerWidget {
   }
 }
 
-<<<<<<< HEAD
 class _ThemeSettingsCard extends StatelessWidget {
   const _ThemeSettingsCard({
     required this.isDarkMode,
@@ -783,8 +763,6 @@ class _TasteProfileSettingsCardState extends State<_TasteProfileSettingsCard> {
   }
 }
 
-=======
->>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
 class _SettingsCard extends StatelessWidget {
   const _SettingsCard({
     required this.icon,
