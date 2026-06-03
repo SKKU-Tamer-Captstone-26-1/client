@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
 
+import 'package:flutter_svg/flutter_svg.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
@@ -29,14 +31,6 @@ const _chipColors = [
   Color(0xFF4F7ED4), // Liquor Shop
   Color(0xFF5CA874), // Outdoor
 ];
-
-IconData _layerIcon(String code) => switch (code) {
-      'bar' => Icons.local_bar,
-      'pub' => Icons.sports_bar,
-      'liquor_shop' => Icons.liquor,
-      'outdoor_spot' => Icons.park,
-      _ => Icons.place,
-    };
 
 Color _layerColor(String code) => switch (code) {
       'bar' => const Color(0xFFFF7E36),
@@ -479,8 +473,15 @@ class _PlaceInfoCard extends StatelessWidget {
                   : Container(
                       width: 72,
                       height: 72,
-                      color: layerColor.withValues(alpha: 0.12),
-                      child: Icon(_layerIcon(place.layerCode), color: layerColor, size: 30),
+                      color: layerColor.withValues(alpha: 0.10),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: SvgPicture.asset(
+                          Theme.of(context).brightness == Brightness.dark
+                              ? 'assets/on-the-block-white.svg'
+                              : 'assets/on-the-block-dark.svg',
+                        ),
+                      ),
                     ),
             ),
             const SizedBox(width: 12),
