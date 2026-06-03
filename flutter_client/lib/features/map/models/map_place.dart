@@ -15,23 +15,30 @@ class MapPlace {
     required this.longitude,
     required this.imageUrl,
     required this.tags,
+    this.isOpenNow,
+    this.openHours = '',
+    this.reviewCount,
   });
 
   factory MapPlace.fromApiMarker(Map<String, dynamic> json) {
     final layerCode = json['layerCode'] as String? ?? 'other';
+    final ratingRaw = json['rating'];
     return MapPlace(
       id: json['id'] as String,
       name: json['label'] as String? ?? '',
       category: _layerLabel(layerCode),
       layerCode: layerCode,
-      address: '',
+      address: json['address'] as String? ?? '',
       distanceLabel: '',
-      rating: '',
+      rating: ratingRaw != null ? ratingRaw.toString() : '',
       status: '',
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
-      imageUrl: '',
+      imageUrl: json['imageUrl'] as String? ?? '',
       tags: const [],
+      isOpenNow: json['isOpen'] as bool?,
+      openHours: json['hours'] as String? ?? '',
+      reviewCount: (json['reviewCount'] as num?)?.toInt(),
     );
   }
 
@@ -59,4 +66,7 @@ class MapPlace {
   final double longitude;
   final String imageUrl;
   final List<String> tags;
+  final bool? isOpenNow;
+  final String openHours;
+  final int? reviewCount;
 }
