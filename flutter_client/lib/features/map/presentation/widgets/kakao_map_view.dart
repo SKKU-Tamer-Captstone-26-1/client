@@ -45,10 +45,10 @@ class KakaoMapView extends StatefulWidget {
   final VoidCallback? onMapInteracted;
 
   @override
-  State<KakaoMapView> createState() => _KakaoMapViewState();
+  State<KakaoMapView> createState() => KakaoMapViewState();
 }
 
-class _KakaoMapViewState extends State<KakaoMapView> {
+class KakaoMapViewState extends State<KakaoMapView> {
   KakaoMapController? _controller;
   StreamSubscription<LabelClickEvent>? _markerClickSub;
   StreamSubscription<CameraMoveEndEvent>? _cameraSub;
@@ -126,6 +126,20 @@ class _KakaoMapViewState extends State<KakaoMapView> {
     });
 
     _syncMarkersWithRetry();
+  }
+
+  Future<void> moveToPlace(MapPlace place) async {
+    final controller = _controller;
+    if (controller == null) return;
+    try {
+      await controller.moveCamera(
+        cameraUpdate: CameraUpdate.fromLatLng(
+          LatLng(latitude: place.latitude, longitude: place.longitude),
+        ),
+      );
+    } catch (e) {
+      debugPrint('[KakaoMapView] moveCamera error: $e');
+    }
   }
 
   Future<void> _syncMarkersWithRetry() async {
