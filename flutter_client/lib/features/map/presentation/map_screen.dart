@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:kakao_maps_flutter/kakao_maps_flutter.dart';
@@ -28,6 +30,14 @@ const _chipColors = [
   Color(0xFF5CA874), // Outdoor
 ];
 
+Color _layerColor(String code) => switch (code) {
+      'bar' => const Color(0xFFFF7E36),
+      'pub' => const Color(0xFFC4963A),
+      'liquor_shop' => const Color(0xFF4F7ED4),
+      'outdoor_spot' => const Color(0xFF5CA874),
+      _ => const Color(0xFF6B6B8A),
+    };
+
 class MapScreen extends StatefulWidget {
   const MapScreen({
     super.key,
@@ -46,6 +56,8 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   final _api = MapApiDataSource();
+  final _mapViewKey = GlobalKey<KakaoMapViewState>();
+  final _searchController = TextEditingController();
 
   LatLng? _initialPosition;
   List<MapPlace> _allPlaces = const [];
@@ -53,6 +65,11 @@ class _MapScreenState extends State<MapScreen> {
   MapPlace? _selectedPlace;
   bool _locationLoading = true;
   bool _markersLoading = false;
+
+  bool _searchActive = false;
+  List<MapPlace> _searchResults = [];
+  bool _searchLoading = false;
+  Timer? _searchDebounce;
 
   List<MapPlace> get _filteredPlaces {
     final layer = _filterLayers[_filterIndex];
@@ -64,6 +81,50 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     _loadInitialPosition();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchDebounce?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    _searchDebounce?.cancel();
+    if (query.trim().isEmpty) {
+      setState(() => _searchResults = []);
+      return;
+    }
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () async {
+      setState(() => _searchLoading = true);
+      try {
+        final results = await _api.searchPlaces(query.trim());
+        if (mounted) setState(() => _searchResults = results);
+      } catch (e) {
+        debugPrint('[MapScreen] search error: $e');
+      } finally {
+        if (mounted) setState(() => _searchLoading = false);
+      }
+    });
+  }
+
+  void _selectSearchResult(MapPlace place) {
+    setState(() {
+      _searchActive = false;
+      _searchResults = [];
+      _selectedPlace = place;
+    });
+    _searchController.clear();
+    _mapViewKey.currentState?.moveToPlace(place);
+  }
+
+  void _dismissSearch() {
+    setState(() {
+      _searchActive = false;
+      _searchResults = [];
+    });
+    _searchController.clear();
   }
 
   Future<void> _loadInitialPosition() async {
@@ -176,6 +237,7 @@ class _MapScreenState extends State<MapScreen> {
               children: [
                 Positioned.fill(
                   child: KakaoMapView(
+                    key: _mapViewKey,
                     initialPosition: _initialPosition!,
                     places: _filteredPlaces,
                     onPlaceSelected: (place) => setState(() => _selectedPlace = place),
@@ -187,7 +249,10 @@ class _MapScreenState extends State<MapScreen> {
                   top: 16,
                   left: 16,
                   right: 16,
-                  child: _MapSearchBar(palette: palette),
+                  child: _MapSearchBar(
+                    palette: palette,
+                    onTap: () => setState(() => _searchActive = true),
+                  ),
                 ),
                 Positioned(
                   top: 80,
@@ -234,6 +299,38 @@ class _MapScreenState extends State<MapScreen> {
                       onDismiss: () => setState(() => _selectedPlace = null),
                     ),
                   ),
+                if (_searchActive) ...[
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: _dismissSearch,
+                      child: const ColoredBox(color: Color(0x80000000)),
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: _SearchHeader(
+                      controller: _searchController,
+                      isLoading: _searchLoading,
+                      onChanged: _onSearchChanged,
+                      onDismiss: _dismissSearch,
+                      palette: palette,
+                    ),
+                  ),
+                  if (_searchResults.isNotEmpty)
+                    Positioned(
+                      top: 80,
+                      left: 16,
+                      right: 16,
+                      bottom: 16,
+                      child: _SearchResultsList(
+                        results: _searchResults,
+                        onResultSelected: _selectSearchResult,
+                        palette: palette,
+                      ),
+                    ),
+                ],
               ],
             ),
     );
@@ -241,12 +338,15 @@ class _MapScreenState extends State<MapScreen> {
 }
 
 class _MapSearchBar extends StatelessWidget {
-  const _MapSearchBar({required this.palette});
+  const _MapSearchBar({required this.palette, this.onTap});
   final AppPalette palette;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    return GestureDetector(
+      onTap: onTap,
+      child: DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
@@ -275,6 +375,7 @@ class _MapSearchBar extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }
@@ -431,6 +532,176 @@ class _PlaceInfoCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchHeader extends StatelessWidget {
+  const _SearchHeader({
+    required this.controller,
+    required this.isLoading,
+    required this.onChanged,
+    required this.onDismiss,
+    required this.palette,
+  });
+
+  final TextEditingController controller;
+  final bool isLoading;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onDismiss;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final topPad = MediaQuery.of(context).padding.top;
+    return Material(
+      color: Colors.transparent,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16, topPad + 16, 16, 0),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: palette.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: palette.outlineVariant),
+            boxShadow: const [
+              BoxShadow(color: Color(0x26000000), blurRadius: 16, offset: Offset(0, 6)),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: onDismiss,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(Icons.arrow_back, size: 22, color: palette.onSurface),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    onChanged: onChanged,
+                    style: TextStyle(color: palette.onSurface, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'Search nearby bars and bottle shops',
+                      hintStyle: TextStyle(
+                        color: palette.secondary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                  ),
+                ),
+                if (isLoading)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primaryContainer,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchResultsList extends StatelessWidget {
+  const _SearchResultsList({
+    required this.results,
+    required this.onResultSelected,
+    required this.palette,
+  });
+
+  final List<MapPlace> results;
+  final ValueChanged<MapPlace> onResultSelected;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: palette.outlineVariant),
+        boxShadow: const [
+          BoxShadow(color: Color(0x26000000), blurRadius: 20, offset: Offset(0, 8)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: ListView.separated(
+          shrinkWrap: true,
+          padding: EdgeInsets.zero,
+          itemCount: results.length,
+          separatorBuilder: (_, _) => Divider(
+            height: 1,
+            thickness: 1,
+            color: palette.outlineVariant,
+          ),
+          itemBuilder: (context, index) {
+            final place = results[index];
+            final color = _layerColor(place.layerCode);
+            return InkWell(
+              onTap: () => onResultSelected(place),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            place.name,
+                            style: TextStyle(
+                              color: palette.onSurface,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            place.category,
+                            style: TextStyle(
+                              color: palette.secondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: palette.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
