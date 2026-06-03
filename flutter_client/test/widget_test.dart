@@ -8,7 +8,8 @@ import 'package:flutter_client/features/auth/data/auth_remote_data_source.dart';
 import 'package:flutter_client/features/auth/data/grpc_gen/auth/v1/auth.pbgrpc.dart';
 import 'package:flutter_client/features/auth/providers/auth_repository_provider.dart';
 import 'package:flutter_client/features/board/data/board_repository.dart';
-import 'package:flutter_client/features/board/data/grpc_gen/board/v1/board.pb.dart' show BoardType;
+import 'package:flutter_client/features/board/data/grpc_gen/board/v1/board.pb.dart'
+    show BoardType;
 import 'package:flutter_client/features/board/data/mock_board_data.dart';
 import 'package:flutter_client/features/board/models/board_models.dart';
 import 'package:flutter_client/features/board/providers/board_repository_provider.dart';
@@ -1238,6 +1239,15 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   Future<CompleteOnboardingResponse> completeOnboarding(String userId) async {
     return CompleteOnboardingResponse()
       ..user = _fakeUser(onboardingCompleted: true);
+  }
+
+  @override
+  Future<GetUserResponse> getUser(String userId) async {
+    return GetUserResponse()
+      ..userId = userId
+      ..nickname = 'Alex Drinkwater'
+      ..profileImageUrl = ''
+      ..alcoholScore = 5;
   }
 
   @override
