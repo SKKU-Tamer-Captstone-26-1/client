@@ -118,8 +118,8 @@ class BoardScreen extends ConsumerWidget {
                       final cardWidth = crossAxisCount == 1
                           ? constraints.maxWidth
                           : (constraints.maxWidth -
-                                    spacing * (crossAxisCount - 1)) /
-                                crossAxisCount;
+                                  spacing * (crossAxisCount - 1)) /
+                              crossAxisCount;
 
                       return Wrap(
                         spacing: spacing,
@@ -219,8 +219,43 @@ class _BoardPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final imageUrl = post.imageUrl;
-    final hasImage = imageUrl != null && imageUrl.trim().isNotEmpty;
+    final hasImage = post.imageUrl != null;
+
+<<<<<<< HEAD
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: palette.outlineVariant.withValues(alpha: 0.52),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x08000000),
+            blurRadius: 10,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (hasImage)
+              SizedBox(
+                height: 164,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    AppNetworkImage(url: imageUrl),
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      child: _CategoryBadge(label: _categoryLabel(post)),
+                    ),
+                  ],
+=======
     final bodyPreview = post.body.length > 100
         ? '${post.body.substring(0, 100)}...'
         : post.body;
@@ -260,6 +295,7 @@ class _BoardPostCard extends StatelessWidget {
                       ),
                     ],
                   ),
+>>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
                 ),
               Padding(
                 padding: EdgeInsets.fromLTRB(20, hasImage ? 18 : 24, 20, 18),
@@ -315,13 +351,19 @@ class _BoardPostCard extends StatelessWidget {
                         ],
                       ),
                     ],
-                    const SizedBox(height: 14),
+<<<<<<< HEAD
+                    const Spacer(),
                     Divider(
-                      height: 1,
+                      height: 24,
                       color: palette.outlineVariant.withValues(alpha: 0.48),
                     ),
-                    const SizedBox(height: 14),
                     _PostMetaRow(post: post, onChatRequested: onChatRequested),
+=======
+                    const SizedBox(height: 14),
+                    const Divider(height: 1, color: Color(0xFFF4F4F5)),
+                    const SizedBox(height: 14),
+                    _PostMetaRow(post: post),
+>>>>>>> d8629a7 (feat: board post creation with image upload, detail view, and GCS config)
                   ],
                 ),
               ),
@@ -362,10 +404,9 @@ class _CategoryBadge extends StatelessWidget {
 }
 
 class _PostMetaRow extends StatelessWidget {
-  const _PostMetaRow({required this.post, this.onChatRequested});
+  const _PostMetaRow({required this.post});
 
   final BoardPost post;
-  final ValueChanged<BoardPost>? onChatRequested;
 
   @override
   Widget build(BuildContext context) {
@@ -396,40 +437,7 @@ class _PostMetaRow extends StatelessWidget {
         _PostMetric(icon: Icons.forum, value: post.commentCount),
         const SizedBox(width: 10),
         _PostMetric(icon: Icons.favorite, value: post.favoriteCount),
-        const SizedBox(width: 8),
-        _BoardChatButton(
-          onPressed: onChatRequested == null
-              ? null
-              : () => onChatRequested!(post),
-        ),
       ],
-    );
-  }
-}
-
-class _BoardChatButton extends StatelessWidget {
-  const _BoardChatButton({this.onPressed});
-
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: 'Open board chat',
-      child: IconButton.filled(
-        onPressed: onPressed,
-        icon: const Icon(Icons.chat_bubble_outline, size: 16),
-        style: IconButton.styleFrom(
-          backgroundColor: AppColors.primaryContainer,
-          disabledBackgroundColor: context.palette.outlineVariant,
-          foregroundColor: Colors.white,
-          disabledForegroundColor: context.palette.secondary,
-          minimumSize: const Size.square(32),
-          fixedSize: const Size.square(32),
-          padding: EdgeInsets.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-      ),
     );
   }
 }

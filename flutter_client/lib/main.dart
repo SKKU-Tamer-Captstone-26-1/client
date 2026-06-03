@@ -30,7 +30,6 @@ import 'features/preference_survey/presentation/survey_intro_screen.dart';
 import 'features/preference_survey/presentation/survey_screen.dart';
 import 'features/profile/profile_setup_screen.dart';
 import 'features/profile/user_page_screen.dart';
-import 'features/recommendation/data/recommendation_grpc_endpoint.dart';
 import 'features/recommendation/data/recommendation_remote_data_source.dart';
 import 'features/recommendation/data/recommendation_repository.dart';
 
@@ -109,7 +108,6 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     _chatRepository =
         widget.chatRepository ?? GrpcChatRepository(GrpcChatRemoteDataSource());
     _chatPushService = widget.chatPushService ?? FirebaseChatPushService();
-    final recommendationEndpoint = RecommendationGrpcEndpoint.fromEnvironment();
     _recommendationRepository =
         widget.recommendationRepository ??
         (widget.enableDefaultRecommendationRepository &&
@@ -147,22 +145,19 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   Future<void> _handleGoogleSignIn() async {
     final session = await ref.read(authRepositoryProvider).googleLogin();
     if (!mounted) return;
-    ref
-        .read(authProvider.notifier)
-        .setSession(
-          accessToken: session.accessToken,
-          refreshToken: session.refreshToken,
-          userId: session.user.userId,
-          user: session.user,
-          isNewUser: session.isNewUser,
-        );
+    ref.read(authProvider.notifier).setSession(
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+      userId: session.user.userId,
+      user: session.user,
+      isNewUser: session.isNewUser,
+    );
     setState(() {
       if (session.isNewUser) {
         _stage = _AppStage.profileSetup;
       } else if (!session.user.onboardingCompleted) {
-        _stage = kBypassSurvey
-            ? _AppStage.locationSetup
-            : _AppStage.surveyIntro;
+        _stage =
+            kBypassSurvey ? _AppStage.locationSetup : _AppStage.surveyIntro;
       } else {
         _stage = _AppStage.home;
       }
@@ -195,16 +190,13 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         userId: ref.read(authProvider).userId ?? '',
         onComplete: () {
           if (kBypassSurvey) {
-            ref
-                .read(authProvider.notifier)
-                .markSurveyCompleted(
-                  surveyId: ref.read(authProvider).user?.surveyId ?? '',
-                );
+            ref.read(authProvider.notifier).markSurveyCompleted(
+              surveyId: ref.read(authProvider).user?.surveyId ?? '',
+            );
           }
           setState(() {
-            _stage = kBypassSurvey
-                ? _AppStage.locationSetup
-                : _AppStage.surveyIntro;
+            _stage =
+                kBypassSurvey ? _AppStage.locationSetup : _AppStage.surveyIntro;
           });
         },
       ),
