@@ -50,4 +50,23 @@ class MapApiDataSource {
     final markers = (body['markers'] as List<dynamic>).cast<Map<String, dynamic>>();
     return markers.map(MapPlace.fromApiMarker).toList();
   }
+
+  Future<List<MapPlace>> searchPlaces(String query) async {
+    final q = query.trim();
+    if (q.isEmpty) return [];
+    final uri = Uri.parse('$_baseUrl/v1/map/search').replace(
+      queryParameters: {'q': q},
+    );
+    final response = await _client.get(uri).timeout(const Duration(seconds: 10));
+    if (response.statusCode != 200) {
+      throw Exception('map-service ${response.statusCode}');
+    }
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    if (body['ok'] != true) {
+      final err = body['error'] as Map<String, dynamic>?;
+      throw Exception('map-service error: ${err?['code']}');
+    }
+    final markers = (body['markers'] as List<dynamic>).cast<Map<String, dynamic>>();
+    return markers.map(MapPlace.fromApiMarker).toList();
+  }
 }
