@@ -30,6 +30,14 @@ const _chipColors = [
   Color(0xFF5CA874), // Outdoor
 ];
 
+IconData _layerIcon(String code) => switch (code) {
+      'bar' => Icons.local_bar,
+      'pub' => Icons.sports_bar,
+      'liquor_shop' => Icons.liquor,
+      'outdoor_spot' => Icons.park,
+      _ => Icons.place,
+    };
+
 Color _layerColor(String code) => switch (code) {
       'bar' => const Color(0xFFFF7E36),
       'pub' => const Color(0xFFC4963A),
@@ -444,10 +452,11 @@ class _PlaceInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final hasImage = place.imageUrl.isNotEmpty;
+    final layerColor = _layerColor(place.layerCode);
     final hasRating = place.rating.isNotEmpty;
-    final hasStatus = place.status.isNotEmpty;
-    final hasDistance = place.distanceLabel.isNotEmpty;
+    final closesAt = place.openHours.isNotEmpty
+        ? place.openHours.split(' - ').last
+        : '';
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -461,15 +470,20 @@ class _PlaceInfoCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (hasImage) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: AppNetworkImage(url: place.imageUrl, width: 80, height: 80),
-              ),
-              const SizedBox(width: 12),
-            ],
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: place.imageUrl.isNotEmpty
+                  ? AppNetworkImage(url: place.imageUrl, width: 72, height: 72)
+                  : Container(
+                      width: 72,
+                      height: 72,
+                      color: layerColor.withValues(alpha: 0.12),
+                      child: Icon(_layerIcon(place.layerCode), color: layerColor, size: 30),
+                    ),
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -477,7 +491,7 @@ class _PlaceInfoCard extends StatelessWidget {
                 children: [
                   Text(
                     place.name,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: palette.onSurface,
@@ -485,33 +499,33 @@ class _PlaceInfoCard extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    [
-                      place.category,
-                      if (hasDistance) place.distanceLabel,
-                    ].join('  ·  '),
-                    style: TextStyle(color: palette.secondary, fontSize: 12),
-                  ),
-                  if (hasStatus) ...[
-                    const SizedBox(height: 4),
+                  if (place.address.isNotEmpty) ...[
+                    const SizedBox(height: 2),
                     Text(
-                      place.status,
-                      style: const TextStyle(
-                        color: AppColors.primaryContainer,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      place.address,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: palette.secondary, fontSize: 12),
                     ),
                   ],
-                  if (hasRating) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.star, size: 14, color: AppColors.primaryContainer),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      if (place.isOpenNow != null) ...[
+                        _OpenBadge(
+                          isOpen: place.isOpenNow!,
+                          closesAt: place.isOpenNow! ? closesAt : '',
+                          palette: palette,
+                        ),
+                        if (hasRating) const SizedBox(width: 8),
+                      ],
+                      if (hasRating) ...[
+                        const Icon(Icons.star_rounded, size: 13, color: AppColors.primaryContainer),
                         const SizedBox(width: 2),
                         Text(
-                          place.rating,
+                          place.reviewCount != null
+                              ? '${place.rating}  (${place.reviewCount})'
+                              : place.rating,
                           style: const TextStyle(
                             color: AppColors.primaryContainer,
                             fontSize: 12,
@@ -519,8 +533,8 @@ class _PlaceInfoCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -533,6 +547,32 @@ class _PlaceInfoCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _OpenBadge extends StatelessWidget {
+  const _OpenBadge({required this.isOpen, required this.closesAt, required this.palette});
+  final bool isOpen;
+  final String closesAt;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = isOpen
+        ? (closesAt.isNotEmpty ? '영업 중 · $closesAt까지' : '영업 중')
+        : '영업 종료';
+    final color = isOpen ? const Color(0xFF5CA874) : palette.secondary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
       ),
     );
   }
