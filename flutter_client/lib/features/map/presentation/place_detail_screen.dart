@@ -128,7 +128,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   Widget _buildTypeSection(AppPalette palette) {
     return switch (widget.place.layerCode) {
       'bar' || 'pub' => Column(children: [
-          _MenuSection(palette: palette),
+          _MenuSection(place: widget.place, palette: palette),
           const SizedBox(height: 8),
           _ReviewsSection(palette: palette),
         ]),
@@ -459,18 +459,37 @@ class _SectionShell extends StatelessWidget {
 
 // ─── Menu Section (Bar / Pub) ────────────────────────────────────────────────
 
-const _mockMenuItems = [
-  ('Old Fashioned', 'Artisan bitters, hand-carved ice', '18,000'),
-  ('Villa Signature', 'Smoked rosemary, proprietary gin blend', '22,000'),
-  ('Macallan 18yo', 'Single malt, Sherry Oak cask', '35,000'),
-];
-
 class _MenuSection extends StatelessWidget {
-  const _MenuSection({required this.palette});
+  const _MenuSection({required this.place, required this.palette});
+  final MapPlace place;
   final AppPalette palette;
 
   @override
   Widget build(BuildContext context) {
+    final items = place.menu;
+
+    if (items.isEmpty) {
+      return _SectionShell(
+        title: 'Menu',
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: palette.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: palette.outlineVariant),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Text(
+                '등록된 메뉴가 없습니다.',
+                style: TextStyle(color: palette.secondary, fontSize: 13),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return _SectionShell(
       title: 'Menu',
       child: DecoratedBox(
@@ -481,7 +500,7 @@ class _MenuSection extends StatelessWidget {
         ),
         child: Column(
           children: [
-            for (var i = 0; i < _mockMenuItems.length; i++) ...[
+            for (var i = 0; i < items.length; i++) ...[
               if (i > 0)
                 Divider(height: 1, thickness: 1, color: palette.outlineVariant),
               Padding(
@@ -493,30 +512,34 @@ class _MenuSection extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _mockMenuItems[i].$1,
+                            items[i].name,
                             style: TextStyle(
                               color: palette.onSurface,
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _mockMenuItems[i].$2,
-                            style: TextStyle(color: palette.secondary, fontSize: 12),
-                          ),
+                          if (items[i].desc.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              items[i].desc,
+                              style: TextStyle(color: palette.secondary, fontSize: 12),
+                            ),
+                          ],
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      '₩${_mockMenuItems[i].$3}',
-                      style: const TextStyle(
-                        color: AppColors.primaryContainer,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                    if (items[i].formattedPrice.isNotEmpty) ...[
+                      const SizedBox(width: 12),
+                      Text(
+                        items[i].formattedPrice,
+                        style: const TextStyle(
+                          color: AppColors.primaryContainer,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
