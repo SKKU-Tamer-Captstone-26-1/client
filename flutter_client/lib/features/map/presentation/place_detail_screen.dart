@@ -5,7 +5,8 @@ import '../../../core/theme/app_colors.dart';
 import '../models/map_inventory_item.dart';
 import '../models/map_place.dart';
 
-const _heroHeight = 300.0;
+const _heroHeight = 220.0;
+const _cardBarHeight = 162.0;
 
 Color _categoryColor(String code) => switch (code) {
       'bar' => const Color(0xFFFF7E36),
@@ -105,8 +106,13 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   onPressed: () {},
                 ),
             ],
+            bottom: _CoreInfoCardBar(
+              place: place,
+              catColor: catColor,
+              palette: palette,
+            ),
             flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
+              collapseMode: CollapseMode.parallax,
               background: _HeroSection(place: place, catColor: catColor),
             ),
           ),
@@ -114,7 +120,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _CoreInfoCard(place: place, catColor: catColor, palette: palette),
                 _buildTypeSection(palette),
                 SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
               ],
@@ -214,18 +219,17 @@ class _HeroSectionState extends State<_HeroSection> {
           ),
         ),
 
-        // ── Bottom fade to surface (only when no image) ──
-        if (urls.isEmpty)
-          DecoratedBox(
+        // ── Bottom fade → blends into the pinned card below ──
+        DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  context.palette.surfaceContainerLow,
+                  context.palette.surfaceContainerLowest.withValues(alpha: urls.isEmpty ? 1.0 : 0.85),
                 ],
-                stops: const [0.45, 1.0],
+                stops: const [0.5, 1.0],
               ),
             ),
           ),
@@ -258,6 +262,30 @@ class _HeroSectionState extends State<_HeroSection> {
   }
 }
 
+// ─── Core Info Card Bar (PreferredSizeWidget — always pinned in SliverAppBar) ─
+
+class _CoreInfoCardBar extends StatelessWidget implements PreferredSizeWidget {
+  const _CoreInfoCardBar({
+    required this.place,
+    required this.catColor,
+    required this.palette,
+  });
+  final MapPlace place;
+  final Color catColor;
+  final AppPalette palette;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(_cardBarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: palette.surfaceContainerLow,
+      child: _CoreInfoCard(place: place, catColor: catColor, palette: palette),
+    );
+  }
+}
+
 // ─── Core Info Card ─────────────────────────────────────────────────────────
 
 class _CoreInfoCard extends StatelessWidget {
@@ -278,18 +306,17 @@ class _CoreInfoCard extends StatelessWidget {
         : '';
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      transform: Matrix4.translationValues(0, -28, 0),
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: palette.outlineVariant),
         boxShadow: const [
-          BoxShadow(color: Color(0x26000000), blurRadius: 20, offset: Offset(0, 8)),
+          BoxShadow(color: Color(0x1A000000), blurRadius: 12, offset: Offset(0, 4)),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -364,7 +391,7 @@ class _CoreInfoCard extends StatelessWidget {
                 ],
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             if (place.isOpenNow != null) ...[
               Row(
                 children: [
@@ -504,9 +531,30 @@ class _MenuSection extends StatelessWidget {
               if (i > 0)
                 Divider(height: 1, thickness: 1, color: palette.outlineVariant),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
+                    if (items[i].imageUrl.isNotEmpty) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          items[i].imageUrl,
+                          width: 64,
+                          height: 64,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: palette.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.restaurant_menu, color: palette.secondary, size: 24),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
