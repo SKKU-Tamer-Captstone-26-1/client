@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../models/map_inventory_item.dart';
 import '../models/map_place.dart';
 
 const _heroHeight = 300.0;
@@ -131,7 +132,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           const SizedBox(height: 8),
           _ReviewsSection(palette: palette),
         ]),
-      'liquor_shop' => _LiquorsSection(palette: palette),
+      'liquor_shop' => _LiquorsSection(place: widget.place, palette: palette),
       'outdoor_spot' => _LocationSection(palette: palette),
       _ => _ReviewsSection(palette: palette),
     };
@@ -640,18 +641,37 @@ class _ReviewCard extends StatelessWidget {
 
 // ─── Liquors Section (Liquor Shop) ───────────────────────────────────────────
 
-const _mockLiquors = [
-  ('The Macallan 12yo Double Cask', '128,000'),
-  ('Balvenie 12yo Double Wood', '115,000'),
-  ('Hibiki Japanese Harmony', '189,000'),
-];
-
 class _LiquorsSection extends StatelessWidget {
-  const _LiquorsSection({required this.palette});
+  const _LiquorsSection({required this.place, required this.palette});
+  final MapPlace place;
   final AppPalette palette;
 
   @override
   Widget build(BuildContext context) {
+    final items = place.inventory;
+
+    if (items.isEmpty) {
+      return _SectionShell(
+        title: 'Available Liquors',
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: palette.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: palette.outlineVariant),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Text(
+                '등록된 재고 정보가 없습니다.',
+                style: TextStyle(color: palette.secondary, fontSize: 13),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return _SectionShell(
       title: 'Available Liquors',
       child: DecoratedBox(
@@ -662,70 +682,86 @@ class _LiquorsSection extends StatelessWidget {
         ),
         child: Column(
           children: [
-            for (var i = 0; i < _mockLiquors.length; i++) ...[
+            for (var i = 0; i < items.length; i++) ...[
               if (i > 0)
                 Divider(height: 1, thickness: 1, color: palette.outlineVariant),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: palette.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(Icons.liquor, color: palette.secondary, size: 28),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _mockLiquors[i].$1,
-                            style: TextStyle(
-                              color: palette.onSurface,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '₩${_mockLiquors[i].$2}',
-                            style: const TextStyle(
-                              color: AppColors.primaryContainer,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        backgroundColor: AppColors.primaryContainer,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text('담기 +', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                    ),
-                  ],
-                ),
-              ),
+              _LiquorRow(item: items[i], palette: palette),
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _LiquorRow extends StatelessWidget {
+  const _LiquorRow({required this.item, required this.palette});
+  final MapInventoryItem item;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: palette.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(Icons.liquor, color: palette.secondary, size: 28),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.displayName,
+                  style: TextStyle(
+                    color: palette.onSurface,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (item.formattedPrice.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    item.formattedPrice,
+                    style: const TextStyle(
+                      color: AppColors.primaryContainer,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          TextButton(
+            onPressed: () {},
+            style: TextButton.styleFrom(
+              backgroundColor: AppColors.primaryContainer,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              '담기 +',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
       ),
     );
   }
