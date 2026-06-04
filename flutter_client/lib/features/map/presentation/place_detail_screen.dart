@@ -140,31 +140,69 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
 // ─── Hero ───────────────────────────────────────────────────────────────────
 
-class _HeroSection extends StatelessWidget {
+class _HeroSection extends StatefulWidget {
   const _HeroSection({required this.place, required this.catColor});
   final MapPlace place;
   final Color catColor;
 
   @override
+  State<_HeroSection> createState() => _HeroSectionState();
+}
+
+class _HeroSectionState extends State<_HeroSection> {
+  final _pageCtrl = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final urls = widget.place.imageUrls;
+
     return Stack(
       fit: StackFit.expand,
       children: [
-        place.imageUrl.isNotEmpty
-            ? Image.network(place.imageUrl, fit: BoxFit.cover)
-            : Container(
-                color: catColor.withValues(alpha: 0.14),
+        // ── Images or logo placeholder ──
+        if (urls.isEmpty)
+          Container(
+            color: widget.catColor.withValues(alpha: 0.14),
+            child: Center(
+              child: SvgPicture.asset(
+                isDark
+                    ? 'assets/on-the-block-white.svg'
+                    : 'assets/on-the-block-dark.svg',
+                width: 130,
+              ),
+            ),
+          )
+        else
+          PageView.builder(
+            controller: _pageCtrl,
+            itemCount: urls.length,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            itemBuilder: (_, i) => Image.network(
+              urls[i],
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Container(
+                color: widget.catColor.withValues(alpha: 0.14),
                 child: Center(
                   child: SvgPicture.asset(
                     isDark
                         ? 'assets/on-the-block-white.svg'
                         : 'assets/on-the-block-dark.svg',
-                    width: 130,
+                    width: 100,
                   ),
                 ),
               ),
-        // Top gradient (keeps back/share icons readable)
+            ),
+          ),
+
+        // ── Top gradient (icons readable over image) ──
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -174,6 +212,30 @@ class _HeroSection extends StatelessWidget {
             ),
           ),
         ),
+
+        // ── Dot indicators ──
+        if (urls.length > 1)
+          Positioned(
+            bottom: 14,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(urls.length, (i) {
+                final active = i == _currentPage;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: active ? 20 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: active ? 1.0 : 0.5),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                );
+              }),
+            ),
+          ),
       ],
     );
   }
