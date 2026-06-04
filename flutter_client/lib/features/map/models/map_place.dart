@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'map_inventory_item.dart';
+import 'map_menu_item.dart';
 
 @immutable
 class MapPlace {
@@ -21,6 +22,7 @@ class MapPlace {
     this.openHours = '',
     this.reviewCount,
     this.inventory = const [],
+    this.menu = const [],
   });
 
   factory MapPlace.fromApiMarker(Map<String, dynamic> json) {
@@ -51,6 +53,11 @@ class MapPlace {
       inventory: (json['inventory'] as List<dynamic>?)
               ?.whereType<Map<String, dynamic>>()
               .map(MapInventoryItem.fromJson)
+              .toList() ??
+          const [],
+      menu: (json['menu'] as List<dynamic>?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(MapMenuItem.fromJson)
               .toList() ??
           const [],
     );
@@ -84,6 +91,7 @@ class MapPlace {
   final String openHours;
   final int? reviewCount;
   final List<MapInventoryItem> inventory;
+  final List<MapMenuItem> menu;
 
   String get imageUrl => imageUrls.isNotEmpty ? imageUrls.first : '';
 }
