@@ -13,6 +13,7 @@ import '../../../shared/widgets/app_network_image.dart';
 import '../../../shared/widgets/app_top_app_bar.dart';
 import '../data/map_api_data_source.dart';
 import '../models/map_place.dart';
+import 'place_detail_screen.dart';
 import 'widgets/kakao_map_view.dart';
 
 const _fallbackPosition = LatLng(
@@ -299,6 +300,12 @@ class _MapScreenState extends State<MapScreen> {
                     child: _PlaceInfoCard(
                       place: _selectedPlace!,
                       onDismiss: () => setState(() => _selectedPlace = null),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PlaceDetailScreen(place: _selectedPlace!),
+                        ),
+                      ),
                     ),
                   ),
                 if (_searchActive) ...[
@@ -439,9 +446,10 @@ class _MapFilterChips extends StatelessWidget {
 }
 
 class _PlaceInfoCard extends StatelessWidget {
-  const _PlaceInfoCard({required this.place, required this.onDismiss});
+  const _PlaceInfoCard({required this.place, required this.onDismiss, this.onTap});
   final MapPlace place;
   final VoidCallback onDismiss;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -452,7 +460,9 @@ class _PlaceInfoCard extends StatelessWidget {
         ? place.openHours.split(' - ').last
         : '';
 
-    return DecoratedBox(
+    return GestureDetector(
+      onTap: onTap,
+      child: DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(24),
@@ -549,6 +559,7 @@ class _PlaceInfoCard extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 }
