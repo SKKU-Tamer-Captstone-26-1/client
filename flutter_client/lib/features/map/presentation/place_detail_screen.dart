@@ -115,7 +115,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               children: [
                 _CoreInfoCard(place: place, catColor: catColor, palette: palette),
                 _buildTypeSection(palette),
-                const SizedBox(height: 40),
+                SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
               ],
             ),
           ),
@@ -212,6 +212,22 @@ class _HeroSectionState extends State<_HeroSection> {
             ),
           ),
         ),
+
+        // ── Bottom fade to surface (only when no image) ──
+        if (urls.isEmpty)
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  context.palette.surfaceContainerLow,
+                ],
+                stops: const [0.45, 1.0],
+              ),
+            ),
+          ),
 
         // ── Dot indicators ──
         if (urls.length > 1)
