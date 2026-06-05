@@ -660,7 +660,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
                 padding: const EdgeInsets.all(20),
                 child: Center(
                   child: Text(
-                    '아직 리뷰가 없습니다. 첫 리뷰를 남겨보세요!',
+                    'No reviews yet. Be the first to share your thoughts!',
                     style: TextStyle(color: palette.secondary, fontSize: 13),
                     textAlign: TextAlign.center,
                   ),
@@ -794,12 +794,12 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
       widget.onReviewAdded(review);
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('리뷰가 등록됐습니다.')),
+        const SnackBar(content: Text('Review submitted successfully.')),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('리뷰 등록에 실패했습니다. 다시 시도해주세요.')),
+        const SnackBar(content: Text('Failed to submit review. Please try again.')),
       );
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -834,7 +834,7 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
           ),
           const SizedBox(height: 20),
           Text(
-            '리뷰 작성',
+            'Write a Review',
             style: TextStyle(
               color: palette.onSurface,
               fontSize: 18,
@@ -863,7 +863,7 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
             controller: _bodyCtrl,
             maxLines: 4,
             decoration: InputDecoration(
-              hintText: '이 장소에 대한 리뷰를 작성해주세요.',
+              hintText: 'Share your experience at this place.',
               hintStyle: TextStyle(color: palette.secondary, fontSize: 14),
               filled: true,
               fillColor: palette.surfaceContainerLow,
@@ -907,7 +907,7 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
                       ),
                     )
                   : const Text(
-                      '리뷰 등록',
+                      'Submit Review',
                       style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
             ),
