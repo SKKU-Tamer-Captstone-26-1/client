@@ -4,8 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../collection/data/collection_repository.dart';
 import '../../collection/data/stub_collection_repository.dart';
+import '../data/map_api_data_source.dart';
 import '../models/map_inventory_item.dart';
 import '../models/map_place.dart';
+import '../models/map_review.dart';
 
 const _heroHeight = 280.0;
 
@@ -135,7 +137,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       'bar' || 'pub' => Column(children: [
           _MenuSection(place: widget.place, palette: palette),
           const SizedBox(height: 8),
-          _ReviewsSection(palette: palette),
+          _ReviewsSection(place: widget.place, palette: palette),
         ]),
       'liquor_shop' => _LiquorsSection(
           place: widget.place,
@@ -143,7 +145,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           collection: _collection,
         ),
       'outdoor_spot' => _LocationSection(palette: palette),
-      _ => _ReviewsSection(palette: palette),
+      _ => _ReviewsSection(place: widget.place, palette: palette),
     };
   }
 }
@@ -600,21 +602,43 @@ class _MenuSection extends StatelessWidget {
 
 // ─── Reviews Section (Bar / Pub) ─────────────────────────────────────────────
 
-const _mockReviews = [
-  ('J', '5', '"Great atmosphere for whiskey lovers. The playlist is as good as the spirits."', '2일 전'),
-  ('M', '4', '"시그니처 칵테일이 정말 독특하고 맛있어요. 인테리어도 고급스러워서 데이트하기 좋은 곳입니다."', '1주 전'),
-];
-
-class _ReviewsSection extends StatelessWidget {
-  const _ReviewsSection({required this.palette});
+class _ReviewsSection extends StatefulWidget {
+  const _ReviewsSection({required this.place, required this.palette});
+  final MapPlace place;
   final AppPalette palette;
 
   @override
+  State<_ReviewsSection> createState() => _ReviewsSectionState();
+}
+
+class _ReviewsSectionState extends State<_ReviewsSection> {
+  late final List<MapReview> _reviews;
+
+  @override
+  void initState() {
+    super.initState();
+    _reviews = List.of(widget.place.reviews);
+  }
+
+  void _onReviewAdded(MapReview review) {
+    setState(() => _reviews.insert(0, review));
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final palette = widget.palette;
     return _SectionShell(
       title: 'Reviews',
       trailing: TextButton(
-        onPressed: () => _showAddReview(context),
+        onPressed: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => _AddReviewSheet(
+            placeId: widget.place.id,
+            onReviewAdded: _onReviewAdded,
+          ),
+        ),
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primaryContainer,
           padding: EdgeInsets.zero,
@@ -625,45 +649,39 @@ class _ReviewsSection extends StatelessWidget {
           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
         ),
       ),
-      child: Column(
-        children: [
-          for (final r in _mockReviews) ...[
-            _ReviewCard(
-              initial: r.$1,
-              stars: int.parse(r.$2),
-              body: r.$3,
-              when: r.$4,
-              palette: palette,
+      child: _reviews.isEmpty
+          ? DecoratedBox(
+              decoration: BoxDecoration(
+                color: palette.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: palette.outlineVariant),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Center(
+                  child: Text(
+                    '아직 리뷰가 없습니다. 첫 리뷰를 남겨보세요!',
+                    style: TextStyle(color: palette.secondary, fontSize: 13),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            )
+          : Column(
+              children: [
+                for (final r in _reviews) ...[
+                  _ReviewCard(review: r, palette: palette),
+                  const SizedBox(height: 10),
+                ],
+              ],
             ),
-            const SizedBox(height: 10),
-          ],
-        ],
-      ),
-    );
-  }
-
-  void _showAddReview(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const _AddReviewSheet(),
     );
   }
 }
 
 class _ReviewCard extends StatelessWidget {
-  const _ReviewCard({
-    required this.initial,
-    required this.stars,
-    required this.body,
-    required this.when,
-    required this.palette,
-  });
-  final String initial;
-  final int stars;
-  final String body;
-  final String when;
+  const _ReviewCard({required this.review, required this.palette});
+  final MapReview review;
   final AppPalette palette;
 
   @override
@@ -685,7 +703,7 @@ class _ReviewCard extends StatelessWidget {
                   radius: 18,
                   backgroundColor: palette.surfaceContainerLow,
                   child: Text(
-                    initial,
+                    review.author.isNotEmpty ? review.author[0].toUpperCase() : '?',
                     style: TextStyle(
                       color: palette.onSurface,
                       fontSize: 13,
@@ -693,24 +711,38 @@ class _ReviewCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
+                Text(
+                  review.author,
+                  style: TextStyle(
+                    color: palette.onSurface,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Row(
                   children: List.generate(
                     5,
                     (i) => Icon(
                       Icons.star_rounded,
                       size: 13,
-                      color: i < stars ? AppColors.primaryContainer : palette.outlineVariant,
+                      color: i < review.rating
+                          ? AppColors.primaryContainer
+                          : palette.outlineVariant,
                     ),
                   ),
                 ),
                 const Spacer(),
-                Text(when, style: TextStyle(color: palette.secondary, fontSize: 11)),
+                Text(
+                  review.dateLabel,
+                  style: TextStyle(color: palette.secondary, fontSize: 11),
+                ),
               ],
             ),
             const SizedBox(height: 10),
             Text(
-              body,
+              review.body,
               style: TextStyle(
                 color: palette.onSurfaceVariant,
                 fontSize: 13,
@@ -728,7 +760,9 @@ class _ReviewCard extends StatelessWidget {
 // ─── Add Review Bottom Sheet ──────────────────────────────────────────────────
 
 class _AddReviewSheet extends StatefulWidget {
-  const _AddReviewSheet();
+  const _AddReviewSheet({required this.placeId, required this.onReviewAdded});
+  final String placeId;
+  final ValueChanged<MapReview> onReviewAdded;
 
   @override
   State<_AddReviewSheet> createState() => _AddReviewSheetState();
@@ -736,25 +770,54 @@ class _AddReviewSheet extends StatefulWidget {
 
 class _AddReviewSheetState extends State<_AddReviewSheet> {
   int _rating = 0;
-  final _ctrl = TextEditingController();
+  bool _submitting = false;
+  final _bodyCtrl = TextEditingController();
+  final _api = MapApiDataSource();
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    _bodyCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_rating == 0 || _submitting) return;
+    setState(() => _submitting = true);
+    try {
+      final review = await _api.submitReview(
+        markerId: widget.placeId,
+        author: '익명',
+        rating: _rating,
+        reviewBody: _bodyCtrl.text.trim(),
+      );
+      if (!mounted) return;
+      widget.onReviewAdded(review);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('리뷰가 등록됐습니다.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('리뷰 등록에 실패했습니다. 다시 시도해주세요.')),
+      );
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final systemBottom = MediaQuery.of(context).padding.bottom;
 
     return Container(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset + systemBottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -779,7 +842,6 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          // Star rating
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (i) {
@@ -797,9 +859,8 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
             }),
           ),
           const SizedBox(height: 20),
-          // Review text field
           TextField(
-            controller: _ctrl,
+            controller: _bodyCtrl,
             maxLines: 4,
             decoration: InputDecoration(
               hintText: '이 장소에 대한 리뷰를 작성해주세요.',
@@ -826,14 +887,7 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _rating > 0
-                  ? () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('리뷰가 등록됐습니다.')),
-                      );
-                    }
-                  : null,
+              onPressed: (_rating > 0 && !_submitting) ? _submit : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryContainer,
                 foregroundColor: Colors.white,
@@ -843,10 +897,19 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
-                '리뷰 등록',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-              ),
+              child: _submitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      '리뷰 등록',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                    ),
             ),
           ),
         ],
