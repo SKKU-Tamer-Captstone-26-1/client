@@ -771,6 +771,7 @@ class _AddReviewSheet extends StatefulWidget {
 class _AddReviewSheetState extends State<_AddReviewSheet> {
   int _rating = 0;
   bool _submitting = false;
+  String? _errorMessage;
   final _bodyCtrl = TextEditingController();
   final _api = MapApiDataSource();
 
@@ -782,7 +783,11 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
 
   Future<void> _submit() async {
     if (_rating == 0 || _submitting) return;
-    setState(() => _submitting = true);
+    if (_bodyCtrl.text.trim().isEmpty) {
+      setState(() => _errorMessage = 'Please write your review before submitting.');
+      return;
+    }
+    setState(() { _submitting = true; _errorMessage = null; });
     try {
       final review = await _api.submitReview(
         markerId: widget.placeId,
@@ -793,14 +798,9 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
       if (!mounted) return;
       widget.onReviewAdded(review);
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Review submitted successfully.')),
-      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to submit review. Please try again.')),
-      );
+      setState(() => _errorMessage = 'Failed to submit. Please try again.');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -883,6 +883,25 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
             ),
             style: TextStyle(color: palette.onSurface, fontSize: 14),
           ),
+          if (_rating == 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Center(
+                child: Text(
+                  'Tap a star to rate',
+                  style: TextStyle(color: palette.secondary, fontSize: 12),
+                ),
+              ),
+            ),
+          if (_errorMessage != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                _errorMessage!,
+                style: const TextStyle(color: Color(0xFFBA1A1A), fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
