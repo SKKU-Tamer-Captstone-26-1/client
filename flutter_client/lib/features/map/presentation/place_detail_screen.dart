@@ -374,7 +374,7 @@ class _CoreInfoCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    place.isOpenNow! ? '영업 중' : '영업 종료',
+                    place.isOpenNow! ? 'Open Now' : 'Closed',
                     style: TextStyle(
                       color: place.isOpenNow!
                           ? const Color(0xFF4CAF50)

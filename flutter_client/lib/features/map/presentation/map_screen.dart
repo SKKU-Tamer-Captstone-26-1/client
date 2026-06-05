@@ -573,8 +573,8 @@ class _OpenBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = isOpen
-        ? (closesAt.isNotEmpty ? '영업 중 · $closesAt까지' : '영업 중')
-        : '영업 종료';
+        ? (closesAt.isNotEmpty ? 'Open · until $closesAt' : 'Open Now')
+        : 'Closed';
     final color = isOpen ? const Color(0xFF5CA874) : palette.secondary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
