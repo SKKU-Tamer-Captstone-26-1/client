@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'map_inventory_item.dart';
 import 'map_menu_item.dart';
+import 'map_review.dart';
 
 @immutable
 class MapPlace {
@@ -23,6 +24,7 @@ class MapPlace {
     this.reviewCount,
     this.inventory = const [],
     this.menu = const [],
+    this.reviews = const [],
   });
 
   factory MapPlace.fromApiMarker(Map<String, dynamic> json) {
@@ -60,6 +62,11 @@ class MapPlace {
               .map(MapMenuItem.fromJson)
               .toList() ??
           const [],
+      reviews: (json['reviews'] as List<dynamic>?)
+              ?.whereType<Map<String, dynamic>>()
+              .map(MapReview.fromJson)
+              .toList() ??
+          const [],
     );
   }
 
@@ -92,6 +99,7 @@ class MapPlace {
   final int? reviewCount;
   final List<MapInventoryItem> inventory;
   final List<MapMenuItem> menu;
+  final List<MapReview> reviews;
 
   String get imageUrl => imageUrls.isNotEmpty ? imageUrls.first : '';
 }
