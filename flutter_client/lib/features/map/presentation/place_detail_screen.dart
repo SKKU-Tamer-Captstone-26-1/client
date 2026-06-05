@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../collection/data/collection_repository.dart';
+import '../../collection/data/stub_collection_repository.dart';
 import '../models/map_inventory_item.dart';
 import '../models/map_place.dart';
 
@@ -33,6 +35,9 @@ class PlaceDetailScreen extends StatefulWidget {
 
 class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   final _scrollCtrl = ScrollController();
+  // Replace StubCollectionRepository with a real implementation once
+  // collection-service is available.
+  final CollectionRepository _collection = const StubCollectionRepository();
   bool _heroVisible = true;
 
   @override
@@ -132,7 +137,11 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           const SizedBox(height: 8),
           _ReviewsSection(palette: palette),
         ]),
-      'liquor_shop' => _LiquorsSection(place: widget.place, palette: palette),
+      'liquor_shop' => _LiquorsSection(
+          place: widget.place,
+          palette: palette,
+          collection: _collection,
+        ),
       'outdoor_spot' => _LocationSection(palette: palette),
       _ => _ReviewsSection(palette: palette),
     };
@@ -849,9 +858,14 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
 // ─── Liquors Section (Liquor Shop) ───────────────────────────────────────────
 
 class _LiquorsSection extends StatelessWidget {
-  const _LiquorsSection({required this.place, required this.palette});
+  const _LiquorsSection({
+    required this.place,
+    required this.palette,
+    required this.collection,
+  });
   final MapPlace place;
   final AppPalette palette;
+  final CollectionRepository collection;
 
   @override
   Widget build(BuildContext context) {
@@ -892,7 +906,12 @@ class _LiquorsSection extends StatelessWidget {
             for (var i = 0; i < items.length; i++) ...[
               if (i > 0)
                 Divider(height: 1, thickness: 1, color: palette.outlineVariant),
-              _LiquorRow(item: items[i], palette: palette),
+              _LiquorRow(
+                item: items[i],
+                placeId: place.id,
+                palette: palette,
+                collection: collection,
+              ),
             ],
           ],
         ),
@@ -902,9 +921,16 @@ class _LiquorsSection extends StatelessWidget {
 }
 
 class _LiquorRow extends StatelessWidget {
-  const _LiquorRow({required this.item, required this.palette});
+  const _LiquorRow({
+    required this.item,
+    required this.placeId,
+    required this.palette,
+    required this.collection,
+  });
   final MapInventoryItem item;
+  final String placeId;
   final AppPalette palette;
+  final CollectionRepository collection;
 
   @override
   Widget build(BuildContext context) {
@@ -952,7 +978,23 @@ class _LiquorRow extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           TextButton(
-            onPressed: () {},
+            onPressed: () async {
+              await collection.addToCart(
+                beverageId: item.beverageId,
+                nameKo: item.nameKo,
+                nameEn: item.nameEn,
+                priceKrw: item.priceKrw,
+                placeId: placeId,
+              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${item.displayName}이(가) 컬렉션에 추가됐습니다.'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
             style: TextButton.styleFrom(
               backgroundColor: AppColors.primaryContainer,
               foregroundColor: Colors.white,
