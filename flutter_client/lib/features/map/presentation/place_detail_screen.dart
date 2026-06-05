@@ -5,8 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../models/map_inventory_item.dart';
 import '../models/map_place.dart';
 
-const _heroHeight = 220.0;
-const _cardBarHeight = 162.0;
+const _heroHeight = 280.0;
 
 Color _categoryColor(String code) => switch (code) {
       'bar' => const Color(0xFFFF7E36),
@@ -106,11 +105,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   onPressed: () {},
                 ),
             ],
-            bottom: _CoreInfoCardBar(
-              place: place,
-              catColor: catColor,
-              palette: palette,
-            ),
             flexibleSpace: FlexibleSpaceBar(
               collapseMode: CollapseMode.parallax,
               background: _HeroSection(place: place, catColor: catColor),
@@ -120,6 +114,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _CoreInfoCard(place: place, catColor: catColor, palette: palette),
                 _buildTypeSection(palette),
                 SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
               ],
@@ -173,7 +168,6 @@ class _HeroSectionState extends State<_HeroSection> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // ── Images or logo placeholder ──
         if (urls.isEmpty)
           Container(
             color: widget.catColor.withValues(alpha: 0.14),
@@ -208,7 +202,7 @@ class _HeroSectionState extends State<_HeroSection> {
             ),
           ),
 
-        // ── Top gradient (icons readable over image) ──
+        // Top gradient for icon readability
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -219,22 +213,7 @@ class _HeroSectionState extends State<_HeroSection> {
           ),
         ),
 
-        // ── Bottom fade → blends into the pinned card below ──
-        DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  context.palette.surfaceContainerLowest.withValues(alpha: urls.isEmpty ? 1.0 : 0.85),
-                ],
-                stops: const [0.5, 1.0],
-              ),
-            ),
-          ),
-
-        // ── Dot indicators ──
+        // Dot indicators
         if (urls.length > 1)
           Positioned(
             bottom: 14,
@@ -262,30 +241,6 @@ class _HeroSectionState extends State<_HeroSection> {
   }
 }
 
-// ─── Core Info Card Bar (PreferredSizeWidget — always pinned in SliverAppBar) ─
-
-class _CoreInfoCardBar extends StatelessWidget implements PreferredSizeWidget {
-  const _CoreInfoCardBar({
-    required this.place,
-    required this.catColor,
-    required this.palette,
-  });
-  final MapPlace place;
-  final Color catColor;
-  final AppPalette palette;
-
-  @override
-  Size get preferredSize => const Size.fromHeight(_cardBarHeight);
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: palette.surfaceContainerLow,
-      child: _CoreInfoCard(place: place, catColor: catColor, palette: palette),
-    );
-  }
-}
-
 // ─── Core Info Card ─────────────────────────────────────────────────────────
 
 class _CoreInfoCard extends StatelessWidget {
@@ -301,12 +256,13 @@ class _CoreInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasRating = place.rating.isNotEmpty;
-    final closesAt = place.openHours.isNotEmpty
-        ? place.openHours.split(' - ').last
+    // "19:00 - 02:00" → "19:00 ~ 02:00"
+    final hoursDisplay = place.openHours.isNotEmpty
+        ? place.openHours.replaceAll(' - ', ' ~ ')
         : '';
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
@@ -316,7 +272,7 @@ class _CoreInfoCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -348,7 +304,7 @@ class _CoreInfoCard extends StatelessWidget {
                         place.name,
                         style: TextStyle(
                           color: palette.onSurface,
-                          fontSize: 26,
+                          fontSize: 24,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -0.5,
                           height: 1.1,
@@ -391,7 +347,7 @@ class _CoreInfoCard extends StatelessWidget {
                 ],
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 14),
             if (place.isOpenNow != null) ...[
               Row(
                 children: [
@@ -416,10 +372,10 @@ class _CoreInfoCard extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  if (closesAt.isNotEmpty && place.isOpenNow!) ...[
-                    const SizedBox(width: 6),
+                  if (hoursDisplay.isNotEmpty) ...[
+                    const SizedBox(width: 8),
                     Text(
-                      '· $closesAt까지',
+                      hoursDisplay,
                       style: TextStyle(color: palette.secondary, fontSize: 13),
                     ),
                   ],
@@ -455,9 +411,10 @@ class _CoreInfoCard extends StatelessWidget {
 // ─── Section Shell ───────────────────────────────────────────────────────────
 
 class _SectionShell extends StatelessWidget {
-  const _SectionShell({required this.title, required this.child});
+  const _SectionShell({required this.title, required this.child, this.trailing});
   final String title;
   final Widget child;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -467,14 +424,22 @@ class _SectionShell extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: palette.onSurface,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
-            ),
+          Row(
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: palette.onSurface,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              if (trailing != null) ...[
+                const Spacer(),
+                trailing!,
+              ],
+            ],
           ),
           const SizedBox(height: 14),
           child,
@@ -517,8 +482,30 @@ class _MenuSection extends StatelessWidget {
       );
     }
 
+    final displayItems = items.take(3).toList();
+    final hasMore = items.length > 3;
+
     return _SectionShell(
       title: 'Menu',
+      trailing: hasMore
+          ? TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MenuListScreen(place: place),
+                ),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primaryContainer,
+                padding: EdgeInsets.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Text(
+                'View All',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+            )
+          : null,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: palette.surfaceContainerLowest,
@@ -527,18 +514,18 @@ class _MenuSection extends StatelessWidget {
         ),
         child: Column(
           children: [
-            for (var i = 0; i < items.length; i++) ...[
+            for (var i = 0; i < displayItems.length; i++) ...[
               if (i > 0)
                 Divider(height: 1, thickness: 1, color: palette.outlineVariant),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   children: [
-                    if (items[i].imageUrl.isNotEmpty) ...[
+                    if (displayItems[i].imageUrl.isNotEmpty) ...[
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Image.network(
-                          items[i].imageUrl,
+                          displayItems[i].imageUrl,
                           width: 64,
                           height: 64,
                           fit: BoxFit.cover,
@@ -549,7 +536,8 @@ class _MenuSection extends StatelessWidget {
                               color: palette.surfaceContainerLow,
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: Icon(Icons.restaurant_menu, color: palette.secondary, size: 24),
+                            child: Icon(Icons.restaurant_menu,
+                                color: palette.secondary, size: 24),
                           ),
                         ),
                       ),
@@ -560,29 +548,31 @@ class _MenuSection extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            items[i].name,
+                            displayItems[i].name,
                             style: TextStyle(
                               color: palette.onSurface,
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          if (items[i].desc.isNotEmpty) ...[
+                          if (displayItems[i].desc.isNotEmpty) ...[
                             const SizedBox(height: 2),
                             Text(
-                              items[i].desc,
+                              displayItems[i].desc,
                               style: TextStyle(color: palette.secondary, fontSize: 12),
                             ),
                           ],
                         ],
                       ),
                     ),
-                    if (items[i].formattedPrice.isNotEmpty) ...[
+                    if (displayItems[i].formattedPrice.isNotEmpty) ...[
                       const SizedBox(width: 12),
                       Text(
-                        items[i].formattedPrice,
-                        style: const TextStyle(
-                          color: AppColors.primaryContainer,
+                        displayItems[i].formattedPrice,
+                        style: TextStyle(
+                          color: displayItems[i].priceKrw == 0
+                              ? palette.secondary
+                              : AppColors.primaryContainer,
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                         ),
@@ -614,6 +604,18 @@ class _ReviewsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return _SectionShell(
       title: 'Reviews',
+      trailing: TextButton(
+        onPressed: () => _showAddReview(context),
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primaryContainer,
+          padding: EdgeInsets.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: const Text(
+          'Add Review',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+        ),
+      ),
       child: Column(
         children: [
           for (final r in _mockReviews) ...[
@@ -628,6 +630,15 @@ class _ReviewsSection extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+
+  void _showAddReview(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _AddReviewSheet(),
     );
   }
 }
@@ -680,17 +691,12 @@ class _ReviewCard extends StatelessWidget {
                     (i) => Icon(
                       Icons.star_rounded,
                       size: 13,
-                      color: i < stars
-                          ? AppColors.primaryContainer
-                          : palette.outlineVariant,
+                      color: i < stars ? AppColors.primaryContainer : palette.outlineVariant,
                     ),
                   ),
                 ),
                 const Spacer(),
-                Text(
-                  when,
-                  style: TextStyle(color: palette.secondary, fontSize: 11),
-                ),
+                Text(when, style: TextStyle(color: palette.secondary, fontSize: 11)),
               ],
             ),
             const SizedBox(height: 10),
@@ -705,6 +711,136 @@ class _ReviewCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─── Add Review Bottom Sheet ──────────────────────────────────────────────────
+
+class _AddReviewSheet extends StatefulWidget {
+  const _AddReviewSheet();
+
+  @override
+  State<_AddReviewSheet> createState() => _AddReviewSheetState();
+}
+
+class _AddReviewSheetState extends State<_AddReviewSheet> {
+  int _rating = 0;
+  final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLowest,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: palette.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            '리뷰 작성',
+            style: TextStyle(
+              color: palette.onSurface,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Star rating
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (i) {
+              return GestureDetector(
+                onTap: () => setState(() => _rating = i + 1),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Icon(
+                    i < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                    color: AppColors.primaryContainer,
+                    size: 44,
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 20),
+          // Review text field
+          TextField(
+            controller: _ctrl,
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: '이 장소에 대한 리뷰를 작성해주세요.',
+              hintStyle: TextStyle(color: palette.secondary, fontSize: 14),
+              filled: true,
+              fillColor: palette.surfaceContainerLow,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: palette.outlineVariant),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: palette.outlineVariant),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryContainer),
+              ),
+              contentPadding: const EdgeInsets.all(14),
+            ),
+            style: TextStyle(color: palette.onSurface, fontSize: 14),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _rating > 0
+                  ? () {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('리뷰가 등록됐습니다.')),
+                      );
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryContainer,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: const Color(0xFFE0E0E0),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                '리뷰 등록',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -827,10 +963,8 @@ class _LiquorRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text(
-              '담기 +',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-            ),
+            child: const Text('담기 +',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -882,6 +1016,110 @@ class _LocationSection extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Menu List Screen ────────────────────────────────────────────────────────
+
+class MenuListScreen extends StatelessWidget {
+  const MenuListScreen({super.key, required this.place});
+  final MapPlace place;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final items = place.menu;
+
+    return Scaffold(
+      backgroundColor: palette.surfaceContainerLow,
+      appBar: AppBar(
+        backgroundColor: palette.surfaceContainerLowest,
+        elevation: 0.5,
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left, color: palette.onSurface, size: 28),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          '${place.name} — Menu',
+          style: TextStyle(
+            color: palette.onSurface,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      body: ListView.separated(
+        padding: EdgeInsets.fromLTRB(
+            16, 16, 16, MediaQuery.of(context).padding.bottom + 24),
+        itemCount: items.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 1),
+        itemBuilder: (context, i) {
+          final item = items[i];
+          return Container(
+            color: palette.surfaceContainerLowest,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                if (item.imageUrl.isNotEmpty) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      item.imageUrl,
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(
+                        width: 64,
+                        height: 64,
+                        color: palette.surfaceContainerLow,
+                        child: Icon(Icons.restaurant_menu,
+                            color: palette.secondary, size: 24),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        style: TextStyle(
+                          color: palette.onSurface,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (item.desc.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          item.desc,
+                          style: TextStyle(color: palette.secondary, fontSize: 12),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (item.formattedPrice.isNotEmpty) ...[
+                  const SizedBox(width: 12),
+                  Text(
+                    item.formattedPrice,
+                    style: TextStyle(
+                      color: item.priceKrw == 0
+                          ? palette.secondary
+                          : AppColors.primaryContainer,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
       ),
     );
   }
