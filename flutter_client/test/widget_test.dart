@@ -20,6 +20,8 @@ import 'package:flutter_client/features/chat/data/mock_groupchat_data.dart';
 import 'package:flutter_client/features/chat/models/groupchat_models.dart';
 import 'package:flutter_client/features/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:flutter_client/features/chat/presentation/widgets/typing_indicator.dart';
+import 'package:flutter_client/features/map/data/map_api_data_source.dart';
+import 'package:flutter_client/features/map/models/map_place.dart';
 import 'package:flutter_client/features/preference_survey/data/survey_grpc_client.dart';
 import 'package:flutter_client/features/preference_survey/data/survey_grpc_endpoint.dart';
 import 'package:flutter_client/features/preference_survey/models/survey_question.dart';
@@ -401,7 +403,7 @@ void main() {
 
     expect(find.text('Search nearby bars and bottle shops'), findsOneWidget);
     expect(find.text('Kakao Map baseline'), findsOneWidget);
-    expect(find.text('The Oak & Barrel'), findsWidgets);
+    expect(find.text('The Oak & Barrel'), findsNothing);
     expect(find.byIcon(Icons.chat), findsNothing);
   });
 
@@ -847,11 +849,35 @@ Future<void> _pumpApp(
       child: OnTheBlockApp(
         chatRepository: _FakeChatRepository(),
         chatPushService: chatPushService ?? _FakeChatPushService(),
+        mapDataSource: _FakeMapApiDataSource(),
+        mapPositionResolver: () async => null,
         recommendationRepository: recommendationRepository,
         enableDefaultRecommendationRepository: false,
       ),
     ),
   );
+}
+
+class _FakeMapApiDataSource extends MapApiDataSource {
+  _FakeMapApiDataSource() : super(baseUrl: 'http://map.test');
+
+  @override
+  Future<List<MapPlace>> fetchMarkers({
+    required double minLon,
+    required double minLat,
+    required double maxLon,
+    required double maxLat,
+    List<String> layers = const ['bar', 'pub', 'liquor_shop', 'outdoor_spot'],
+    int limit = 500,
+    int offset = 0,
+  }) async {
+    return const [];
+  }
+
+  @override
+  Future<List<MapPlace>> searchPlaces(String query) async {
+    return const [];
+  }
 }
 
 class _FakeRecommendationRepository implements RecommendationRepository {

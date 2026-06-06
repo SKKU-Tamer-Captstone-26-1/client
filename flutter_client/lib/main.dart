@@ -24,6 +24,7 @@ import 'features/chat/presentation/groupchat_list_screen.dart';
 import 'features/chat/presentation/groupchat_room_screen.dart';
 import 'features/collection/presentation/collection_screen.dart';
 import 'features/home/presentation/home_screen.dart';
+import 'features/map/data/map_api_data_source.dart';
 import 'features/map/presentation/map_screen.dart';
 import 'features/location/presentation/location_screen.dart';
 import 'features/preference_survey/presentation/survey_intro_screen.dart';
@@ -50,12 +51,16 @@ class OnTheBlockApp extends ConsumerStatefulWidget {
     super.key,
     this.chatRepository,
     this.chatPushService,
+    this.mapDataSource,
+    this.mapPositionResolver,
     this.recommendationRepository,
     this.enableDefaultRecommendationRepository = true,
   });
 
   final ChatRepository? chatRepository;
   final ChatPushService? chatPushService;
+  final MapApiDataSource? mapDataSource;
+  final MapPositionResolver? mapPositionResolver;
   final RecommendationRepository? recommendationRepository;
   final bool enableDefaultRecommendationRepository;
 
@@ -262,6 +267,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
       ),
       _AppStage.map => MapScreen(
+        dataSource: widget.mapDataSource,
+        positionResolver: widget.mapPositionResolver,
         onBottomNavSelected: _selectBottomNavItem,
         onProfileSelected: _goToProfile,
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
