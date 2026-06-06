@@ -85,6 +85,8 @@ class _MapScreenState extends State<MapScreen> {
   bool _searchActive = false;
   List<MapPlace> _searchResults = [];
   bool _searchLoading = false;
+  bool _searchHasQueried = false;
+  bool _searchError = false;
   Timer? _searchDebounce;
 
   List<MapPlace> get _filteredPlaces {
@@ -110,16 +112,33 @@ class _MapScreenState extends State<MapScreen> {
   void _onSearchChanged(String query) {
     _searchDebounce?.cancel();
     if (query.trim().isEmpty) {
-      setState(() => _searchResults = []);
+      setState(() {
+        _searchResults = [];
+        _searchHasQueried = false;
+        _searchError = false;
+      });
       return;
     }
     _searchDebounce = Timer(const Duration(milliseconds: 300), () async {
       setState(() => _searchLoading = true);
       try {
         final results = await _api.searchPlaces(query.trim());
-        if (mounted) setState(() => _searchResults = results);
+        if (mounted) {
+          setState(() {
+            _searchResults = results;
+            _searchHasQueried = true;
+            _searchError = false;
+          });
+        }
       } catch (e) {
         debugPrint('[MapScreen] search error: $e');
+        if (mounted) {
+          setState(() {
+            _searchResults = [];
+            _searchHasQueried = true;
+            _searchError = true;
+          });
+        }
       } finally {
         if (mounted) setState(() => _searchLoading = false);
       }
@@ -140,6 +159,8 @@ class _MapScreenState extends State<MapScreen> {
     setState(() {
       _searchActive = false;
       _searchResults = [];
+      _searchHasQueried = false;
+      _searchError = false;
     });
     _searchController.clear();
   }
@@ -239,6 +260,7 @@ class _MapScreenState extends State<MapScreen> {
     final palette = context.palette;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: palette.surfaceContainerLow,
       appBar: AppTopAppBar(
         onNotificationBoardSelected: () {
@@ -372,6 +394,16 @@ class _MapScreenState extends State<MapScreen> {
                       child: _SearchResultsList(
                         results: _searchResults,
                         onResultSelected: _selectSearchResult,
+                        palette: palette,
+                      ),
+                    ),
+                  if (!_searchLoading && _searchHasQueried && _searchResults.isEmpty)
+                    Positioned(
+                      top: 96,
+                      left: 16,
+                      right: 16,
+                      child: _SearchFeedback(
+                        isError: _searchError,
                         palette: palette,
                       ),
                     ),
@@ -640,8 +672,8 @@ class _OpenBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = isOpen
-        ? (closesAt.isNotEmpty ? '영업 중 · $closesAt까지' : '영업 중')
-        : '영업 종료';
+        ? (closesAt.isNotEmpty ? 'Open · until $closesAt' : 'Open Now')
+        : 'Closed';
     final color = isOpen ? const Color(0xFF5CA874) : palette.secondary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
@@ -741,6 +773,39 @@ class _SearchHeader extends StatelessWidget {
                     ),
                   ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchFeedback extends StatelessWidget {
+  const _SearchFeedback({required this.isError, required this.palette});
+  final bool isError;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: palette.outlineVariant),
+        boxShadow: const [
+          BoxShadow(color: Color(0x26000000), blurRadius: 16, offset: Offset(0, 6)),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        child: Center(
+          child: Text(
+            isError ? 'Search Error' : 'No results',
+            style: TextStyle(
+              color: isError ? const Color(0xFFD32F2F) : palette.secondary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),

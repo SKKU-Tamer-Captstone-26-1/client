@@ -24,7 +24,8 @@ class MapMenuItem {
   final String imageUrl;
 
   String get formattedPrice {
-    if (priceKrw <= 0) return '';
+    if (priceKrw < 0) return '';
+    if (priceKrw == 0) return 'Varies';
     final formatted = priceKrw.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
       (m) => '${m[1]},',
