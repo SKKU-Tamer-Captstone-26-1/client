@@ -220,6 +220,7 @@ class _MapScreenState extends State<MapScreen> {
     final palette = context.palette;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: palette.surfaceContainerLow,
       appBar: AppTopAppBar(
         onNotificationBoardSelected: () {
