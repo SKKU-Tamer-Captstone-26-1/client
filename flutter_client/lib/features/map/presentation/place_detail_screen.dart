@@ -615,6 +615,7 @@ class _ReviewsSection extends ConsumerStatefulWidget {
 
 class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
   late final List<MapReview> _reviews;
+  final _api = MapApiDataSource();
 
   @override
   void initState() {
@@ -624,6 +625,20 @@ class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
 
   void _onReviewAdded(MapReview review) {
     setState(() => _reviews.insert(0, review));
+  }
+
+  Future<void> _onReviewDeleted(MapReview review) async {
+    if (review.reviewId.isEmpty) return;
+    try {
+      await _api.deleteReview(markerId: widget.place.id, reviewId: review.reviewId);
+      if (mounted) setState(() => _reviews.remove(review));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete review.')),
+        );
+      }
+    }
   }
 
   @override
@@ -677,6 +692,9 @@ class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
                     review: r,
                     palette: palette,
                     currentUserId: currentUserId,
+                    onDeletePressed: currentUserId.isNotEmpty && r.authorId == currentUserId
+                        ? () => _onReviewDeleted(r)
+                        : null,
                   ),
                   const SizedBox(height: 10),
                 ],
@@ -691,14 +709,17 @@ class _ReviewCard extends StatelessWidget {
     required this.review,
     required this.palette,
     required this.currentUserId,
+    this.onDeletePressed,
   });
   final MapReview review;
   final AppPalette palette;
   final String currentUserId;
+  final VoidCallback? onDeletePressed;
 
   @override
   Widget build(BuildContext context) {
-    final isOwnReview = currentUserId.isNotEmpty && review.authorId == currentUserId;
+    final isOwnReview = onDeletePressed != null;
+    final profileUrl = review.isAnonymous ? null : review.profileImageUrl;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
@@ -715,14 +736,10 @@ class _ReviewCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 18,
                   backgroundColor: palette.surfaceContainerLow,
-                  child: Text(
-                    review.author.isNotEmpty ? review.author[0].toUpperCase() : '?',
-                    style: TextStyle(
-                      color: palette.onSurface,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                  backgroundImage: profileUrl != null ? NetworkImage(profileUrl) : null,
+                  child: profileUrl == null
+                      ? Icon(Icons.person_outline, color: palette.secondary, size: 18)
+                      : null,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -759,12 +776,7 @@ class _ReviewCard extends StatelessWidget {
                     size: 18,
                   ),
                   onPressed: isOwnReview
-                      ? () {
-                          // TODO: implement delete when backend ready
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Delete feature coming soon.')),
-                          );
-                        }
+                      ? onDeletePressed
                       : () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -841,6 +853,7 @@ class _AddReviewSheetState extends ConsumerState<_AddReviewSheet> {
         isAnonymous: _isAnonymous,
         rating: _rating,
         reviewBody: _bodyCtrl.text.trim(),
+        profileImageUrl: _isAnonymous ? null : authUser?.profileImageUrl,
       );
       if (!mounted) return;
       widget.onReviewAdded(review);
