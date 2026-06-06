@@ -495,108 +495,110 @@ class _MenuSection extends StatelessWidget {
       );
     }
 
-    final displayItems = items.take(3).toList();
-    final hasMore = items.length > 3;
+    final displayItems = items.take(5).toList();
+    final hasMore = items.length > 5;
 
     return _SectionShell(
       title: 'Menu',
-      trailing: hasMore
-          ? TextButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => MenuListScreen(place: place),
-                ),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primaryContainer,
-                padding: EdgeInsets.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                'View All',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-              ),
-            )
-          : null,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: palette.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: palette.outlineVariant),
-        ),
-        child: Column(
-          children: [
-            for (var i = 0; i < displayItems.length; i++) ...[
-              if (i > 0)
-                Divider(height: 1, thickness: 1, color: palette.outlineVariant),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    if (displayItems[i].imageUrl.isNotEmpty) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          displayItems[i].imageUrl,
-                          width: 64,
-                          height: 64,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              color: palette.surfaceContainerLow,
-                              borderRadius: BorderRadius.circular(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: palette.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: palette.outlineVariant),
+            ),
+            child: Column(
+              children: [
+                for (var i = 0; i < displayItems.length; i++) ...[
+                  if (i > 0)
+                    Divider(height: 1, thickness: 1, color: palette.outlineVariant),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Row(
+                      children: [
+                        if (displayItems[i].imageUrl.isNotEmpty) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              displayItems[i].imageUrl,
+                              width: 64,
+                              height: 64,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: palette.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(Icons.restaurant_menu,
+                                    color: palette.secondary, size: 24),
+                              ),
                             ),
-                            child: Icon(Icons.restaurant_menu,
-                                color: palette.secondary, size: 24),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                displayItems[i].name,
+                                style: TextStyle(
+                                  color: palette.onSurface,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              if (displayItems[i].desc.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  displayItems[i].desc,
+                                  style: TextStyle(color: palette.secondary, fontSize: 12),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                        if (displayItems[i].formattedPrice.isNotEmpty) ...[
+                          const SizedBox(width: 12),
                           Text(
-                            displayItems[i].name,
+                            displayItems[i].formattedPrice,
                             style: TextStyle(
-                              color: palette.onSurface,
-                              fontSize: 14,
+                              color: displayItems[i].priceKrw == 0
+                                  ? palette.secondary
+                                  : AppColors.primaryContainer,
+                              fontSize: 13,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          if (displayItems[i].desc.isNotEmpty) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              displayItems[i].desc,
-                              style: TextStyle(color: palette.secondary, fontSize: 12),
-                            ),
-                          ],
                         ],
-                      ),
+                      ],
                     ),
-                    if (displayItems[i].formattedPrice.isNotEmpty) ...[
-                      const SizedBox(width: 12),
-                      Text(
-                        displayItems[i].formattedPrice,
-                        style: TextStyle(
-                          color: displayItems[i].priceKrw == 0
-                              ? palette.secondary
-                              : AppColors.primaryContainer,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (hasMore) ...[
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => MenuListScreen(place: place)),
               ),
-            ],
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primaryContainer,
+                side: BorderSide(color: palette.outlineVariant),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text('View All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -645,6 +647,9 @@ class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
   Widget build(BuildContext context) {
     final palette = widget.palette;
     final currentUserId = ref.watch(authProvider).userId ?? '';
+    final displayReviews = _reviews.take(3).toList();
+    final hasMoreReviews = _reviews.length > 3;
+
     return _SectionShell(
       title: 'Reviews',
       trailing: TextButton(
@@ -686,8 +691,9 @@ class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
               ),
             )
           : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                for (final r in _reviews) ...[
+                for (final r in displayReviews) ...[
                   _ReviewCard(
                     review: r,
                     palette: palette,
@@ -698,6 +704,27 @@ class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
                   ),
                   const SizedBox(height: 10),
                 ],
+                if (hasMoreReviews)
+                  OutlinedButton(
+                    onPressed: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => _AllReviewsSheet(
+                        reviews: _reviews,
+                        palette: palette,
+                        currentUserId: currentUserId,
+                        onDeletePressed: _onReviewDeleted,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primaryContainer,
+                      side: BorderSide(color: palette.outlineVariant),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('View All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                  ),
               ],
             ),
     );
@@ -825,6 +852,87 @@ class _ReviewCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─── All Reviews Bottom Sheet ─────────────────────────────────────────────────
+
+class _AllReviewsSheet extends StatelessWidget {
+  const _AllReviewsSheet({
+    required this.reviews,
+    required this.palette,
+    required this.currentUserId,
+    required this.onDeletePressed,
+  });
+  final List<MapReview> reviews;
+  final AppPalette palette;
+  final String currentUserId;
+  final void Function(MapReview) onDeletePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final topPad = MediaQuery.of(context).padding.top;
+    return Container(
+      margin: EdgeInsets.only(top: topPad + 24),
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLow,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: palette.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Row(
+              children: [
+                Text(
+                  'All Reviews (${reviews.length})',
+                  style: TextStyle(
+                    color: palette.onSurface,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(Icons.close, color: palette.secondary, size: 20),
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: palette.outlineVariant),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: reviews.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (_, i) => _ReviewCard(
+                review: reviews[i],
+                palette: palette,
+                currentUserId: currentUserId,
+                onDeletePressed: currentUserId.isNotEmpty && reviews[i].authorId == currentUserId
+                    ? () {
+                        onDeletePressed(reviews[i]);
+                        Navigator.pop(context);
+                      }
+                    : null,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
