@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../collection/data/collection_repository.dart';
+import '../../collection/data/stub_collection_repository.dart';
+import '../data/map_api_data_source.dart';
 import '../models/map_inventory_item.dart';
 import '../models/map_place.dart';
+import '../models/map_review.dart';
 
-const _heroHeight = 220.0;
-const _cardBarHeight = 162.0;
+const _heroHeight = 280.0;
 
 Color _categoryColor(String code) => switch (code) {
       'bar' => const Color(0xFFFF7E36),
@@ -34,6 +39,9 @@ class PlaceDetailScreen extends StatefulWidget {
 
 class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   final _scrollCtrl = ScrollController();
+  // Replace StubCollectionRepository with a real implementation once
+  // collection-service is available.
+  final CollectionRepository _collection = const StubCollectionRepository();
   bool _heroVisible = true;
 
   @override
@@ -80,7 +88,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                 children: [
                   Icon(Icons.chevron_left, color: iconColor, size: 26),
                   Text(
-                    '지도',
+                    'Map',
                     style: TextStyle(
                       color: iconColor,
                       fontSize: 13,
@@ -106,11 +114,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   onPressed: () {},
                 ),
             ],
-            bottom: _CoreInfoCardBar(
-              place: place,
-              catColor: catColor,
-              palette: palette,
-            ),
             flexibleSpace: FlexibleSpaceBar(
               collapseMode: CollapseMode.parallax,
               background: _HeroSection(place: place, catColor: catColor),
@@ -120,6 +123,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _CoreInfoCard(place: place, catColor: catColor, palette: palette),
                 _buildTypeSection(palette),
                 SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
               ],
@@ -135,11 +139,15 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       'bar' || 'pub' => Column(children: [
           _MenuSection(place: widget.place, palette: palette),
           const SizedBox(height: 8),
-          _ReviewsSection(palette: palette),
+          _ReviewsSection(place: widget.place, palette: palette),
         ]),
-      'liquor_shop' => _LiquorsSection(place: widget.place, palette: palette),
+      'liquor_shop' => _LiquorsSection(
+          place: widget.place,
+          palette: palette,
+          collection: _collection,
+        ),
       'outdoor_spot' => _LocationSection(palette: palette),
-      _ => _ReviewsSection(palette: palette),
+      _ => _ReviewsSection(place: widget.place, palette: palette),
     };
   }
 }
@@ -173,7 +181,6 @@ class _HeroSectionState extends State<_HeroSection> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // ── Images or logo placeholder ──
         if (urls.isEmpty)
           Container(
             color: widget.catColor.withValues(alpha: 0.14),
@@ -208,7 +215,7 @@ class _HeroSectionState extends State<_HeroSection> {
             ),
           ),
 
-        // ── Top gradient (icons readable over image) ──
+        // Top gradient for icon readability
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -219,22 +226,7 @@ class _HeroSectionState extends State<_HeroSection> {
           ),
         ),
 
-        // ── Bottom fade → blends into the pinned card below ──
-        DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  context.palette.surfaceContainerLowest.withValues(alpha: urls.isEmpty ? 1.0 : 0.85),
-                ],
-                stops: const [0.5, 1.0],
-              ),
-            ),
-          ),
-
-        // ── Dot indicators ──
+        // Dot indicators
         if (urls.length > 1)
           Positioned(
             bottom: 14,
@@ -262,30 +254,6 @@ class _HeroSectionState extends State<_HeroSection> {
   }
 }
 
-// ─── Core Info Card Bar (PreferredSizeWidget — always pinned in SliverAppBar) ─
-
-class _CoreInfoCardBar extends StatelessWidget implements PreferredSizeWidget {
-  const _CoreInfoCardBar({
-    required this.place,
-    required this.catColor,
-    required this.palette,
-  });
-  final MapPlace place;
-  final Color catColor;
-  final AppPalette palette;
-
-  @override
-  Size get preferredSize => const Size.fromHeight(_cardBarHeight);
-
-  @override
-  Widget build(BuildContext context) {
-    return ColoredBox(
-      color: palette.surfaceContainerLow,
-      child: _CoreInfoCard(place: place, catColor: catColor, palette: palette),
-    );
-  }
-}
-
 // ─── Core Info Card ─────────────────────────────────────────────────────────
 
 class _CoreInfoCard extends StatelessWidget {
@@ -301,12 +269,13 @@ class _CoreInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasRating = place.rating.isNotEmpty;
-    final closesAt = place.openHours.isNotEmpty
-        ? place.openHours.split(' - ').last
+    // "19:00 - 02:00" → "19:00 ~ 02:00"
+    final hoursDisplay = place.openHours.isNotEmpty
+        ? place.openHours.replaceAll(' - ', ' ~ ')
         : '';
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
@@ -316,7 +285,7 @@ class _CoreInfoCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -348,7 +317,7 @@ class _CoreInfoCard extends StatelessWidget {
                         place.name,
                         style: TextStyle(
                           color: palette.onSurface,
-                          fontSize: 26,
+                          fontSize: 24,
                           fontWeight: FontWeight.w900,
                           letterSpacing: -0.5,
                           height: 1.1,
@@ -391,7 +360,7 @@ class _CoreInfoCard extends StatelessWidget {
                 ],
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 14),
             if (place.isOpenNow != null) ...[
               Row(
                 children: [
@@ -407,7 +376,7 @@ class _CoreInfoCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    place.isOpenNow! ? '영업 중' : '영업 종료',
+                    place.isOpenNow! ? 'Open Now' : 'Closed',
                     style: TextStyle(
                       color: place.isOpenNow!
                           ? const Color(0xFF4CAF50)
@@ -416,10 +385,10 @@ class _CoreInfoCard extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  if (closesAt.isNotEmpty && place.isOpenNow!) ...[
-                    const SizedBox(width: 6),
+                  if (hoursDisplay.isNotEmpty) ...[
+                    const SizedBox(width: 8),
                     Text(
-                      '· $closesAt까지',
+                      hoursDisplay,
                       style: TextStyle(color: palette.secondary, fontSize: 13),
                     ),
                   ],
@@ -455,9 +424,10 @@ class _CoreInfoCard extends StatelessWidget {
 // ─── Section Shell ───────────────────────────────────────────────────────────
 
 class _SectionShell extends StatelessWidget {
-  const _SectionShell({required this.title, required this.child});
+  const _SectionShell({required this.title, required this.child, this.trailing});
   final String title;
   final Widget child;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -467,17 +437,72 @@ class _SectionShell extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: palette.onSurface,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
-            ),
+          Row(
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: palette.onSurface,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              if (trailing != null) ...[
+                const Spacer(),
+                trailing!,
+              ],
+            ],
           ),
           const SizedBox(height: 14),
           child,
+        ],
+      ),
+    );
+  }
+}
+
+void _showFullScreenImage(BuildContext context, String imageUrl) {
+  Navigator.of(context).push(
+    PageRouteBuilder(
+      opaque: false,
+      barrierColor: Colors.black,
+      pageBuilder: (_, _, _) => _FullScreenImageViewer(imageUrl: imageUrl),
+    ),
+  );
+}
+
+class _FullScreenImageViewer extends StatelessWidget {
+  const _FullScreenImageViewer({required this.imageUrl});
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const Icon(Icons.broken_image, color: Colors.white54, size: 64),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                style: IconButton.styleFrom(backgroundColor: Colors.black45),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -508,7 +533,7 @@ class _MenuSection extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Center(
               child: Text(
-                '등록된 메뉴가 없습니다.',
+                'No menu available.',
                 style: TextStyle(color: palette.secondary, fontSize: 13),
               ),
             ),
@@ -517,114 +542,111 @@ class _MenuSection extends StatelessWidget {
       );
     }
 
+    final displayItems = items.take(5).toList();
+    final hasMore = items.length > 5;
+
     return _SectionShell(
       title: 'Menu',
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: palette.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: palette.outlineVariant),
-        ),
-        child: Column(
-          children: [
-            for (var i = 0; i < items.length; i++) ...[
-              if (i > 0)
-                Divider(height: 1, thickness: 1, color: palette.outlineVariant),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: Row(
-                  children: [
-                    if (items[i].imageUrl.isNotEmpty) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          items[i].imageUrl,
-                          width: 64,
-                          height: 64,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              color: palette.surfaceContainerLow,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: palette.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: palette.outlineVariant),
+            ),
+            child: Column(
+              children: [
+                for (var i = 0; i < displayItems.length; i++) ...[
+                  if (i > 0)
+                    Divider(height: 1, thickness: 1, color: palette.outlineVariant),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Row(
+                      children: [
+                        if (displayItems[i].imageUrl.isNotEmpty) ...[
+                          GestureDetector(
+                            onTap: () => _showFullScreenImage(context, displayItems[i].imageUrl),
+                            child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                displayItems[i].imageUrl,
+                                width: 64,
+                                height: 64,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Container(
+                                  width: 64,
+                                  height: 64,
+                                  decoration: BoxDecoration(
+                                    color: palette.surfaceContainerLow,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(Icons.restaurant_menu,
+                                      color: palette.secondary, size: 24),
+                                ),
+                              ),
                             ),
-                            child: Icon(Icons.restaurant_menu, color: palette.secondary, size: 24),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                displayItems[i].name,
+                                style: TextStyle(
+                                  color: palette.onSurface,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              if (displayItems[i].desc.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  displayItems[i].desc,
+                                  style: TextStyle(color: palette.secondary, fontSize: 12),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                        if (displayItems[i].formattedPrice.isNotEmpty) ...[
+                          const SizedBox(width: 12),
                           Text(
-                            items[i].name,
+                            displayItems[i].formattedPrice,
                             style: TextStyle(
-                              color: palette.onSurface,
-                              fontSize: 14,
+                              color: displayItems[i].priceKrw == 0
+                                  ? palette.secondary
+                                  : AppColors.primaryContainer,
+                              fontSize: 13,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          if (items[i].desc.isNotEmpty) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              items[i].desc,
-                              style: TextStyle(color: palette.secondary, fontSize: 12),
-                            ),
-                          ],
                         ],
-                      ),
+                      ],
                     ),
-                    if (items[i].formattedPrice.isNotEmpty) ...[
-                      const SizedBox(width: 12),
-                      Text(
-                        items[i].formattedPrice,
-                        style: const TextStyle(
-                          color: AppColors.primaryContainer,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Reviews Section (Bar / Pub) ─────────────────────────────────────────────
-
-const _mockReviews = [
-  ('J', '5', '"Great atmosphere for whiskey lovers. The playlist is as good as the spirits."', '2일 전'),
-  ('M', '4', '"시그니처 칵테일이 정말 독특하고 맛있어요. 인테리어도 고급스러워서 데이트하기 좋은 곳입니다."', '1주 전'),
-];
-
-class _ReviewsSection extends StatelessWidget {
-  const _ReviewsSection({required this.palette});
-  final AppPalette palette;
-
-  @override
-  Widget build(BuildContext context) {
-    return _SectionShell(
-      title: 'Reviews',
-      child: Column(
-        children: [
-          for (final r in _mockReviews) ...[
-            _ReviewCard(
-              initial: r.$1,
-              stars: int.parse(r.$2),
-              body: r.$3,
-              when: r.$4,
-              palette: palette,
+                  ),
+                ],
+              ],
             ),
+          ),
+          if (hasMore) ...[
             const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => MenuListScreen(place: place)),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primaryContainer,
+                side: BorderSide(color: palette.outlineVariant),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: const Text('View All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+            ),
           ],
         ],
       ),
@@ -632,22 +654,149 @@ class _ReviewsSection extends StatelessWidget {
   }
 }
 
-class _ReviewCard extends StatelessWidget {
-  const _ReviewCard({
-    required this.initial,
-    required this.stars,
-    required this.body,
-    required this.when,
-    required this.palette,
-  });
-  final String initial;
-  final int stars;
-  final String body;
-  final String when;
+// ─── Reviews Section (Bar / Pub) ─────────────────────────────────────────────
+
+class _ReviewsSection extends ConsumerStatefulWidget {
+  const _ReviewsSection({required this.place, required this.palette});
+  final MapPlace place;
   final AppPalette palette;
 
   @override
+  ConsumerState<_ReviewsSection> createState() => _ReviewsSectionState();
+}
+
+class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
+  late final List<MapReview> _reviews;
+  final _api = MapApiDataSource();
+
+  @override
+  void initState() {
+    super.initState();
+    _reviews = List.of(widget.place.reviews);
+  }
+
+  void _onReviewAdded(MapReview review) {
+    setState(() => _reviews.insert(0, review));
+  }
+
+  Future<void> _onReviewDeleted(MapReview review) async {
+    if (review.reviewId.isEmpty) return;
+    try {
+      await _api.deleteReview(markerId: widget.place.id, reviewId: review.reviewId);
+      if (mounted) setState(() => _reviews.remove(review));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete review.')),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final palette = widget.palette;
+    final currentUserId = ref.watch(authProvider).userId ?? '';
+    final displayReviews = _reviews.take(3).toList();
+    final hasMoreReviews = _reviews.length > 3;
+
+    return _SectionShell(
+      title: 'Reviews',
+      trailing: TextButton(
+        onPressed: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => _AddReviewSheet(
+            placeId: widget.place.id,
+            onReviewAdded: _onReviewAdded,
+          ),
+        ),
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.primaryContainer,
+          padding: EdgeInsets.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: const Text(
+          'Add Review',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+        ),
+      ),
+      child: _reviews.isEmpty
+          ? DecoratedBox(
+              decoration: BoxDecoration(
+                color: palette.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: palette.outlineVariant),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Center(
+                  child: Text(
+                    'No reviews yet. Be the first to share your thoughts!',
+                    style: TextStyle(color: palette.secondary, fontSize: 13),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final r in displayReviews) ...[
+                  _ReviewCard(
+                    review: r,
+                    palette: palette,
+                    currentUserId: currentUserId,
+                    onDeletePressed: currentUserId.isNotEmpty && r.authorId == currentUserId
+                        ? () => _onReviewDeleted(r)
+                        : null,
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                if (hasMoreReviews)
+                  OutlinedButton(
+                    onPressed: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => _AllReviewsSheet(
+                        reviews: _reviews,
+                        palette: palette,
+                        currentUserId: currentUserId,
+                        onDeletePressed: _onReviewDeleted,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primaryContainer,
+                      side: BorderSide(color: palette.outlineVariant),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('View All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+class _ReviewCard extends StatelessWidget {
+  const _ReviewCard({
+    required this.review,
+    required this.palette,
+    required this.currentUserId,
+    this.onDeletePressed,
+  });
+  final MapReview review;
+  final AppPalette palette;
+  final String currentUserId;
+  final VoidCallback? onDeletePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final isOwnReview = onDeletePressed != null;
+    final profileUrl = review.isAnonymous ? null : review.profileImageUrl;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
@@ -664,23 +813,28 @@ class _ReviewCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 18,
                   backgroundColor: palette.surfaceContainerLow,
-                  child: Text(
-                    initial,
-                    style: TextStyle(
-                      color: palette.onSurface,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  backgroundImage: profileUrl != null ? NetworkImage(profileUrl) : null,
+                  child: profileUrl == null
+                      ? Icon(Icons.person_outline, color: palette.secondary, size: 18)
+                      : null,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  review.author,
+                  style: TextStyle(
+                    color: palette.onSurface,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Row(
                   children: List.generate(
                     5,
                     (i) => Icon(
                       Icons.star_rounded,
                       size: 13,
-                      color: i < stars
+                      color: i < review.rating
                           ? AppColors.primaryContainer
                           : palette.outlineVariant,
                     ),
@@ -688,14 +842,57 @@ class _ReviewCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  when,
+                  review.dateLabel,
                   style: TextStyle(color: palette.secondary, fontSize: 11),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    color: isOwnReview ? palette.secondary : palette.outlineVariant,
+                    size: 18,
+                  ),
+                  onPressed: isOwnReview
+                      ? () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Delete Review'),
+                              content: const Text('Are you sure you want to delete this review?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed == true) onDeletePressed?.call();
+                        }
+                      : () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('You can only delete your own reviews.'),
+                            ),
+                          );
+                        },
+                  tooltip: isOwnReview ? 'Delete review' : 'Can only delete your own reviews',
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  padding: EdgeInsets.zero,
+                  splashRadius: 16,
                 ),
               ],
             ),
             const SizedBox(height: 10),
             Text(
-              body,
+              review.body,
               style: TextStyle(
                 color: palette.onSurfaceVariant,
                 fontSize: 13,
@@ -710,12 +907,359 @@ class _ReviewCard extends StatelessWidget {
   }
 }
 
+// ─── All Reviews Bottom Sheet ─────────────────────────────────────────────────
+
+class _AllReviewsSheet extends StatelessWidget {
+  const _AllReviewsSheet({
+    required this.reviews,
+    required this.palette,
+    required this.currentUserId,
+    required this.onDeletePressed,
+  });
+  final List<MapReview> reviews;
+  final AppPalette palette;
+  final String currentUserId;
+  final void Function(MapReview) onDeletePressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final topPad = MediaQuery.of(context).padding.top;
+    return Container(
+      margin: EdgeInsets.only(top: topPad + 24),
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLow,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: palette.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Row(
+              children: [
+                Text(
+                  'All Reviews (${reviews.length})',
+                  style: TextStyle(
+                    color: palette.onSurface,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(Icons.close, color: palette.secondary, size: 20),
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: palette.outlineVariant),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: reviews.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (_, i) => _ReviewCard(
+                review: reviews[i],
+                palette: palette,
+                currentUserId: currentUserId,
+                onDeletePressed: currentUserId.isNotEmpty && reviews[i].authorId == currentUserId
+                    ? () {
+                        onDeletePressed(reviews[i]);
+                        Navigator.pop(context);
+                      }
+                    : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Add Review Bottom Sheet ──────────────────────────────────────────────────
+
+class _AddReviewSheet extends ConsumerStatefulWidget {
+  const _AddReviewSheet({required this.placeId, required this.onReviewAdded});
+  final String placeId;
+  final ValueChanged<MapReview> onReviewAdded;
+
+  @override
+  ConsumerState<_AddReviewSheet> createState() => _AddReviewSheetState();
+}
+
+class _AddReviewSheetState extends ConsumerState<_AddReviewSheet> {
+  int _rating = 0;
+  bool _submitting = false;
+  bool _isAnonymous = true;
+  String? _errorMessage;
+  final _bodyCtrl = TextEditingController();
+  final _api = MapApiDataSource();
+
+  @override
+  void dispose() {
+    _bodyCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_rating == 0 || _submitting) return;
+    if (_bodyCtrl.text.trim().isEmpty) {
+      setState(() => _errorMessage = 'Please write your review before submitting.');
+      return;
+    }
+    setState(() { _submitting = true; _errorMessage = null; });
+    final authUser = ref.read(authProvider).user;
+    final authorId = ref.read(authProvider).userId ?? '';
+    final authorName = _isAnonymous
+        ? 'Anonymous'
+        : (authUser?.nickname ?? authUser?.email ?? 'Anonymous');
+    try {
+      final review = await _api.submitReview(
+        markerId: widget.placeId,
+        authorId: authorId,
+        author: authorName,
+        isAnonymous: _isAnonymous,
+        rating: _rating,
+        reviewBody: _bodyCtrl.text.trim(),
+        profileImageUrl: _isAnonymous ? null : authUser?.profileImageUrl,
+      );
+      if (!mounted) return;
+      widget.onReviewAdded(review);
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _errorMessage = 'Failed to submit. Please try again.');
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final systemBottom = MediaQuery.of(context).padding.bottom;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLowest,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + bottomInset + systemBottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: palette.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Write a Review',
+            style: TextStyle(
+              color: palette.onSurface,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (_rating == 0)
+            Center(
+              child: Text(
+                'Tap a star to rate',
+                style: TextStyle(color: palette.secondary, fontSize: 12),
+              ),
+            ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (i) {
+              return GestureDetector(
+                onTap: () => setState(() => _rating = i + 1),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Icon(
+                    i < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                    color: AppColors.primaryContainer,
+                    size: 44,
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 12),
+          _AuthorPreviewRow(
+            isAnonymous: _isAnonymous,
+            onChanged: (v) => setState(() => _isAnonymous = v),
+            palette: palette,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _bodyCtrl,
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: 'Share your experience at this place.',
+              hintStyle: TextStyle(color: palette.secondary, fontSize: 14),
+              filled: true,
+              fillColor: palette.surfaceContainerLow,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: palette.outlineVariant),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: palette.outlineVariant),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primaryContainer),
+              ),
+              contentPadding: const EdgeInsets.all(14),
+            ),
+            style: TextStyle(color: palette.onSurface, fontSize: 14),
+          ),
+          if (_errorMessage != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                _errorMessage!,
+                style: const TextStyle(color: Color(0xFFBA1A1A), fontSize: 13),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: (_rating > 0 && !_submitting) ? _submit : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryContainer,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: const Color(0xFFE0E0E0),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _submitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'Submit Review',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Author Preview Row ──────────────────────────────────────────────────────
+
+class _AuthorPreviewRow extends ConsumerWidget {
+  const _AuthorPreviewRow({
+    required this.isAnonymous,
+    required this.onChanged,
+    required this.palette,
+  });
+  final bool isAnonymous;
+  final ValueChanged<bool> onChanged;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider).user;
+    final displayName = isAnonymous
+        ? 'Anonymous'
+        : (user?.nickname ?? user?.email ?? 'Anonymous');
+    final profileUrl = isAnonymous ? null : user?.profileImageUrl;
+
+    return Row(
+      children: [
+        // Avatar
+        CircleAvatar(
+          radius: 20,
+          backgroundColor: palette.surfaceContainerLow,
+          backgroundImage:
+              profileUrl != null ? NetworkImage(profileUrl) : null,
+          child: profileUrl == null
+              ? Icon(
+                  isAnonymous ? Icons.person_outline : Icons.person,
+                  color: palette.secondary,
+                  size: 20,
+                )
+              : null,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            displayName,
+            style: TextStyle(
+              color: palette.onSurface,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Row(
+          children: [
+            Transform.scale(
+              scale: 0.85,
+              child: Switch(
+                value: isAnonymous,
+                onChanged: onChanged,
+                activeThumbColor: AppColors.primaryContainer,
+              ),
+            ),
+            Text(
+              'Anonymous',
+              style: TextStyle(color: palette.secondary, fontSize: 12),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 // ─── Liquors Section (Liquor Shop) ───────────────────────────────────────────
 
 class _LiquorsSection extends StatelessWidget {
-  const _LiquorsSection({required this.place, required this.palette});
+  const _LiquorsSection({
+    required this.place,
+    required this.palette,
+    required this.collection,
+  });
   final MapPlace place;
   final AppPalette palette;
+  final CollectionRepository collection;
 
   @override
   Widget build(BuildContext context) {
@@ -734,7 +1278,7 @@ class _LiquorsSection extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Center(
               child: Text(
-                '등록된 재고 정보가 없습니다.',
+                'No inventory available.',
                 style: TextStyle(color: palette.secondary, fontSize: 13),
               ),
             ),
@@ -756,7 +1300,12 @@ class _LiquorsSection extends StatelessWidget {
             for (var i = 0; i < items.length; i++) ...[
               if (i > 0)
                 Divider(height: 1, thickness: 1, color: palette.outlineVariant),
-              _LiquorRow(item: items[i], palette: palette),
+              _LiquorRow(
+                item: items[i],
+                placeId: place.id,
+                palette: palette,
+                collection: collection,
+              ),
             ],
           ],
         ),
@@ -766,9 +1315,16 @@ class _LiquorsSection extends StatelessWidget {
 }
 
 class _LiquorRow extends StatelessWidget {
-  const _LiquorRow({required this.item, required this.palette});
+  const _LiquorRow({
+    required this.item,
+    required this.placeId,
+    required this.palette,
+    required this.collection,
+  });
   final MapInventoryItem item;
+  final String placeId;
   final AppPalette palette;
+  final CollectionRepository collection;
 
   @override
   Widget build(BuildContext context) {
@@ -816,7 +1372,23 @@ class _LiquorRow extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           TextButton(
-            onPressed: () {},
+            onPressed: () async {
+              await collection.addToCart(
+                beverageId: item.beverageId,
+                nameKo: item.nameKo,
+                nameEn: item.nameEn,
+                priceKrw: item.priceKrw,
+                placeId: placeId,
+              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${item.displayName} added to your collection.'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
             style: TextButton.styleFrom(
               backgroundColor: AppColors.primaryContainer,
               foregroundColor: Colors.white,
@@ -827,10 +1399,8 @@ class _LiquorRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text(
-              '담기 +',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-            ),
+            child: const Text('담기 +',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -882,6 +1452,110 @@ class _LocationSection extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Menu List Screen ────────────────────────────────────────────────────────
+
+class MenuListScreen extends StatelessWidget {
+  const MenuListScreen({super.key, required this.place});
+  final MapPlace place;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final items = place.menu;
+
+    return Scaffold(
+      backgroundColor: palette.surfaceContainerLow,
+      appBar: AppBar(
+        backgroundColor: palette.surfaceContainerLowest,
+        elevation: 0.5,
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left, color: palette.onSurface, size: 28),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          '${place.name} — Menu',
+          style: TextStyle(
+            color: palette.onSurface,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      body: ListView.separated(
+        padding: EdgeInsets.fromLTRB(
+            16, 16, 16, MediaQuery.of(context).padding.bottom + 24),
+        itemCount: items.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 1),
+        itemBuilder: (context, i) {
+          final item = items[i];
+          return Container(
+            color: palette.surfaceContainerLowest,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                if (item.imageUrl.isNotEmpty) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      item.imageUrl,
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(
+                        width: 64,
+                        height: 64,
+                        color: palette.surfaceContainerLow,
+                        child: Icon(Icons.restaurant_menu,
+                            color: palette.secondary, size: 24),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        style: TextStyle(
+                          color: palette.onSurface,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (item.desc.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          item.desc,
+                          style: TextStyle(color: palette.secondary, fontSize: 12),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (item.formattedPrice.isNotEmpty) ...[
+                  const SizedBox(width: 12),
+                  Text(
+                    item.formattedPrice,
+                    style: TextStyle(
+                      color: item.priceKrw == 0
+                          ? palette.secondary
+                          : AppColors.primaryContainer,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
       ),
     );
   }

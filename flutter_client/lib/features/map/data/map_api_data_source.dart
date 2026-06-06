@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/map_place.dart';
+import '../models/map_review.dart';
 
 const _defaultBaseUrl = String.fromEnvironment(
   'MAP_API_BASE_URL',
@@ -68,5 +69,63 @@ class MapApiDataSource {
     }
     final markers = (body['markers'] as List<dynamic>).cast<Map<String, dynamic>>();
     return markers.map(MapPlace.fromApiMarker).toList();
+  }
+
+  Future<MapReview> submitReview({
+    required String markerId,
+    required String authorId,
+    required String author,
+    required bool isAnonymous,
+    required int rating,
+    required String reviewBody,
+    String? profileImageUrl,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/v1/map/markers/$markerId/reviews');
+    final response = await _client
+        .post(
+          uri,
+          headers: {'Content-Type': 'application/json; charset=utf-8'},
+          body: jsonEncode({
+            'author_id': authorId,
+            'author': author,
+            'is_anonymous': isAnonymous,
+            'profile_image_url': profileImageUrl,
+            'rating': rating,
+            'body': reviewBody,
+          }),
+        )
+        .timeout(const Duration(seconds: 10));
+
+    if (response.statusCode != 200) {
+      throw Exception('map-service ${response.statusCode}');
+    }
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    if (body['ok'] != true) {
+      final err = body['error'] as Map<String, dynamic>?;
+      throw Exception('map-service error: ${err?['code']}');
+    }
+
+    return MapReview.fromJson(body['review'] as Map<String, dynamic>);
+  }
+
+  Future<void> deleteReview({
+    required String markerId,
+    required String reviewId,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/v1/map/markers/$markerId/reviews/$reviewId');
+    final response = await _client
+        .delete(uri)
+        .timeout(const Duration(seconds: 10));
+
+    if (response.statusCode != 200) {
+      throw Exception('map-service ${response.statusCode}');
+    }
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    if (body['ok'] != true) {
+      final err = body['error'] as Map<String, dynamic>?;
+      throw Exception('map-service error: ${err?['code']}');
+    }
   }
 }
