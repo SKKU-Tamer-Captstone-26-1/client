@@ -462,6 +462,53 @@ class _SectionShell extends StatelessWidget {
   }
 }
 
+void _showFullScreenImage(BuildContext context, String imageUrl) {
+  Navigator.of(context).push(
+    PageRouteBuilder(
+      opaque: false,
+      barrierColor: Colors.black,
+      pageBuilder: (_, _, _) => _FullScreenImageViewer(imageUrl: imageUrl),
+    ),
+  );
+}
+
+class _FullScreenImageViewer extends StatelessWidget {
+  const _FullScreenImageViewer({required this.imageUrl});
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const Icon(Icons.broken_image, color: Colors.white54, size: 64),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                style: IconButton.styleFrom(backgroundColor: Colors.black45),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ─── Menu Section (Bar / Pub) ────────────────────────────────────────────────
 
 class _MenuSection extends StatelessWidget {
@@ -519,22 +566,25 @@ class _MenuSection extends StatelessWidget {
                     child: Row(
                       children: [
                         if (displayItems[i].imageUrl.isNotEmpty) ...[
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.network(
-                              displayItems[i].imageUrl,
-                              width: 64,
-                              height: 64,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Container(
+                          GestureDetector(
+                            onTap: () => _showFullScreenImage(context, displayItems[i].imageUrl),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                displayItems[i].imageUrl,
                                 width: 64,
                                 height: 64,
-                                decoration: BoxDecoration(
-                                  color: palette.surfaceContainerLow,
-                                  borderRadius: BorderRadius.circular(10),
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Container(
+                                  width: 64,
+                                  height: 64,
+                                  decoration: BoxDecoration(
+                                    color: palette.surfaceContainerLow,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(Icons.restaurant_menu,
+                                      color: palette.secondary, size: 24),
                                 ),
-                                child: Icon(Icons.restaurant_menu,
-                                    color: palette.secondary, size: 24),
                               ),
                             ),
                           ),
