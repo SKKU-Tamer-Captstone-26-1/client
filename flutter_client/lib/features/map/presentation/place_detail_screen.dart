@@ -1,0 +1,888 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import '../../../core/theme/app_colors.dart';
+import '../models/map_inventory_item.dart';
+import '../models/map_place.dart';
+
+const _heroHeight = 220.0;
+const _cardBarHeight = 162.0;
+
+Color _categoryColor(String code) => switch (code) {
+      'bar' => const Color(0xFFFF7E36),
+      'pub' => const Color(0xFFC4963A),
+      'liquor_shop' => const Color(0xFF4F7ED4),
+      'outdoor_spot' => const Color(0xFF5CA874),
+      _ => const Color(0xFF6B6B8A),
+    };
+
+String _categoryLabel(String code) => switch (code) {
+      'bar' => 'Bar',
+      'pub' => 'Pub',
+      'liquor_shop' => 'Liquor Shop',
+      'outdoor_spot' => 'Outdoor',
+      _ => code,
+    };
+
+class PlaceDetailScreen extends StatefulWidget {
+  const PlaceDetailScreen({super.key, required this.place});
+  final MapPlace place;
+
+  @override
+  State<PlaceDetailScreen> createState() => _PlaceDetailScreenState();
+}
+
+class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
+  final _scrollCtrl = ScrollController();
+  bool _heroVisible = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollCtrl.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final expanded = _scrollCtrl.offset < _heroHeight - kToolbarHeight;
+    if (expanded != _heroVisible) setState(() => _heroVisible = expanded);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final place = widget.place;
+    final catColor = _categoryColor(place.layerCode);
+    final iconColor = _heroVisible ? Colors.white : palette.onSurface;
+
+    return Scaffold(
+      backgroundColor: palette.surfaceContainerLow,
+      body: CustomScrollView(
+        controller: _scrollCtrl,
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: _heroHeight,
+            backgroundColor: _heroVisible
+                ? Colors.transparent
+                : palette.surfaceContainerLowest,
+            elevation: _heroVisible ? 0 : 0.5,
+            automaticallyImplyLeading: false,
+            leading: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.chevron_left, color: iconColor, size: 26),
+                  Text(
+                    '지도',
+                    style: TextStyle(
+                      color: iconColor,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            leadingWidth: 64,
+            actions: [
+              IconButton(
+                icon: Icon(Icons.share_outlined, color: iconColor, size: 22),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: Icon(Icons.favorite_border, color: iconColor, size: 22),
+                onPressed: () {},
+              ),
+              if (place.layerCode == 'liquor_shop')
+                IconButton(
+                  icon: Icon(Icons.shopping_cart_outlined, color: iconColor, size: 22),
+                  onPressed: () {},
+                ),
+            ],
+            bottom: _CoreInfoCardBar(
+              place: place,
+              catColor: catColor,
+              palette: palette,
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.parallax,
+              background: _HeroSection(place: place, catColor: catColor),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTypeSection(palette),
+                SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTypeSection(AppPalette palette) {
+    return switch (widget.place.layerCode) {
+      'bar' || 'pub' => Column(children: [
+          _MenuSection(place: widget.place, palette: palette),
+          const SizedBox(height: 8),
+          _ReviewsSection(palette: palette),
+        ]),
+      'liquor_shop' => _LiquorsSection(place: widget.place, palette: palette),
+      'outdoor_spot' => _LocationSection(palette: palette),
+      _ => _ReviewsSection(palette: palette),
+    };
+  }
+}
+
+// ─── Hero ───────────────────────────────────────────────────────────────────
+
+class _HeroSection extends StatefulWidget {
+  const _HeroSection({required this.place, required this.catColor});
+  final MapPlace place;
+  final Color catColor;
+
+  @override
+  State<_HeroSection> createState() => _HeroSectionState();
+}
+
+class _HeroSectionState extends State<_HeroSection> {
+  final _pageCtrl = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final urls = widget.place.imageUrls;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // ── Images or logo placeholder ──
+        if (urls.isEmpty)
+          Container(
+            color: widget.catColor.withValues(alpha: 0.14),
+            child: Center(
+              child: SvgPicture.asset(
+                isDark
+                    ? 'assets/on-the-block-white.svg'
+                    : 'assets/on-the-block-dark.svg',
+                width: 130,
+              ),
+            ),
+          )
+        else
+          PageView.builder(
+            controller: _pageCtrl,
+            itemCount: urls.length,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            itemBuilder: (_, i) => Image.network(
+              urls[i],
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Container(
+                color: widget.catColor.withValues(alpha: 0.14),
+                child: Center(
+                  child: SvgPicture.asset(
+                    isDark
+                        ? 'assets/on-the-block-white.svg'
+                        : 'assets/on-the-block-dark.svg',
+                    width: 100,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        // ── Top gradient (icons readable over image) ──
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.center,
+              colors: [Color(0x80000000), Colors.transparent],
+            ),
+          ),
+        ),
+
+        // ── Bottom fade → blends into the pinned card below ──
+        DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  context.palette.surfaceContainerLowest.withValues(alpha: urls.isEmpty ? 1.0 : 0.85),
+                ],
+                stops: const [0.5, 1.0],
+              ),
+            ),
+          ),
+
+        // ── Dot indicators ──
+        if (urls.length > 1)
+          Positioned(
+            bottom: 14,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(urls.length, (i) {
+                final active = i == _currentPage;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: active ? 20 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: active ? 1.0 : 0.5),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                );
+              }),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// ─── Core Info Card Bar (PreferredSizeWidget — always pinned in SliverAppBar) ─
+
+class _CoreInfoCardBar extends StatelessWidget implements PreferredSizeWidget {
+  const _CoreInfoCardBar({
+    required this.place,
+    required this.catColor,
+    required this.palette,
+  });
+  final MapPlace place;
+  final Color catColor;
+  final AppPalette palette;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(_cardBarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: palette.surfaceContainerLow,
+      child: _CoreInfoCard(place: place, catColor: catColor, palette: palette),
+    );
+  }
+}
+
+// ─── Core Info Card ─────────────────────────────────────────────────────────
+
+class _CoreInfoCard extends StatelessWidget {
+  const _CoreInfoCard({
+    required this.place,
+    required this.catColor,
+    required this.palette,
+  });
+  final MapPlace place;
+  final Color catColor;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasRating = place.rating.isNotEmpty;
+    final closesAt = place.openHours.isNotEmpty
+        ? place.openHours.split(' - ').last
+        : '';
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: palette.outlineVariant),
+        boxShadow: const [
+          BoxShadow(color: Color(0x1A000000), blurRadius: 12, offset: Offset(0, 4)),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: catColor,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          _categoryLabel(place.layerCode).toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        place.name,
+                        style: TextStyle(
+                          color: palette.onSurface,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                          height: 1.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (hasRating) ...[
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: palette.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star_rounded, color: AppColors.primaryContainer, size: 16),
+                        const SizedBox(width: 3),
+                        Text(
+                          place.rating,
+                          style: TextStyle(
+                            color: palette.onSurface,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        if (place.reviewCount != null) ...[
+                          const SizedBox(width: 3),
+                          Text(
+                            '(${place.reviewCount})',
+                            style: TextStyle(color: palette.secondary, fontSize: 11),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 10),
+            if (place.isOpenNow != null) ...[
+              Row(
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: place.isOpenNow!
+                          ? const Color(0xFF4CAF50)
+                          : palette.secondary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    place.isOpenNow! ? '영업 중' : '영업 종료',
+                    style: TextStyle(
+                      color: place.isOpenNow!
+                          ? const Color(0xFF4CAF50)
+                          : palette.secondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (closesAt.isNotEmpty && place.isOpenNow!) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      '· $closesAt까지',
+                      style: TextStyle(color: palette.secondary, fontSize: 13),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
+            if (place.address.isNotEmpty)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.location_on_outlined, color: palette.secondary, size: 16),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      place.address,
+                      style: TextStyle(
+                        color: palette.onSurfaceVariant,
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Section Shell ───────────────────────────────────────────────────────────
+
+class _SectionShell extends StatelessWidget {
+  const _SectionShell({required this.title, required this.child});
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: palette.onSurface,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Menu Section (Bar / Pub) ────────────────────────────────────────────────
+
+class _MenuSection extends StatelessWidget {
+  const _MenuSection({required this.place, required this.palette});
+  final MapPlace place;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = place.menu;
+
+    if (items.isEmpty) {
+      return _SectionShell(
+        title: 'Menu',
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: palette.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: palette.outlineVariant),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Text(
+                '등록된 메뉴가 없습니다.',
+                style: TextStyle(color: palette.secondary, fontSize: 13),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return _SectionShell(
+      title: 'Menu',
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: palette.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: palette.outlineVariant),
+        ),
+        child: Column(
+          children: [
+            for (var i = 0; i < items.length; i++) ...[
+              if (i > 0)
+                Divider(height: 1, thickness: 1, color: palette.outlineVariant),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    if (items[i].imageUrl.isNotEmpty) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          items[i].imageUrl,
+                          width: 64,
+                          height: 64,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: palette.surfaceContainerLow,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.restaurant_menu, color: palette.secondary, size: 24),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            items[i].name,
+                            style: TextStyle(
+                              color: palette.onSurface,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          if (items[i].desc.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              items[i].desc,
+                              style: TextStyle(color: palette.secondary, fontSize: 12),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (items[i].formattedPrice.isNotEmpty) ...[
+                      const SizedBox(width: 12),
+                      Text(
+                        items[i].formattedPrice,
+                        style: const TextStyle(
+                          color: AppColors.primaryContainer,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Reviews Section (Bar / Pub) ─────────────────────────────────────────────
+
+const _mockReviews = [
+  ('J', '5', '"Great atmosphere for whiskey lovers. The playlist is as good as the spirits."', '2일 전'),
+  ('M', '4', '"시그니처 칵테일이 정말 독특하고 맛있어요. 인테리어도 고급스러워서 데이트하기 좋은 곳입니다."', '1주 전'),
+];
+
+class _ReviewsSection extends StatelessWidget {
+  const _ReviewsSection({required this.palette});
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SectionShell(
+      title: 'Reviews',
+      child: Column(
+        children: [
+          for (final r in _mockReviews) ...[
+            _ReviewCard(
+              initial: r.$1,
+              stars: int.parse(r.$2),
+              body: r.$3,
+              when: r.$4,
+              palette: palette,
+            ),
+            const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewCard extends StatelessWidget {
+  const _ReviewCard({
+    required this.initial,
+    required this.stars,
+    required this.body,
+    required this.when,
+    required this.palette,
+  });
+  final String initial;
+  final int stars;
+  final String body;
+  final String when;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: palette.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: palette.surfaceContainerLow,
+                  child: Text(
+                    initial,
+                    style: TextStyle(
+                      color: palette.onSurface,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Row(
+                  children: List.generate(
+                    5,
+                    (i) => Icon(
+                      Icons.star_rounded,
+                      size: 13,
+                      color: i < stars
+                          ? AppColors.primaryContainer
+                          : palette.outlineVariant,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  when,
+                  style: TextStyle(color: palette.secondary, fontSize: 11),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              body,
+              style: TextStyle(
+                color: palette.onSurfaceVariant,
+                fontSize: 13,
+                height: 1.5,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Liquors Section (Liquor Shop) ───────────────────────────────────────────
+
+class _LiquorsSection extends StatelessWidget {
+  const _LiquorsSection({required this.place, required this.palette});
+  final MapPlace place;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = place.inventory;
+
+    if (items.isEmpty) {
+      return _SectionShell(
+        title: 'Available Liquors',
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: palette.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: palette.outlineVariant),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Text(
+                '등록된 재고 정보가 없습니다.',
+                style: TextStyle(color: palette.secondary, fontSize: 13),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return _SectionShell(
+      title: 'Available Liquors',
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: palette.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: palette.outlineVariant),
+        ),
+        child: Column(
+          children: [
+            for (var i = 0; i < items.length; i++) ...[
+              if (i > 0)
+                Divider(height: 1, thickness: 1, color: palette.outlineVariant),
+              _LiquorRow(item: items[i], palette: palette),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LiquorRow extends StatelessWidget {
+  const _LiquorRow({required this.item, required this.palette});
+  final MapInventoryItem item;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: palette.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(Icons.liquor, color: palette.secondary, size: 28),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.displayName,
+                  style: TextStyle(
+                    color: palette.onSurface,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (item.formattedPrice.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    item.formattedPrice,
+                    style: const TextStyle(
+                      color: AppColors.primaryContainer,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          TextButton(
+            onPressed: () {},
+            style: TextButton.styleFrom(
+              backgroundColor: AppColors.primaryContainer,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              '담기 +',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Location Section (Outdoor) ──────────────────────────────────────────────
+
+class _LocationSection extends StatelessWidget {
+  const _LocationSection({required this.palette});
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context) {
+    return _SectionShell(
+      title: '장소 정보',
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: palette.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: palette.outlineVariant),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                height: 160,
+                decoration: BoxDecoration(
+                  color: palette.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Center(
+                  child: Icon(Icons.map_outlined, size: 48, color: Color(0xFF5CA874)),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                '탁 트인 전망과 함께 즐길 수 있는 야외 테라스 좌석입니다. 선선한 바람과 함께 도심 속 여유를 만끽할 수 있는 낭만적인 분위기를 선사합니다.',
+                style: TextStyle(
+                  color: palette.onSurfaceVariant,
+                  fontSize: 13,
+                  height: 1.6,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
