@@ -88,7 +88,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                 children: [
                   Icon(Icons.chevron_left, color: iconColor, size: 26),
                   Text(
-                    '지도',
+                    'Map',
                     style: TextStyle(
                       color: iconColor,
                       fontSize: 13,
@@ -533,7 +533,7 @@ class _MenuSection extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Center(
               child: Text(
-                '등록된 메뉴가 없습니다.',
+                'No menu available.',
                 style: TextStyle(color: palette.secondary, fontSize: 13),
               ),
             ),
@@ -1278,7 +1278,7 @@ class _LiquorsSection extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Center(
               child: Text(
-                '등록된 재고 정보가 없습니다.',
+                'No inventory available.',
                 style: TextStyle(color: palette.secondary, fontSize: 13),
               ),
             ),
@@ -1383,7 +1383,7 @@ class _LiquorRow extends StatelessWidget {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${item.displayName}이(가) 컬렉션에 추가됐습니다.'),
+                    content: Text('${item.displayName} added to your collection.'),
                     duration: const Duration(seconds: 2),
                   ),
                 );
