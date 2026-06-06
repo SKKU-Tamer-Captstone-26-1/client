@@ -78,6 +78,7 @@ class MapApiDataSource {
     required bool isAnonymous,
     required int rating,
     required String reviewBody,
+    String? profileImageUrl,
   }) async {
     final uri = Uri.parse('$_baseUrl/v1/map/markers/$markerId/reviews');
     final response = await _client
@@ -88,6 +89,7 @@ class MapApiDataSource {
             'author_id': authorId,
             'author': author,
             'is_anonymous': isAnonymous,
+            'profile_image_url': profileImageUrl,
             'rating': rating,
             'body': reviewBody,
           }),
@@ -105,5 +107,25 @@ class MapApiDataSource {
     }
 
     return MapReview.fromJson(body['review'] as Map<String, dynamic>);
+  }
+
+  Future<void> deleteReview({
+    required String markerId,
+    required String reviewId,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/v1/map/markers/$markerId/reviews/$reviewId');
+    final response = await _client
+        .delete(uri)
+        .timeout(const Duration(seconds: 10));
+
+    if (response.statusCode != 200) {
+      throw Exception('map-service ${response.statusCode}');
+    }
+
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+    if (body['ok'] != true) {
+      final err = body['error'] as Map<String, dynamic>?;
+      throw Exception('map-service error: ${err?['code']}');
+    }
   }
 }
