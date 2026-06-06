@@ -776,7 +776,29 @@ class _ReviewCard extends StatelessWidget {
                     size: 18,
                   ),
                   onPressed: isOwnReview
-                      ? onDeletePressed
+                      ? () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Delete Review'),
+                              content: const Text('Are you sure you want to delete this review?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed == true) onDeletePressed?.call();
+                        }
                       : () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
