@@ -73,7 +73,9 @@ class MapApiDataSource {
 
   Future<MapReview> submitReview({
     required String markerId,
+    required String authorId,
     required String author,
+    required bool isAnonymous,
     required int rating,
     required String reviewBody,
   }) async {
@@ -82,7 +84,13 @@ class MapApiDataSource {
         .post(
           uri,
           headers: {'Content-Type': 'application/json; charset=utf-8'},
-          body: jsonEncode({'author': author, 'rating': rating, 'body': reviewBody}),
+          body: jsonEncode({
+            'author_id': authorId,
+            'author': author,
+            'is_anonymous': isAnonymous,
+            'rating': rating,
+            'body': reviewBody,
+          }),
         )
         .timeout(const Duration(seconds: 10));
 
