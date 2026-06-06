@@ -686,6 +686,7 @@ class _ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isOwnReview = review.author == 'You';
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
@@ -738,6 +739,32 @@ class _ReviewCard extends StatelessWidget {
                   review.dateLabel,
                   style: TextStyle(color: palette.secondary, fontSize: 11),
                 ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    color: isOwnReview ? palette.secondary : palette.outlineVariant,
+                    size: 18,
+                  ),
+                  onPressed: isOwnReview
+                      ? () {
+                          // TODO: implement delete when backend ready
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Delete feature coming soon.')),
+                          );
+                        }
+                      : () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('You can only delete your own reviews.'),
+                            ),
+                          );
+                        },
+                  tooltip: isOwnReview ? 'Delete review' : 'Can only delete your own reviews',
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  padding: EdgeInsets.zero,
+                  splashRadius: 16,
+                ),
               ],
             ),
             const SizedBox(height: 10),
@@ -771,6 +798,7 @@ class _AddReviewSheet extends StatefulWidget {
 class _AddReviewSheetState extends State<_AddReviewSheet> {
   int _rating = 0;
   bool _submitting = false;
+  bool _isAnonymous = true;
   String? _errorMessage;
   final _bodyCtrl = TextEditingController();
   final _api = MapApiDataSource();
@@ -791,7 +819,7 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
     try {
       final review = await _api.submitReview(
         markerId: widget.placeId,
-        author: '익명',
+        author: _isAnonymous ? 'Anonymous' : 'You',
         rating: _rating,
         reviewBody: _bodyCtrl.text.trim(),
       );
@@ -841,7 +869,15 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          if (_rating == 0)
+            Center(
+              child: Text(
+                'Tap a star to rate',
+                style: TextStyle(color: palette.secondary, fontSize: 12),
+              ),
+            ),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (i) {
@@ -858,7 +894,22 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
               );
             }),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Checkbox(
+                value: _isAnonymous,
+                onChanged: (v) => setState(() => _isAnonymous = v ?? true),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              Text(
+                'Post anonymously',
+                style: TextStyle(color: palette.onSurface, fontSize: 13),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
           TextField(
             controller: _bodyCtrl,
             maxLines: 4,
@@ -883,16 +934,6 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
             ),
             style: TextStyle(color: palette.onSurface, fontSize: 14),
           ),
-          if (_rating == 0)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Center(
-                child: Text(
-                  'Tap a star to rate',
-                  style: TextStyle(color: palette.secondary, fontSize: 12),
-                ),
-              ),
-            ),
           if (_errorMessage != null)
             Padding(
               padding: const EdgeInsets.only(top: 12),
