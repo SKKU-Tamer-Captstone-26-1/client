@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
+import '../../../features/chatbot/data/chatbot_repository.dart';
+import '../../../features/chatbot/models/chatbot_models.dart';
 import '../../../features/chatbot/presentation/chatbot_modal.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
@@ -27,6 +29,8 @@ class BoardScreen extends ConsumerWidget {
     this.onBoardChatRequested,
     this.onCreatePostRequested,
     this.onPostSelected,
+    this.chatbotRepository,
+    this.chatbotAuthToken = '',
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
@@ -35,6 +39,8 @@ class BoardScreen extends ConsumerWidget {
   final ValueChanged<BoardPost>? onBoardChatRequested;
   final VoidCallback? onCreatePostRequested;
   final ValueChanged<BoardPost>? onPostSelected;
+  final ChatbotRepository? chatbotRepository;
+  final String chatbotAuthToken;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
@@ -60,7 +66,12 @@ class BoardScreen extends ConsumerWidget {
         children: [
           FloatingActionButton.small(
             heroTag: 'board-chatbot',
-            onPressed: () => showChatbotModal(context),
+            onPressed: () => showChatbotModal(
+              context,
+              repository: chatbotRepository,
+              authToken: chatbotAuthToken,
+              screenContext: ChatbotScreenContext.board,
+            ),
             tooltip: 'Chat with Neighborhood Guide',
             backgroundColor: palette.surfaceContainerLowest,
             foregroundColor: AppColors.primaryContainer,

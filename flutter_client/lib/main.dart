@@ -9,6 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_controller.dart';
 import 'core/theme/app_icons.dart';
 import 'core/config/app_config.dart';
+import 'core/gateway/app_gateway_grpc_endpoint.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/providers/auth_repository_provider.dart';
@@ -16,6 +17,8 @@ import 'features/board/models/board_models.dart';
 import 'features/board/presentation/board_create_post_screen.dart';
 import 'features/board/presentation/board_detail_screen.dart';
 import 'features/board/presentation/board_screen.dart';
+import 'features/chatbot/data/chatbot_remote_data_source.dart';
+import 'features/chatbot/data/chatbot_repository.dart';
 import 'features/chat/data/chat_push_service.dart';
 import 'features/chat/data/chat_remote_data_source.dart';
 import 'features/chat/data/chat_repository.dart';
@@ -53,6 +56,8 @@ class OnTheBlockApp extends ConsumerStatefulWidget {
     this.chatPushService,
     this.mapDataSource,
     this.mapPositionResolver,
+    this.chatbotRepository,
+    this.enableDefaultChatbotRepository = true,
     this.recommendationRepository,
     this.enableDefaultRecommendationRepository = true,
   });
@@ -61,6 +66,8 @@ class OnTheBlockApp extends ConsumerStatefulWidget {
   final ChatPushService? chatPushService;
   final MapApiDataSource? mapDataSource;
   final MapPositionResolver? mapPositionResolver;
+  final ChatbotRepository? chatbotRepository;
+  final bool enableDefaultChatbotRepository;
   final RecommendationRepository? recommendationRepository;
   final bool enableDefaultRecommendationRepository;
 
@@ -92,6 +99,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
   GroupchatRoomSummary _selectedGroupchatRoom = _emptyRoom;
   ChatRepository? _chatRepository;
   ChatPushService? _chatPushService;
+  ChatbotRepository? _chatbotRepository;
   RecommendationRepository? _recommendationRepository;
   final Set<String> _locallyHiddenRoomIds = <String>{};
   String? _pendingChatPushRoomId;
@@ -115,6 +123,15 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         widget.chatRepository ?? GrpcChatRepository(GrpcChatRemoteDataSource());
     _chatPushService = widget.chatPushService ?? FirebaseChatPushService();
     final recommendationEndpoint = RecommendationGrpcEndpoint.fromEnvironment();
+    final appGatewayEndpoint = AppGatewayGrpcEndpoint.fromEnvironment();
+    _chatbotRepository =
+        widget.chatbotRepository ??
+        (widget.enableDefaultChatbotRepository &&
+                appGatewayEndpoint.isConfigured
+            ? GrpcChatbotRepository(
+                GrpcChatbotRemoteDataSource(endpoint: appGatewayEndpoint),
+              )
+            : null);
     _recommendationRepository =
         widget.recommendationRepository ??
         (widget.enableDefaultRecommendationRepository &&
@@ -137,6 +154,10 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     final repo = _chatRepository;
     if (repo != null) {
       unawaited(repo.dispose());
+    }
+    final chatbotRepo = _chatbotRepository;
+    if (chatbotRepo != null) {
+      unawaited(chatbotRepo.dispose());
     }
     final recommendationRepo = _recommendationRepository;
     if (recommendationRepo != null) {
@@ -262,6 +283,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         onProfileSelected: _goToProfile,
         recommendationRepository: _recommendationRepository,
         recommendationAuthToken: _currentAuthToken,
+        chatbotRepository: _chatbotRepository,
+        chatbotAuthToken: _currentAuthToken,
         hasCompletedSurvey:
             ref.read(authProvider).user?.surveyId?.trim().isNotEmpty ?? false,
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
@@ -279,6 +302,8 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         onBoardChatRequested: _openBoardChat,
         onCreatePostRequested: _openBoardCreatePost,
         onPostSelected: _openBoardDetail,
+        chatbotRepository: _chatbotRepository,
+        chatbotAuthToken: _currentAuthToken,
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
       ),
       _AppStage.boardCreatePost => BoardCreatePostScreen(

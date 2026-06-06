@@ -5,12 +5,28 @@ const String kGatewayBaseUrl = String.fromEnvironment(
   defaultValue: 'http://10.0.2.2:8080',
 );
 
+const String kAppGatewayGrpcHost = String.fromEnvironment(
+  'APP_GATEWAY_GRPC_HOST',
+  defaultValue: '',
+);
+
+const String kAppGatewayGrpcTls = String.fromEnvironment(
+  'APP_GATEWAY_GRPC_TLS',
+  defaultValue: 'true',
+);
+
 const bool kBypassSurvey = bool.fromEnvironment('BYPASS_SURVEY');
 
 const String kKakaoRestApiKey = String.fromEnvironment('KAKAO_REST_API_KEY');
 
-const String kGcsBucket = String.fromEnvironment('GCS_BUCKET', defaultValue: '');
-const String kGcsApiKey = String.fromEnvironment('GCS_API_KEY', defaultValue: '');
+const String kGcsBucket = String.fromEnvironment(
+  'GCS_BUCKET',
+  defaultValue: '',
+);
+const String kGcsApiKey = String.fromEnvironment(
+  'GCS_API_KEY',
+  defaultValue: '',
+);
 
 const String kSurveyGrpcHost = String.fromEnvironment(
   'SURVEY_GRPC_HOST',
@@ -28,8 +44,13 @@ void assertSecureConfig() {
   if (kBypassSurvey) {
     throw StateError('BYPASS_SURVEY must be false in release builds.');
   }
-  assert(
-    kGatewayBaseUrl.startsWith('https://'),
-    'GATEWAY_BASE_URL must use https:// in release builds (got: $kGatewayBaseUrl)',
-  );
+  if (!kGatewayBaseUrl.startsWith('https://')) {
+    throw StateError(
+      'GATEWAY_BASE_URL must use https:// in release builds (got: $kGatewayBaseUrl)',
+    );
+  }
+  if (kAppGatewayGrpcHost.isNotEmpty &&
+      kAppGatewayGrpcTls.toLowerCase() != 'true') {
+    throw StateError('APP_GATEWAY_GRPC_TLS must be true in release builds.');
+  }
 }

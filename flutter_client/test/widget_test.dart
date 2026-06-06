@@ -20,6 +20,8 @@ import 'package:flutter_client/features/chat/data/mock_groupchat_data.dart';
 import 'package:flutter_client/features/chat/models/groupchat_models.dart';
 import 'package:flutter_client/features/chat/presentation/widgets/chat_input_bar.dart';
 import 'package:flutter_client/features/chat/presentation/widgets/typing_indicator.dart';
+import 'package:flutter_client/features/chatbot/data/chatbot_repository.dart';
+import 'package:flutter_client/features/chatbot/models/chatbot_models.dart';
 import 'package:flutter_client/features/map/data/map_api_data_source.dart';
 import 'package:flutter_client/features/map/models/map_place.dart';
 import 'package:flutter_client/features/preference_survey/data/survey_grpc_client.dart';
@@ -586,22 +588,48 @@ void main() {
     expect(find.text('Proceed to Checkout'), findsOneWidget);
   });
 
-  testWidgets('opens chatbot modal from home but not map', (
+  testWidgets('home chatbot sends authenticated message and renders cards', (
     WidgetTester tester,
   ) async {
-    await _pumpApp(tester);
+    final chatbotRepository = _FakeChatbotRepository(
+      answer: _chatbotAnswerWithCards(),
+    );
+
+    await _pumpApp(tester, chatbotRepository: chatbotRepository);
 
     await _signInAndSkipOnboarding(tester);
 
     await tester.tap(find.byIcon(Icons.chat));
     await tester.pumpAndSettle();
 
-    expect(find.text('Chat with Neighborhood Guide'), findsOneWidget);
+    expect(find.text('ON THE BLOCK 챗봇'), findsOneWidget);
+    expect(find.text('질문을 입력하세요...'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).last, '위스키 추천해줘');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Send chatbot message'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('라프로익 10년을 먼저 추천드려요.'), findsOneWidget);
+    expect(find.text('라프로익 10년'), findsOneWidget);
+    expect(find.text('수원 바틀샵'), findsOneWidget);
+    expect(find.text('참고 가격 89,000원'), findsOneWidget);
+    expect(chatbotRepository.lastAuthToken, 'access-token');
+    expect(chatbotRepository.lastRequest?.message, '위스키 추천해줘');
     expect(
-      find.textContaining('Looking for a specific bottle'),
-      findsOneWidget,
+      chatbotRepository.lastRequest?.screenContext,
+      ChatbotScreenContext.home,
     );
-    expect(find.text('Type your message...'), findsOneWidget);
+    expect(chatbotRepository.lastRequest?.beverageLimit, 3);
+    expect(chatbotRepository.lastRequest?.venueLimit, 3);
+    expect(
+      chatbotRepository.lastRequest?.clientContext.containsKey('user_id'),
+      isFalse,
+    );
+
+    final beverageTop = tester.getTopLeft(find.text('라프로익 10년').first).dy;
+    final venueTop = tester.getTopLeft(find.text('수원 바틀샵').first).dy;
+    expect(beverageTop, lessThan(venueTop));
 
     await tester.tap(find.byTooltip('Close'));
     await tester.pumpAndSettle();
@@ -616,7 +644,9 @@ void main() {
   testWidgets('board keeps plus for writing and has separate chatbot button', (
     WidgetTester tester,
   ) async {
-    await _pumpApp(tester);
+    final chatbotRepository = _FakeChatbotRepository();
+
+    await _pumpApp(tester, chatbotRepository: chatbotRepository);
 
     await _signInAndSkipOnboarding(tester);
     await tester.tap(find.text('Board'));
@@ -629,7 +659,147 @@ void main() {
     await tester.tap(find.byTooltip('Chat with Neighborhood Guide'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Chat with Neighborhood Guide'), findsOneWidget);
+    expect(find.text('ON THE BLOCK 챗봇'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).last, '보드 글 기준으로 알려줘');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Send chatbot message'));
+    await tester.pumpAndSettle();
+
+    expect(chatbotRepository.lastAuthToken, 'access-token');
+    expect(
+      chatbotRepository.lastRequest?.screenContext,
+      ChatbotScreenContext.board,
+    );
+  });
+
+  testWidgets('chatbot renders refused response without generic error', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(
+      tester,
+      chatbotRepository: _FakeChatbotRepository(
+        answer: const ChatbotAnswer(
+          conversationId: 'conv-1',
+          messageId: 'msg-refused',
+          answer: '주류 추천 범위를 벗어난 요청에는 답변할 수 없습니다.',
+          status: ChatbotResponseStatus.refused,
+          refused: true,
+          refusalReason: '범위 밖 요청',
+          profileStatus: ChatbotProfileStatus.active,
+          missingFacts: <String>[],
+          followUpQuestions: <String>[],
+          cards: <ChatbotCardModel>[],
+        ),
+      ),
+    );
+
+    await _signInAndSkipOnboarding(tester);
+    await tester.tap(find.byIcon(Icons.chat));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '아무거나 말해줘');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Send chatbot message'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('요청 거절'), findsOneWidget);
+    expect(find.text('주류 추천 범위를 벗어난 요청에는 답변할 수 없습니다.'), findsOneWidget);
+    expect(find.text('챗봇 서버에 연결하지 못했습니다.'), findsNothing);
+  });
+
+  testWidgets('chatbot renders insufficient-data profile state', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(
+      tester,
+      chatbotRepository: _FakeChatbotRepository(
+        answer: const ChatbotAnswer(
+          conversationId: 'conv-1',
+          messageId: 'msg-profile',
+          answer: '추천 프로필이 아직 준비되지 않았습니다.',
+          status: ChatbotResponseStatus.insufficientData,
+          refused: false,
+          refusalReason: '',
+          profileStatus: ChatbotProfileStatus.missing,
+          missingFacts: <String>['survey_response'],
+          followUpQuestions: <String>['설문을 먼저 완료해 주세요.'],
+          cards: <ChatbotCardModel>[],
+        ),
+      ),
+    );
+
+    await _signInAndSkipOnboarding(tester);
+    await tester.tap(find.byIcon(Icons.chat));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '내 취향 설명해줘');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Send chatbot message'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('프로필 준비 필요'), findsOneWidget);
+    expect(find.text('부족한 정보'), findsOneWidget);
+    expect(find.text('- survey_response'), findsOneWidget);
+    expect(find.text('- 설문을 먼저 완료해 주세요.'), findsOneWidget);
+  });
+
+  testWidgets('chatbot backend unavailable state can retry', (
+    WidgetTester tester,
+  ) async {
+    final chatbotRepository = _FakeChatbotRepository()..failNextSend = true;
+
+    await _pumpApp(tester, chatbotRepository: chatbotRepository);
+
+    await _signInAndSkipOnboarding(tester);
+    await tester.tap(find.byIcon(Icons.chat));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '추천해줘');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Send chatbot message'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('챗봇 서버에 연결하지 못했습니다.'), findsOneWidget);
+
+    await tester.tap(find.text('재시도'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('추천 결과를 찾았어요.'), findsOneWidget);
+    expect(chatbotRepository.sendCalls, 2);
+  });
+
+  testWidgets('chatbot feedback sends idempotency key', (
+    WidgetTester tester,
+  ) async {
+    final chatbotRepository = _FakeChatbotRepository(
+      answer: _chatbotAnswerWithCards(),
+    );
+
+    await _pumpApp(tester, chatbotRepository: chatbotRepository);
+
+    await _signInAndSkipOnboarding(tester);
+    await tester.tap(find.byIcon(Icons.chat));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '추천해줘');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Send chatbot message'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Helpful'));
+    await tester.pumpAndSettle();
+
+    expect(chatbotRepository.feedbackEvents, hasLength(1));
+    expect(
+      chatbotRepository.feedbackEvents.single.eventType,
+      ChatbotFeedbackType.helpful,
+    );
+    expect(chatbotRepository.feedbackEvents.single.authToken, 'access-token');
+    expect(
+      chatbotRepository.feedbackEvents.single.idempotencyKey,
+      contains(':msg-1:helpful'),
+    );
+    expect(
+      chatbotRepository.feedbackEvents.single.metadata['screen_context'],
+      'home',
+    );
   });
 
   testWidgets('opens board-linked chat from board post', (
@@ -833,6 +1003,7 @@ Future<void> _skipSurveyAndLocation(WidgetTester tester) async {
 Future<void> _pumpApp(
   WidgetTester tester, {
   ChatPushService? chatPushService,
+  ChatbotRepository? chatbotRepository,
   RecommendationRepository? recommendationRepository,
   Map<String, Object> initialPreferences = const {},
 }) {
@@ -851,11 +1022,173 @@ Future<void> _pumpApp(
         chatPushService: chatPushService ?? _FakeChatPushService(),
         mapDataSource: _FakeMapApiDataSource(),
         mapPositionResolver: () async => null,
+        chatbotRepository: chatbotRepository ?? _FakeChatbotRepository(),
+        enableDefaultChatbotRepository: false,
         recommendationRepository: recommendationRepository,
         enableDefaultRecommendationRepository: false,
       ),
     ),
   );
+}
+
+ChatbotAnswer _chatbotAnswerWithCards() {
+  return const ChatbotAnswer(
+    conversationId: 'conv-1',
+    messageId: 'msg-1',
+    answer: '라프로익 10년을 먼저 추천드려요.',
+    status: ChatbotResponseStatus.answered,
+    refused: false,
+    refusalReason: '',
+    profileStatus: ChatbotProfileStatus.active,
+    missingFacts: <String>[],
+    followUpQuestions: <String>[],
+    cards: <ChatbotCardModel>[
+      ChatbotCardModel(
+        kind: ChatbotCardKind.beverageRecommendation,
+        title: '라프로익 10년',
+        subtitle: 'peated single malt',
+        displayReason: '스모키한 향과 긴 여운 때문에 잘 맞습니다.',
+        reasonCodes: <String>['SMOKY', 'CATEGORY_MATCH'],
+        beverage: ChatbotBeverageCard(
+          rank: 1,
+          resultId: 'bev-result-1',
+          beverageId: 'bev-1',
+          nameKo: '라프로익 10년',
+          nameEn: 'Laphroaig 10 Year Old',
+          category: 'whiskey',
+          reasonCodes: <String>['SMOKY', 'CATEGORY_MATCH'],
+          explanation: '스모키한 향과 긴 여운 때문에 잘 맞습니다.',
+        ),
+      ),
+      ChatbotCardModel(
+        kind: ChatbotCardKind.venueRecommendation,
+        title: '수원 바틀샵',
+        subtitle: '수원시 팔달구',
+        displayReason: '근처에서 관측된 구매 후보입니다.',
+        reasonCodes: <String>['NEARBY', 'PRICE_OBSERVED'],
+        venue: ChatbotVenueCard(
+          rank: 2,
+          resultId: 'venue-result-1',
+          placeId: 'place-1',
+          name: '수원 바틀샵',
+          placeType: 'liquor_shop',
+          address: '수원시 팔달구',
+          distanceM: 840,
+          priceKrw: 89000,
+          estimatedTravelTimeSec: 540,
+          availabilityLabel: '확인된 이용 가능',
+          freshnessLabel: '최신 관측',
+          reasonCodes: <String>['NEARBY', 'PRICE_OBSERVED'],
+          explanation: '근처에서 관측된 구매 후보입니다.',
+        ),
+      ),
+    ],
+  );
+}
+
+class _FakeChatbotRepository implements ChatbotRepository {
+  _FakeChatbotRepository({ChatbotAnswer? answer})
+    : answer =
+          answer ??
+          const ChatbotAnswer(
+            conversationId: 'conv-1',
+            messageId: 'msg-1',
+            answer: '추천 결과를 찾았어요.',
+            status: ChatbotResponseStatus.answered,
+            refused: false,
+            refusalReason: '',
+            profileStatus: ChatbotProfileStatus.active,
+            missingFacts: <String>[],
+            followUpQuestions: <String>[],
+            cards: <ChatbotCardModel>[],
+          );
+
+  final ChatbotAnswer answer;
+  final List<_RecordedChatbotFeedback> feedbackEvents =
+      <_RecordedChatbotFeedback>[];
+  ChatbotSendRequest? lastRequest;
+  String lastAuthToken = '';
+  int sendCalls = 0;
+  bool failNextSend = false;
+
+  @override
+  Future<ChatbotAnswer> sendMessage(ChatbotSendRequest request) async {
+    sendCalls += 1;
+    lastRequest = request;
+    lastAuthToken = request.authToken;
+    if (failNextSend) {
+      failNextSend = false;
+      throw Exception('chatbot unavailable');
+    }
+    return answer;
+  }
+
+  @override
+  Future<ChatbotConversationPage> getConversation({
+    required String authToken,
+    required String conversationId,
+    int pageSize = 20,
+    String pageToken = '',
+  }) async {
+    return ChatbotConversationPage(
+      conversationId: conversationId,
+      nextPageToken: '',
+      messages: <ChatbotConversationMessage>[
+        ChatbotConversationMessage(
+          messageId: answer.messageId,
+          role: ChatbotMessageRole.assistant,
+          content: answer.answer,
+          cards: answer.cards,
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<void> recordFeedback({
+    required String authToken,
+    required String conversationId,
+    required String messageId,
+    required ChatbotFeedbackType eventType,
+    required String idempotencyKey,
+    String comment = '',
+    Map<String, Object> metadata = const <String, Object>{},
+  }) async {
+    feedbackEvents.add(
+      _RecordedChatbotFeedback(
+        authToken: authToken,
+        conversationId: conversationId,
+        messageId: messageId,
+        eventType: eventType,
+        idempotencyKey: idempotencyKey,
+        comment: comment,
+        metadata: Map<String, Object>.unmodifiable(metadata),
+      ),
+    );
+  }
+
+  @override
+  Future<void> dispose() async {}
+}
+
+class _RecordedChatbotFeedback {
+  const _RecordedChatbotFeedback({
+    required this.authToken,
+    required this.conversationId,
+    required this.messageId,
+    required this.eventType,
+    required this.idempotencyKey,
+    required this.comment,
+    required this.metadata,
+  });
+
+  final String authToken;
+  final String conversationId;
+  final String messageId;
+  final ChatbotFeedbackType eventType;
+  final String idempotencyKey;
+  final String comment;
+  final Map<String, Object> metadata;
 }
 
 class _FakeMapApiDataSource extends MapApiDataSource {

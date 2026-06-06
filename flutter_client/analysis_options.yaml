@@ -11,6 +11,7 @@ include: package:flutter_lints/flutter.yaml
 
 analyzer:
   exclude:
+    - lib/core/gateway/grpc_gen/**
     - lib/features/chat/data/grpc_gen/**
     - lib/features/auth/data/grpc_gen/**
     - lib/features/board/data/grpc_gen/**
