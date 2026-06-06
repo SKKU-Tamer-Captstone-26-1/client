@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../collection/data/collection_repository.dart';
 import '../../collection/data/stub_collection_repository.dart';
 import '../data/map_api_data_source.dart';
@@ -602,16 +604,16 @@ class _MenuSection extends StatelessWidget {
 
 // ─── Reviews Section (Bar / Pub) ─────────────────────────────────────────────
 
-class _ReviewsSection extends StatefulWidget {
+class _ReviewsSection extends ConsumerStatefulWidget {
   const _ReviewsSection({required this.place, required this.palette});
   final MapPlace place;
   final AppPalette palette;
 
   @override
-  State<_ReviewsSection> createState() => _ReviewsSectionState();
+  ConsumerState<_ReviewsSection> createState() => _ReviewsSectionState();
 }
 
-class _ReviewsSectionState extends State<_ReviewsSection> {
+class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
   late final List<MapReview> _reviews;
 
   @override
@@ -627,6 +629,7 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
   @override
   Widget build(BuildContext context) {
     final palette = widget.palette;
+    final currentUserId = ref.watch(authProvider).userId ?? '';
     return _SectionShell(
       title: 'Reviews',
       trailing: TextButton(
@@ -670,7 +673,11 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
           : Column(
               children: [
                 for (final r in _reviews) ...[
-                  _ReviewCard(review: r, palette: palette),
+                  _ReviewCard(
+                    review: r,
+                    palette: palette,
+                    currentUserId: currentUserId,
+                  ),
                   const SizedBox(height: 10),
                 ],
               ],
@@ -680,13 +687,18 @@ class _ReviewsSectionState extends State<_ReviewsSection> {
 }
 
 class _ReviewCard extends StatelessWidget {
-  const _ReviewCard({required this.review, required this.palette});
+  const _ReviewCard({
+    required this.review,
+    required this.palette,
+    required this.currentUserId,
+  });
   final MapReview review;
   final AppPalette palette;
+  final String currentUserId;
 
   @override
   Widget build(BuildContext context) {
-    final isOwnReview = review.author == 'You';
+    final isOwnReview = currentUserId.isNotEmpty && review.authorId == currentUserId;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
@@ -786,16 +798,16 @@ class _ReviewCard extends StatelessWidget {
 
 // ─── Add Review Bottom Sheet ──────────────────────────────────────────────────
 
-class _AddReviewSheet extends StatefulWidget {
+class _AddReviewSheet extends ConsumerStatefulWidget {
   const _AddReviewSheet({required this.placeId, required this.onReviewAdded});
   final String placeId;
   final ValueChanged<MapReview> onReviewAdded;
 
   @override
-  State<_AddReviewSheet> createState() => _AddReviewSheetState();
+  ConsumerState<_AddReviewSheet> createState() => _AddReviewSheetState();
 }
 
-class _AddReviewSheetState extends State<_AddReviewSheet> {
+class _AddReviewSheetState extends ConsumerState<_AddReviewSheet> {
   int _rating = 0;
   bool _submitting = false;
   bool _isAnonymous = true;
@@ -816,10 +828,17 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
       return;
     }
     setState(() { _submitting = true; _errorMessage = null; });
+    final authUser = ref.read(authProvider).user;
+    final authorId = ref.read(authProvider).userId ?? '';
+    final authorName = _isAnonymous
+        ? 'Anonymous'
+        : (authUser?.nickname ?? authUser?.email ?? 'Anonymous');
     try {
       final review = await _api.submitReview(
         markerId: widget.placeId,
-        author: _isAnonymous ? 'Anonymous' : 'You',
+        authorId: authorId,
+        author: authorName,
+        isAnonymous: _isAnonymous,
         rating: _rating,
         reviewBody: _bodyCtrl.text.trim(),
       );
@@ -895,19 +914,10 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
             }),
           ),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Checkbox(
-                value: _isAnonymous,
-                onChanged: (v) => setState(() => _isAnonymous = v ?? true),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              Text(
-                'Post anonymously',
-                style: TextStyle(color: palette.onSurface, fontSize: 13),
-              ),
-            ],
+          _AuthorPreviewRow(
+            isAnonymous: _isAnonymous,
+            onChanged: (v) => setState(() => _isAnonymous = v),
+            palette: palette,
           ),
           const SizedBox(height: 16),
           TextField(
@@ -974,6 +984,74 @@ class _AddReviewSheetState extends State<_AddReviewSheet> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ─── Author Preview Row ──────────────────────────────────────────────────────
+
+class _AuthorPreviewRow extends ConsumerWidget {
+  const _AuthorPreviewRow({
+    required this.isAnonymous,
+    required this.onChanged,
+    required this.palette,
+  });
+  final bool isAnonymous;
+  final ValueChanged<bool> onChanged;
+  final AppPalette palette;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider).user;
+    final displayName = isAnonymous
+        ? 'Anonymous'
+        : (user?.nickname ?? user?.email ?? 'Anonymous');
+    final profileUrl = isAnonymous ? null : user?.profileImageUrl;
+
+    return Row(
+      children: [
+        // Avatar
+        CircleAvatar(
+          radius: 20,
+          backgroundColor: palette.surfaceContainerLow,
+          backgroundImage:
+              profileUrl != null ? NetworkImage(profileUrl) : null,
+          child: profileUrl == null
+              ? Icon(
+                  isAnonymous ? Icons.person_outline : Icons.person,
+                  color: palette.secondary,
+                  size: 20,
+                )
+              : null,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            displayName,
+            style: TextStyle(
+              color: palette.onSurface,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Row(
+          children: [
+            Transform.scale(
+              scale: 0.85,
+              child: Switch(
+                value: isAnonymous,
+                onChanged: onChanged,
+                activeThumbColor: AppColors.primaryContainer,
+              ),
+            ),
+            Text(
+              'Anonymous',
+              style: TextStyle(color: palette.secondary, fontSize: 12),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
