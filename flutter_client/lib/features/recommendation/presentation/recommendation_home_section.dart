@@ -471,6 +471,7 @@ class _RecommendationCardState extends State<_RecommendationCard> {
         authToken: widget.authToken,
         requestId: widget.requestId,
         resultId: recommendation.resultId,
+        beverageId: recommendation.beverageId,
         eventType: eventType,
         idempotencyKey:
             '${widget.sessionIdHash}:${recommendation.resultId}:${_eventKey(eventType)}',

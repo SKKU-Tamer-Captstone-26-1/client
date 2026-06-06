@@ -1,11 +1,12 @@
 import 'package:grpc/grpc.dart';
 
-import 'grpc_gen/google/protobuf/struct.pb.dart' as structpb;
-import 'grpc_gen/recommendation/v1/recommendation.pbgrpc.dart' as pb;
-import 'recommendation_grpc_endpoint.dart';
+import '../../../core/gateway/app_gateway_grpc_endpoint.dart';
+import '../../../core/gateway/app_gateway_struct.dart';
+import '../../../core/gateway/grpc_gen/appgateway/v1/app_gateway.pbgrpc.dart'
+    as pb;
 
 abstract class RecommendationRemoteDataSource {
-  Future<pb.GetProfileStatusResponse> getProfileStatus({
+  Future<pb.GetRecommendationProfileStatusResponse> getProfileStatus({
     required String authToken,
   });
 
@@ -14,15 +15,35 @@ abstract class RecommendationRemoteDataSource {
     required String category,
     required int limit,
     required pb.BudgetMode budgetMode,
+    String pageToken = '',
+    Map<String, Object> screenContext = const <String, Object>{},
+    Map<String, Object> clientContext = const <String, Object>{},
+  });
+
+  Future<pb.GetVenueRecommendationsResponse> getVenueRecommendations({
+    required String authToken,
+    double? lat,
+    double? lng,
+    int radiusM = 0,
+    String selectedBeverageId = '',
+    String category = '',
+    int limit = 10,
+    String pageToken = '',
+    required pb.BudgetMode budgetMode,
+    Map<String, Object> screenContext = const <String, Object>{},
+    Map<String, Object> clientContext = const <String, Object>{},
   });
 
   Future<pb.RecordRecommendationEventResponse> recordRecommendationEvent({
     required String authToken,
     required String requestId,
     required String resultId,
+    required String beverageId,
+    required String venueId,
     required pb.RecommendationEventType eventType,
     required String idempotencyKey,
-    required structpb.Struct metadata,
+    required Map<String, Object> eventContext,
+    Map<String, Object> clientContext = const <String, Object>{},
   });
 
   Future<void> dispose();
@@ -31,10 +52,10 @@ abstract class RecommendationRemoteDataSource {
 class GrpcRecommendationRemoteDataSource
     implements RecommendationRemoteDataSource {
   factory GrpcRecommendationRemoteDataSource({
-    RecommendationGrpcEndpoint? endpoint,
+    AppGatewayGrpcEndpoint? endpoint,
   }) {
     final resolvedEndpoint =
-        endpoint ?? RecommendationGrpcEndpoint.fromEnvironment();
+        endpoint ?? AppGatewayGrpcEndpoint.fromEnvironment();
     final channel = ClientChannel(
       resolvedEndpoint.host,
       port: resolvedEndpoint.port,
@@ -48,7 +69,7 @@ class GrpcRecommendationRemoteDataSource
     return GrpcRecommendationRemoteDataSource._(
       resolvedEndpoint,
       channel,
-      pb.RecommendationServiceClient(channel),
+      pb.AppGatewayServiceClient(channel),
     );
   }
 
@@ -58,16 +79,16 @@ class GrpcRecommendationRemoteDataSource
     this._client,
   );
 
-  final RecommendationGrpcEndpoint _endpoint;
+  final AppGatewayGrpcEndpoint _endpoint;
   final ClientChannel _channel;
-  final pb.RecommendationServiceClient _client;
+  final pb.AppGatewayServiceClient _client;
 
   @override
-  Future<pb.GetProfileStatusResponse> getProfileStatus({
+  Future<pb.GetRecommendationProfileStatusResponse> getProfileStatus({
     required String authToken,
   }) {
-    return _client.getProfileStatus(
-      pb.GetProfileStatusRequest(),
+    return _client.getRecommendationProfileStatus(
+      pb.GetRecommendationProfileStatusRequest(),
       options: _authenticatedOptions(authToken),
     );
   }
@@ -78,13 +99,54 @@ class GrpcRecommendationRemoteDataSource
     required String category,
     required int limit,
     required pb.BudgetMode budgetMode,
+    String pageToken = '',
+    Map<String, Object> screenContext = const <String, Object>{},
+    Map<String, Object> clientContext = const <String, Object>{},
   }) {
     return _client.getBeverageRecommendations(
       pb.GetBeverageRecommendationsRequest(
         category: category,
         limit: limit,
+        pageToken: pageToken,
         budgetMode: budgetMode,
+        screenContext: mapToStruct(screenContext),
+        clientContext: mapToStruct(clientContext),
       ),
+      options: _authenticatedOptions(authToken),
+    );
+  }
+
+  @override
+  Future<pb.GetVenueRecommendationsResponse> getVenueRecommendations({
+    required String authToken,
+    double? lat,
+    double? lng,
+    int radiusM = 0,
+    String selectedBeverageId = '',
+    String category = '',
+    int limit = 10,
+    String pageToken = '',
+    required pb.BudgetMode budgetMode,
+    Map<String, Object> screenContext = const <String, Object>{},
+    Map<String, Object> clientContext = const <String, Object>{},
+  }) {
+    final request = pb.GetVenueRecommendationsRequest(
+      radiusM: radiusM,
+      selectedBeverageId: selectedBeverageId,
+      category: category,
+      limit: limit,
+      pageToken: pageToken,
+      budgetMode: budgetMode,
+      screenContext: mapToStruct(screenContext),
+      clientContext: mapToStruct(clientContext),
+    );
+    if (lat != null && lng != null) {
+      request.lat = lat;
+      request.lng = lng;
+    }
+
+    return _client.getVenueRecommendations(
+      request,
       options: _authenticatedOptions(authToken),
     );
   }
@@ -94,17 +156,23 @@ class GrpcRecommendationRemoteDataSource
     required String authToken,
     required String requestId,
     required String resultId,
+    required String beverageId,
+    required String venueId,
     required pb.RecommendationEventType eventType,
     required String idempotencyKey,
-    required structpb.Struct metadata,
+    required Map<String, Object> eventContext,
+    Map<String, Object> clientContext = const <String, Object>{},
   }) {
     return _client.recordRecommendationEvent(
       pb.RecordRecommendationEventRequest(
+        idempotencyKey: idempotencyKey,
+        eventType: eventType,
         requestId: requestId,
         resultId: resultId,
-        eventType: eventType,
-        idempotencyKey: idempotencyKey,
-        metadata: metadata,
+        beverageId: beverageId,
+        venueId: venueId,
+        eventContext: mapToStruct(eventContext),
+        clientContext: mapToStruct(clientContext),
       ),
       options: _authenticatedOptions(authToken),
     );

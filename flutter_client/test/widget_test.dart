@@ -1279,12 +1279,35 @@ class _FakeRecommendationRepository implements RecommendationRepository {
   }
 
   @override
+  Future<VenueRecommendationPage> getVenueRecommendations({
+    required String authToken,
+    double? lat,
+    double? lng,
+    int radiusM = 0,
+    String selectedBeverageId = '',
+    String category = '',
+    int limit = 10,
+    String pageToken = '',
+    RecommendationBudgetMode budgetMode = RecommendationBudgetMode.soft,
+  }) async {
+    return const VenueRecommendationPage(
+      requestId: 'venue-req-1',
+      profileStatus: RecommendationProfileStatus.active,
+      profileRevision: 1,
+      recommendations: <VenueRecommendation>[],
+      nextPageToken: '',
+    );
+  }
+
+  @override
   Future<void> recordEvent({
     required String authToken,
     required String requestId,
     required String resultId,
     required RecommendationEventKind eventType,
     required String idempotencyKey,
+    String beverageId = '',
+    String venueId = '',
     Map<String, Object> metadata = const <String, Object>{},
   }) async {
     events.add(

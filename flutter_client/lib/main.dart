@@ -34,7 +34,6 @@ import 'features/preference_survey/presentation/survey_intro_screen.dart';
 import 'features/preference_survey/presentation/survey_screen.dart';
 import 'features/profile/profile_setup_screen.dart';
 import 'features/profile/user_page_screen.dart';
-import 'features/recommendation/data/recommendation_grpc_endpoint.dart';
 import 'features/recommendation/data/recommendation_remote_data_source.dart';
 import 'features/recommendation/data/recommendation_repository.dart';
 
@@ -122,7 +121,6 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     _chatRepository =
         widget.chatRepository ?? GrpcChatRepository(GrpcChatRemoteDataSource());
     _chatPushService = widget.chatPushService ?? FirebaseChatPushService();
-    final recommendationEndpoint = RecommendationGrpcEndpoint.fromEnvironment();
     final appGatewayEndpoint = AppGatewayGrpcEndpoint.fromEnvironment();
     _chatbotRepository =
         widget.chatbotRepository ??
@@ -135,10 +133,10 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
     _recommendationRepository =
         widget.recommendationRepository ??
         (widget.enableDefaultRecommendationRepository &&
-                recommendationEndpoint.isConfigured
+                appGatewayEndpoint.isConfigured
             ? GrpcRecommendationRepository(
                 GrpcRecommendationRemoteDataSource(
-                  endpoint: recommendationEndpoint,
+                  endpoint: appGatewayEndpoint,
                 ),
               )
             : null);
