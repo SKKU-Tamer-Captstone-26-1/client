@@ -1246,6 +1246,9 @@ class GetBeverageRecommendationsRequest extends $pb.GeneratedMessage {
     $1.Struct? screenContext,
     $core.String? category,
     BudgetMode? budgetMode,
+    $core.Iterable<$core.String>? excludeBeverageIds,
+    $core.Iterable<$core.String>? excludeResultIds,
+    BeverageDiversityMode? diversityMode,
     $1.Struct? clientContext,
   }) {
     final $result = create();
@@ -1263,6 +1266,15 @@ class GetBeverageRecommendationsRequest extends $pb.GeneratedMessage {
     }
     if (budgetMode != null) {
       $result.budgetMode = budgetMode;
+    }
+    if (excludeBeverageIds != null) {
+      $result.excludeBeverageIds.addAll(excludeBeverageIds);
+    }
+    if (excludeResultIds != null) {
+      $result.excludeResultIds.addAll(excludeResultIds);
+    }
+    if (diversityMode != null) {
+      $result.diversityMode = diversityMode;
     }
     if (clientContext != null) {
       $result.clientContext = clientContext;
@@ -1291,6 +1303,14 @@ class GetBeverageRecommendationsRequest extends $pb.GeneratedMessage {
         defaultOrMaker: BudgetMode.BUDGET_MODE_UNSPECIFIED,
         valueOf: BudgetMode.valueOf,
         enumValues: BudgetMode.values)
+    ..pPS(6, _omitFieldNames ? '' : 'excludeBeverageIds')
+    ..pPS(7, _omitFieldNames ? '' : 'excludeResultIds')
+    ..e<BeverageDiversityMode>(
+        8, _omitFieldNames ? '' : 'diversityMode', $pb.PbFieldType.OE,
+        defaultOrMaker:
+            BeverageDiversityMode.BEVERAGE_DIVERSITY_MODE_UNSPECIFIED,
+        valueOf: BeverageDiversityMode.valueOf,
+        enumValues: BeverageDiversityMode.values)
     ..aOM<$1.Struct>(20, _omitFieldNames ? '' : 'clientContext',
         subBuilder: $1.Struct.create)
     ..hasRequiredFields = false;
@@ -1385,19 +1405,37 @@ class GetBeverageRecommendationsRequest extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   void clearBudgetMode() => clearField(5);
 
+  @$pb.TagNumber(6)
+  $core.List<$core.String> get excludeBeverageIds => $_getList(5);
+
+  @$pb.TagNumber(7)
+  $core.List<$core.String> get excludeResultIds => $_getList(6);
+
+  @$pb.TagNumber(8)
+  BeverageDiversityMode get diversityMode => $_getN(7);
+  @$pb.TagNumber(8)
+  set diversityMode(BeverageDiversityMode v) {
+    setField(8, v);
+  }
+
+  @$pb.TagNumber(8)
+  $core.bool hasDiversityMode() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearDiversityMode() => clearField(8);
+
   @$pb.TagNumber(20)
-  $1.Struct get clientContext => $_getN(5);
+  $1.Struct get clientContext => $_getN(8);
   @$pb.TagNumber(20)
   set clientContext($1.Struct v) {
     setField(20, v);
   }
 
   @$pb.TagNumber(20)
-  $core.bool hasClientContext() => $_has(5);
+  $core.bool hasClientContext() => $_has(8);
   @$pb.TagNumber(20)
   void clearClientContext() => clearField(20);
   @$pb.TagNumber(20)
-  $1.Struct ensureClientContext() => $_ensure(5);
+  $1.Struct ensureClientContext() => $_ensure(8);
 }
 
 class GetBeverageRecommendationsResponse extends $pb.GeneratedMessage {

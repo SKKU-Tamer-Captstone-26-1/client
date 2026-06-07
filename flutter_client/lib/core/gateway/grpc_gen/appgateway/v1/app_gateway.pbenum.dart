@@ -164,6 +164,35 @@ class BudgetMode extends $pb.ProtobufEnum {
   const BudgetMode._($core.int v, $core.String n) : super(v, n);
 }
 
+class BeverageDiversityMode extends $pb.ProtobufEnum {
+  static const BeverageDiversityMode BEVERAGE_DIVERSITY_MODE_UNSPECIFIED =
+      BeverageDiversityMode._(
+          0, _omitEnumNames ? '' : 'BEVERAGE_DIVERSITY_MODE_UNSPECIFIED');
+  static const BeverageDiversityMode BEVERAGE_DIVERSITY_MODE_STANDARD =
+      BeverageDiversityMode._(
+          1, _omitEnumNames ? '' : 'BEVERAGE_DIVERSITY_MODE_STANDARD');
+  static const BeverageDiversityMode BEVERAGE_DIVERSITY_MODE_DIFFERENT =
+      BeverageDiversityMode._(
+          2, _omitEnumNames ? '' : 'BEVERAGE_DIVERSITY_MODE_DIFFERENT');
+  static const BeverageDiversityMode BEVERAGE_DIVERSITY_MODE_ADJACENT =
+      BeverageDiversityMode._(
+          3, _omitEnumNames ? '' : 'BEVERAGE_DIVERSITY_MODE_ADJACENT');
+
+  static const $core.List<BeverageDiversityMode> values =
+      <BeverageDiversityMode>[
+    BEVERAGE_DIVERSITY_MODE_UNSPECIFIED,
+    BEVERAGE_DIVERSITY_MODE_STANDARD,
+    BEVERAGE_DIVERSITY_MODE_DIFFERENT,
+    BEVERAGE_DIVERSITY_MODE_ADJACENT,
+  ];
+
+  static final $core.Map<$core.int, BeverageDiversityMode> _byValue =
+      $pb.ProtobufEnum.initByValue(values);
+  static BeverageDiversityMode? valueOf($core.int value) => _byValue[value];
+
+  const BeverageDiversityMode._($core.int v, $core.String n) : super(v, n);
+}
+
 class RecommendationEventType extends $pb.ProtobufEnum {
   static const RecommendationEventType RECOMMENDATION_EVENT_TYPE_UNSPECIFIED =
       RecommendationEventType._(
