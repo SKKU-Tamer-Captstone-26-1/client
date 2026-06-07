@@ -9,6 +9,8 @@ enum RecommendationProfileStatus {
 
 enum RecommendationBudgetMode { soft, strict }
 
+enum RecommendationDiversityMode { unspecified, standard, different, adjacent }
+
 enum RecommendationEventKind { impression, click, save, dismiss, detailView }
 
 class RecommendationProfile {

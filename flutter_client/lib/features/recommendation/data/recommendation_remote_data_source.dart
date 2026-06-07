@@ -15,6 +15,10 @@ abstract class RecommendationRemoteDataSource {
     required String category,
     required int limit,
     required pb.BudgetMode budgetMode,
+    List<String> excludeBeverageIds = const <String>[],
+    List<String> excludeResultIds = const <String>[],
+    pb.BeverageDiversityMode diversityMode =
+        pb.BeverageDiversityMode.BEVERAGE_DIVERSITY_MODE_UNSPECIFIED,
     String pageToken = '',
     Map<String, Object> screenContext = const <String, Object>{},
     Map<String, Object> clientContext = const <String, Object>{},
@@ -99,6 +103,10 @@ class GrpcRecommendationRemoteDataSource
     required String category,
     required int limit,
     required pb.BudgetMode budgetMode,
+    List<String> excludeBeverageIds = const <String>[],
+    List<String> excludeResultIds = const <String>[],
+    pb.BeverageDiversityMode diversityMode =
+        pb.BeverageDiversityMode.BEVERAGE_DIVERSITY_MODE_UNSPECIFIED,
     String pageToken = '',
     Map<String, Object> screenContext = const <String, Object>{},
     Map<String, Object> clientContext = const <String, Object>{},
@@ -109,6 +117,9 @@ class GrpcRecommendationRemoteDataSource
         limit: limit,
         pageToken: pageToken,
         budgetMode: budgetMode,
+        excludeBeverageIds: excludeBeverageIds,
+        excludeResultIds: excludeResultIds,
+        diversityMode: diversityMode,
         screenContext: mapToStruct(screenContext),
         clientContext: mapToStruct(clientContext),
       ),
@@ -163,17 +174,20 @@ class GrpcRecommendationRemoteDataSource
     required Map<String, Object> eventContext,
     Map<String, Object> clientContext = const <String, Object>{},
   }) {
+    final request = pb.RecordRecommendationEventRequest(
+      idempotencyKey: idempotencyKey,
+      eventType: eventType,
+      requestId: requestId,
+      resultId: resultId,
+      beverageId: beverageId,
+      venueId: venueId,
+      eventContext: mapToStruct(eventContext),
+    );
+    // The current gateway rejects recommendation event metadata carrying
+    // client_context. Keep this field omitted for event tracking calls.
+
     return _client.recordRecommendationEvent(
-      pb.RecordRecommendationEventRequest(
-        idempotencyKey: idempotencyKey,
-        eventType: eventType,
-        requestId: requestId,
-        resultId: resultId,
-        beverageId: beverageId,
-        venueId: venueId,
-        eventContext: mapToStruct(eventContext),
-        clientContext: mapToStruct(clientContext),
-      ),
+      request,
       options: _authenticatedOptions(authToken),
     );
   }

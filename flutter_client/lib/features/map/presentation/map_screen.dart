@@ -36,14 +36,14 @@ const _filterLayers = <String?>[
 // Per-layer chip colors matching marker icon colors.
 const _chipColors = [
   Color(0xFF6B6B8A), // All
-  Color(0xFFFF7E36), // Bar
+  AppColors.primaryContainer, // Bar
   Color(0xFFC4963A), // Pub
   Color(0xFF4F7ED4), // Liquor Shop
   Color(0xFF5CA874), // Outdoor
 ];
 
 Color _layerColor(String code) => switch (code) {
-  'bar' => const Color(0xFFFF7E36),
+  'bar' => AppColors.primaryContainer,
   'pub' => const Color(0xFFC4963A),
   'liquor_shop' => const Color(0xFF4F7ED4),
   'outdoor_spot' => const Color(0xFF5CA874),
@@ -397,7 +397,9 @@ class _MapScreenState extends State<MapScreen> {
                         palette: palette,
                       ),
                     ),
-                  if (!_searchLoading && _searchHasQueried && _searchResults.isEmpty)
+                  if (!_searchLoading &&
+                      _searchHasQueried &&
+                      _searchResults.isEmpty)
                     Positioned(
                       top: 96,
                       left: 16,
@@ -426,13 +428,15 @@ class _MapSearchBar extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: palette.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: palette.outlineVariant),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: palette.outlineVariant.withValues(alpha: 0.7),
+          ),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x18000000),
-              blurRadius: 16,
-              offset: Offset(0, 6),
+              color: Color(0x14000000),
+              blurRadius: 18,
+              offset: Offset(0, 8),
             ),
           ],
         ),
@@ -794,7 +798,11 @@ class _SearchFeedback extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: palette.outlineVariant),
         boxShadow: const [
-          BoxShadow(color: Color(0x26000000), blurRadius: 16, offset: Offset(0, 6)),
+          BoxShadow(
+            color: Color(0x26000000),
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
         ],
       ),
       child: Padding(

@@ -25,8 +25,10 @@ abstract final class AppTheme {
         ).copyWith(
           primary: AppColors.primaryContainer,
           onPrimary: Colors.white,
-          secondary: palette.secondary,
+          secondary: palette.terracotta,
           onSecondary: palette.surfaceContainerLowest,
+          tertiary: palette.premiumGold,
+          onTertiary: palette.onSurface,
           surface: palette.surfaceContainerLowest,
           onSurface: palette.onSurface,
           surfaceContainerLowest: palette.surfaceContainerLowest,
@@ -119,6 +121,11 @@ abstract final class AppTheme {
           height: 1.2,
         ),
       ),
+      dividerTheme: DividerThemeData(
+        color: palette.outlineVariant.withValues(alpha: isDark ? 0.7 : 0.8),
+        thickness: 1,
+        space: 1,
+      ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.primaryContainer,
@@ -128,6 +135,8 @@ abstract final class AppTheme {
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           minimumSize: const Size(0, 44),
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+          elevation: 0,
+          shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -156,6 +165,32 @@ abstract final class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return palette.secondary.withValues(alpha: 0.48);
+          }
+          if (states.contains(WidgetState.selected)) {
+            return Colors.white;
+          }
+          return palette.surfaceContainerLowest;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return palette.surfaceContainerLow.withValues(alpha: 0.62);
+          }
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primaryContainer;
+          }
+          return palette.surfaceContainerLow;
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return AppColors.primaryContainer;
+          }
+          return palette.outlineVariant;
+        }),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -219,6 +254,34 @@ abstract final class AppTheme {
         foregroundColor: Colors.white,
         shape: const CircleBorder(),
         elevation: isDark ? 3 : 5,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: AppColors.primaryContainer,
+        linearTrackColor: palette.surfaceContainerLow,
+        circularTrackColor: palette.surfaceContainerLow,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: palette.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        titleTextStyle: TextStyle(
+          color: palette.onSurface,
+          fontSize: 20,
+          fontWeight: FontWeight.w800,
+          height: 1.2,
+        ),
+        contentTextStyle: TextStyle(
+          color: palette.onSurfaceVariant,
+          fontSize: 14,
+          height: 1.45,
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: palette.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: isDark ? const Color(0xFF2E251F) : palette.onSurface,

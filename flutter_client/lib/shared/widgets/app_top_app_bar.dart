@@ -17,7 +17,7 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onProfileSelected;
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(68);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,12 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       backgroundColor: palette.surfaceContainerLowest,
       foregroundColor: palette.onSurface,
-      shape: Border(bottom: BorderSide(color: palette.outlineVariant)),
+      toolbarHeight: 68,
+      shape: Border(
+        bottom: BorderSide(
+          color: palette.outlineVariant.withValues(alpha: 0.72),
+        ),
+      ),
       titleSpacing: 16,
       title: Row(
         children: [
@@ -48,105 +53,128 @@ class AppTopAppBar extends StatelessWidget implements PreferredSizeWidget {
           Text(
             'OnTheBlock',
             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-              color: AppColors.primaryContainer,
-              fontSize: 20,
+              color: palette.onSurface,
+              fontSize: 21,
               height: 1.1,
             ),
           ),
         ],
       ),
       actions: [
-        IconButton(
+        _TopAppBarAction(
+          tooltip: 'Search',
+          icon: AppIcons.topAppBarSearch,
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute<void>(builder: (_) => const SearchScreen()),
             );
           },
-          icon: const Icon(AppIcons.topAppBarSearch),
-          tooltip: 'Search',
-          style: IconButton.styleFrom(
-            fixedSize: const Size.square(40),
-            minimumSize: const Size.square(40),
-            padding: EdgeInsets.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
         ),
-        SizedBox(
-          width: 40,
-          height: 40,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => NotificationScreen(
-                        onBoardNotificationSelected:
-                            onNotificationBoardSelected,
-                      ),
-                    ),
-                  );
-                },
-                icon: const Icon(AppIcons.topAppBarNotifications),
-                tooltip: 'Notifications',
-                style: IconButton.styleFrom(
-                  fixedSize: const Size.square(40),
-                  minimumSize: const Size.square(40),
-                  padding: EdgeInsets.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        const SizedBox(width: 8),
+        _TopAppBarAction(
+          tooltip: 'Notifications',
+          icon: AppIcons.topAppBarNotifications,
+          badgeLabel: '4',
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => NotificationScreen(
+                  onBoardNotificationSelected: onNotificationBoardSelected,
                 ),
               ),
-              Positioned(
-                top: 6,
-                right: 4,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.error,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: palette.surfaceContainerLowest,
-                      width: 2,
-                    ),
-                  ),
-                  child: const Text(
-                    '4',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                      height: 1,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
+        const SizedBox(width: 8),
         Padding(
-          padding: const EdgeInsets.only(left: 4, right: 12),
-          child: Material(
-            color: palette.surfaceContainerLow,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onProfileSelected,
-              child: SizedBox(
-                width: 34,
-                height: 34,
-                child: Icon(
-                  AppIcons.topAppBarProfile,
-                  size: 22,
-                  color: palette.secondary,
-                ),
-              ),
-            ),
+          padding: const EdgeInsets.only(right: 16),
+          child: _TopAppBarAction(
+            tooltip: 'Profile',
+            icon: AppIcons.topAppBarProfile,
+            onPressed: onProfileSelected,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _TopAppBarAction extends StatelessWidget {
+  const _TopAppBarAction({
+    required this.tooltip,
+    required this.icon,
+    this.badgeLabel,
+    this.onPressed,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final String? badgeLabel;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          IconButton(
+            onPressed: onPressed,
+            icon: Icon(icon, size: 23),
+            tooltip: tooltip,
+            style: IconButton.styleFrom(
+              backgroundColor: palette.surfaceContainerLow,
+              foregroundColor: palette.onSurfaceVariant,
+              disabledForegroundColor: palette.secondary.withValues(
+                alpha: 0.42,
+              ),
+              side: BorderSide(
+                color: palette.outlineVariant.withValues(alpha: 0.55),
+              ),
+              fixedSize: const Size.square(40),
+              minimumSize: const Size.square(40),
+              padding: EdgeInsets.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+          if (badgeLabel != null)
+            Positioned(
+              top: -1,
+              right: -2,
+              child: Container(
+                constraints: const BoxConstraints(minWidth: 17),
+                height: 17,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.error,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: palette.surfaceContainerLowest,
+                    width: 2,
+                  ),
+                ),
+                child: Text(
+                  badgeLabel!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    height: 1,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

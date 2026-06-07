@@ -4,7 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 
 const _inputBarMaxWidth = 768.0;
 const _inputBarHorizontalPadding = 16.0;
-const _inputBarVerticalPadding = 10.0;
+const _inputBarVerticalPadding = 12.0;
 const _inputActionSize = 44.0;
 const _inputMaxLines = 5;
 
@@ -83,7 +83,11 @@ class _ChatInputBarState extends State<ChatInputBar> {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
-        border: Border(top: BorderSide(color: palette.outlineVariant)),
+        border: Border(
+          top: BorderSide(
+            color: palette.outlineVariant.withValues(alpha: 0.72),
+          ),
+        ),
       ),
       child: SafeArea(
         top: false,
@@ -104,10 +108,16 @@ class _ChatInputBarState extends State<ChatInputBar> {
                     style: IconButton.styleFrom(
                       backgroundColor: palette.surfaceContainerLow,
                       foregroundColor: palette.onSurfaceVariant,
-                      shape: const CircleBorder(),
+                      disabledBackgroundColor: palette.surfaceContainerLow,
+                      disabledForegroundColor: palette.secondary.withValues(
+                        alpha: 0.48,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       fixedSize: const Size(_inputActionSize, _inputActionSize),
                     ),
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Icons.add_photo_alternate_outlined),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -116,10 +126,10 @@ class _ChatInputBarState extends State<ChatInputBar> {
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: palette.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(
                             color: palette.outlineVariant.withValues(
-                              alpha: 0.9,
+                              alpha: 0.72,
                             ),
                           ),
                         ),
@@ -164,7 +174,11 @@ class _ChatInputBarState extends State<ChatInputBar> {
                       fixedSize: WidgetStateProperty.all(
                         const Size(_inputActionSize, _inputActionSize),
                       ),
-                      shape: WidgetStateProperty.all(const CircleBorder()),
+                      shape: WidgetStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
                       backgroundColor: WidgetStateProperty.resolveWith((
                         states,
                       ) {

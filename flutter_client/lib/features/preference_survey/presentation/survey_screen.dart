@@ -26,16 +26,34 @@ class SurveyScreen extends ConsumerWidget {
 
     if (state.error != null) {
       return Scaffold(
-        backgroundColor: palette.surfaceContainerLowest,
-        body: Center(child: Text('Failed to load questions: ${state.error}')),
+        backgroundColor: palette.surfaceContainerLow,
+        body: _SurveyStateMessage(
+          icon: Icons.error_outline,
+          title: 'Survey unavailable',
+          message: 'Failed to load questions: ${state.error}',
+        ),
       );
     }
     if (state.isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        backgroundColor: palette.surfaceContainerLow,
+        body: const _SurveyStateMessage(
+          icon: Icons.auto_awesome,
+          title: 'Preparing your taste profile',
+          message: 'Loading ONTHEBLOCK survey questions...',
+          isLoading: true,
+        ),
+      );
     }
     if (state.visibleQuestions.isEmpty) {
-      return const Scaffold(
-        body: Center(child: Text('No survey questions available.')),
+      return Scaffold(
+        backgroundColor: palette.surfaceContainerLow,
+        body: const _SurveyStateMessage(
+          icon: Icons.quiz_outlined,
+          title: 'No survey questions available.',
+          message:
+              'You can skip for now and complete your taste profile later.',
+        ),
       );
     }
 
@@ -45,7 +63,11 @@ class SurveyScreen extends ConsumerWidget {
         backgroundColor: palette.surfaceContainerLowest,
         elevation: 0,
         scrolledUnderElevation: 0,
-        shape: Border(bottom: BorderSide(color: palette.outlineVariant)),
+        shape: Border(
+          bottom: BorderSide(
+            color: palette.outlineVariant.withValues(alpha: 0.72),
+          ),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: palette.onSurface),
           onPressed: state.isFirst
@@ -166,25 +188,38 @@ class _ProgressHeader extends StatelessWidget {
 
     return Container(
       color: palette.surfaceContainerLowest,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Row(
-        children: List.generate(total * 2 - 1, (i) {
-          if (i.isOdd) {
-            final isDone = (i ~/ 2) < current;
-            return Expanded(
-              child: Container(
-                height: 2,
-                color: isDone
-                    ? AppColors.primaryContainer
-                    : colorScheme.surfaceContainerHigh,
-              ),
-            );
-          }
-          final stepIndex = i ~/ 2;
-          final isDone = stepIndex < current;
-          final isCurrent = stepIndex == current;
-          return _StepDot(isDone: isDone, isCurrent: isCurrent);
-        }),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      child: Column(
+        children: [
+          Text(
+            'Step ${current + 1} of $total',
+            style: TextStyle(
+              color: palette.secondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: List.generate(total * 2 - 1, (i) {
+              if (i.isOdd) {
+                final isDone = (i ~/ 2) < current;
+                return Expanded(
+                  child: Container(
+                    height: 2,
+                    color: isDone
+                        ? AppColors.primaryContainer
+                        : colorScheme.surfaceContainerHigh,
+                  ),
+                );
+              }
+              final stepIndex = i ~/ 2;
+              final isDone = stepIndex < current;
+              final isCurrent = stepIndex == current;
+              return _StepDot(isDone: isDone, isCurrent: isCurrent);
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -321,7 +356,14 @@ class _BottomControls extends StatelessWidget {
     final canAdvance = state.isReadyToAdvance;
 
     return Container(
-      color: palette.surfaceContainerLowest,
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLowest,
+        border: Border(
+          top: BorderSide(
+            color: palette.outlineVariant.withValues(alpha: 0.72),
+          ),
+        ),
+      ),
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: SafeArea(
         top: false,
@@ -335,7 +377,9 @@ class _BottomControls extends StatelessWidget {
                   label: const Text('Previous'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: const StadiumBorder(),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
               ),
@@ -345,10 +389,11 @@ class _BottomControls extends StatelessWidget {
               flex: 2,
               child: FilledButton.icon(
                 onPressed: canAdvance ? onNext : null,
-                icon: Text(state.isLast ? 'Done' : 'Next'),
-                label: state.isLast
-                    ? const Icon(Icons.check)
-                    : const Icon(Icons.arrow_forward),
+                icon: Icon(
+                  state.isLast ? Icons.check : Icons.arrow_forward,
+                  size: 18,
+                ),
+                label: Text(state.isLast ? 'Done' : 'Next'),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primaryContainer,
                   foregroundColor: Colors.white,
@@ -356,7 +401,9 @@ class _BottomControls extends StatelessWidget {
                   disabledForegroundColor: colorScheme.onSurfaceVariant
                       .withValues(alpha: 0.55),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: const StadiumBorder(),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   textStyle: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -365,6 +412,88 @@ class _BottomControls extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SurveyStateMessage extends StatelessWidget {
+  const _SurveyStateMessage({
+    required this.icon,
+    required this.title,
+    required this.message,
+    this.isLoading = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final bool isLoading;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: palette.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: palette.outlineVariant.withValues(alpha: 0.62),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Icon(icon, color: AppColors.primaryContainer),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: palette.onSurface,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: palette.secondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
+                  ),
+                  if (isLoading) ...[
+                    const SizedBox(height: 18),
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2.5),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

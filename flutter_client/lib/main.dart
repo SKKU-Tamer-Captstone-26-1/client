@@ -355,6 +355,7 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
         bottomNavBadgeCounts: _bottomNavBadgeCounts,
         recommendationRepository: _recommendationRepository,
         recommendationAuthToken: _currentAuthToken,
+        currentBottomNavItem: _bottomNavItemForStage(_previousStage),
         isDarkMode: themeMode == ThemeMode.dark,
         onThemeToggle: _toggleThemeMode,
         onBottomNavSelected: _selectBottomNavItem,
@@ -371,6 +372,16 @@ class _OnTheBlockAppState extends ConsumerState<OnTheBlockApp> {
           });
         },
       ),
+    };
+  }
+
+  AppBottomNavItem _bottomNavItemForStage(_AppStage stage) {
+    return switch (stage) {
+      _AppStage.map => AppBottomNavItem.map,
+      _AppStage.board => AppBottomNavItem.board,
+      _AppStage.chat || _AppStage.groupchatRoom => AppBottomNavItem.chat,
+      _AppStage.collection => AppBottomNavItem.collection,
+      _ => AppBottomNavItem.home,
     };
   }
 

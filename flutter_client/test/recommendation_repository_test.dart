@@ -68,6 +68,36 @@ void main() {
       expect(remote.lastEventContext['visible_ms'], 1250);
       expect(remote.lastEventContext.containsKey('user_id'), isFalse);
       expect(remote.lastEventContext.containsKey('raw_token'), isFalse);
+      expect(remote.lastClientContext, isEmpty);
+    },
+  );
+
+  test(
+    'getBeverageRecommendations forwards direct diversity controls',
+    () async {
+      final remote = _FakeRecommendationRemoteDataSource();
+      final repository = GrpcRecommendationRepository(remote);
+
+      await repository.getBeverageRecommendations(
+        authToken: 'access-token',
+        category: 'whisky',
+        limit: 3,
+        budgetMode: RecommendationBudgetMode.strict,
+        excludeBeverageIds: const <String>['bev-1'],
+        excludeResultIds: const <String>['result-1'],
+        diversityMode: RecommendationDiversityMode.different,
+      );
+
+      expect(remote.lastAuthToken, 'access-token');
+      expect(remote.lastCategory, 'whisky');
+      expect(remote.lastLimit, 3);
+      expect(remote.lastBudgetMode, pb.BudgetMode.BUDGET_MODE_STRICT);
+      expect(remote.lastExcludeBeverageIds, orderedEquals(['bev-1']));
+      expect(remote.lastExcludeResultIds, orderedEquals(['result-1']));
+      expect(
+        remote.lastDiversityMode,
+        pb.BeverageDiversityMode.BEVERAGE_DIVERSITY_MODE_DIFFERENT,
+      );
     },
   );
 }
@@ -79,9 +109,16 @@ class _FakeRecommendationRemoteDataSource
   String lastResultId = '';
   String lastBeverageId = '';
   String lastVenueId = '';
+  String lastCategory = '';
+  int lastLimit = 0;
+  pb.BudgetMode? lastBudgetMode;
+  List<String> lastExcludeBeverageIds = const <String>[];
+  List<String> lastExcludeResultIds = const <String>[];
+  pb.BeverageDiversityMode? lastDiversityMode;
   pb.RecommendationEventType? lastEventType;
   String lastIdempotencyKey = '';
   Map<String, Object> lastEventContext = const <String, Object>{};
+  Map<String, Object> lastClientContext = const <String, Object>{};
 
   @override
   Future<pb.GetRecommendationProfileStatusResponse> getProfileStatus({
@@ -96,11 +133,22 @@ class _FakeRecommendationRemoteDataSource
     required String category,
     required int limit,
     required pb.BudgetMode budgetMode,
+    List<String> excludeBeverageIds = const <String>[],
+    List<String> excludeResultIds = const <String>[],
+    pb.BeverageDiversityMode diversityMode =
+        pb.BeverageDiversityMode.BEVERAGE_DIVERSITY_MODE_UNSPECIFIED,
     String pageToken = '',
     Map<String, Object> screenContext = const <String, Object>{},
     Map<String, Object> clientContext = const <String, Object>{},
-  }) {
-    throw UnimplementedError();
+  }) async {
+    lastAuthToken = authToken;
+    lastCategory = category;
+    lastLimit = limit;
+    lastBudgetMode = budgetMode;
+    lastExcludeBeverageIds = List<String>.unmodifiable(excludeBeverageIds);
+    lastExcludeResultIds = List<String>.unmodifiable(excludeResultIds);
+    lastDiversityMode = diversityMode;
+    return pb.GetBeverageRecommendationsResponse();
   }
 
   @override
@@ -140,6 +188,7 @@ class _FakeRecommendationRemoteDataSource
     lastEventType = eventType;
     lastIdempotencyKey = idempotencyKey;
     lastEventContext = Map<String, Object>.unmodifiable(eventContext);
+    lastClientContext = Map<String, Object>.unmodifiable(clientContext);
     return pb.RecordRecommendationEventResponse(accepted: true);
   }
 

@@ -18,19 +18,21 @@ class GoogleSignInButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 52,
       child: OutlinedButton(
         onPressed: onPressed,
         style:
             OutlinedButton.styleFrom(
               foregroundColor: palette.onSurface,
               backgroundColor: palette.surfaceContainerLowest,
-              side: BorderSide(color: palette.outlineVariant),
+              side: BorderSide(
+                color: palette.outlineVariant.withValues(alpha: 0.82),
+              ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(18),
               ),
               elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
             ).copyWith(
               overlayColor: WidgetStateProperty.all(
                 palette.surfaceContainerLow.withValues(alpha: 0.55),
@@ -49,11 +51,23 @@ class GoogleSignInButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const GoogleLogo(size: 22),
-                  const SizedBox(width: 16),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: palette.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(6),
+                      child: GoogleLogo(size: 18),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Text(
                     'Continue with Google',
-                    style: Theme.of(context).textTheme.labelLarge,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ],
               ),

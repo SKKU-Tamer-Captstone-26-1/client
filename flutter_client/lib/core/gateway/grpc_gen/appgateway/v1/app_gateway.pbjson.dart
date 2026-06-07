@@ -106,6 +106,24 @@ final $typed_data.Uint8List budgetModeDescriptor = $convert.base64Decode(
     'CgpCdWRnZXRNb2RlEhsKF0JVREdFVF9NT0RFX1VOU1BFQ0lGSUVEEAASFAoQQlVER0VUX01PRE'
     'VfU09GVBABEhYKEkJVREdFVF9NT0RFX1NUUklDVBAC');
 
+@$core.Deprecated('Use beverageDiversityModeDescriptor instead')
+const BeverageDiversityMode$json = {
+  '1': 'BeverageDiversityMode',
+  '2': [
+    {'1': 'BEVERAGE_DIVERSITY_MODE_UNSPECIFIED', '2': 0},
+    {'1': 'BEVERAGE_DIVERSITY_MODE_STANDARD', '2': 1},
+    {'1': 'BEVERAGE_DIVERSITY_MODE_DIFFERENT', '2': 2},
+    {'1': 'BEVERAGE_DIVERSITY_MODE_ADJACENT', '2': 3},
+  ],
+};
+
+/// Descriptor for `BeverageDiversityMode`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List beverageDiversityModeDescriptor = $convert.base64Decode(
+    'ChVCZXZlcmFnZURpdmVyc2l0eU1vZGUSJwojQkVWRVJBR0VfRElWRVJTSVRZX01PREVfVU5TUE'
+    'VDSUZJRUQQABIkCiBCRVZFUkFHRV9ESVZFUlNJVFlfTU9ERV9TVEFOREFSRBABEiUKIUJFVkVS'
+    'QUdFX0RJVkVSU0lUWV9NT0RFX0RJRkZFUkVOVBACEiQKIEJFVkVSQUdFX0RJVkVSU0lUWV9NT0'
+    'RFX0FESkFDRU5UEAM=');
+
 @$core.Deprecated('Use recommendationEventTypeDescriptor instead')
 const RecommendationEventType$json = {
   '1': 'RecommendationEventType',
@@ -449,6 +467,28 @@ const GetBeverageRecommendationsRequest$json = {
       '10': 'budgetMode'
     },
     {
+      '1': 'exclude_beverage_ids',
+      '3': 6,
+      '4': 3,
+      '5': 9,
+      '10': 'excludeBeverageIds'
+    },
+    {
+      '1': 'exclude_result_ids',
+      '3': 7,
+      '4': 3,
+      '5': 9,
+      '10': 'excludeResultIds'
+    },
+    {
+      '1': 'diversity_mode',
+      '3': 8,
+      '4': 1,
+      '5': 14,
+      '6': '.ontheblock.appgateway.v1.BeverageDiversityMode',
+      '10': 'diversityMode'
+    },
+    {
       '1': 'client_context',
       '3': 20,
       '4': 1,
@@ -465,8 +505,12 @@ final $typed_data.Uint8List getBeverageRecommendationsRequestDescriptor = $conve
     'l0Eh0KCnBhZ2VfdG9rZW4YAiABKAlSCXBhZ2VUb2tlbhI+Cg5zY3JlZW5fY29udGV4dBgDIAEo'
     'CzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3RSDXNjcmVlbkNvbnRleHQSGgoIY2F0ZWdvcnkYBC'
     'ABKAlSCGNhdGVnb3J5EkUKC2J1ZGdldF9tb2RlGAUgASgOMiQub250aGVibG9jay5hcHBnYXRl'
-    'd2F5LnYxLkJ1ZGdldE1vZGVSCmJ1ZGdldE1vZGUSPgoOY2xpZW50X2NvbnRleHQYFCABKAsyFy'
-    '5nb29nbGUucHJvdG9idWYuU3RydWN0Ug1jbGllbnRDb250ZXh0');
+    'd2F5LnYxLkJ1ZGdldE1vZGVSCmJ1ZGdldE1vZGUSMAoUZXhjbHVkZV9iZXZlcmFnZV9pZHMYBi'
+    'ADKAlSEmV4Y2x1ZGVCZXZlcmFnZUlkcxIsChJleGNsdWRlX3Jlc3VsdF9pZHMYByADKAlSEGV4'
+    'Y2x1ZGVSZXN1bHRJZHMSVgoOZGl2ZXJzaXR5X21vZGUYCCABKA4yLy5vbnRoZWJsb2NrLmFwcG'
+    'dhdGV3YXkudjEuQmV2ZXJhZ2VEaXZlcnNpdHlNb2RlUg1kaXZlcnNpdHlNb2RlEj4KDmNsaWVu'
+    'dF9jb250ZXh0GBQgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVjdFINY2xpZW50Q29udGV4dA'
+    '==');
 
 @$core.Deprecated('Use getBeverageRecommendationsResponseDescriptor instead')
 const GetBeverageRecommendationsResponse$json = {

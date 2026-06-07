@@ -26,6 +26,10 @@ abstract class RecommendationRepository {
     String category = '',
     int limit = 10,
     RecommendationBudgetMode budgetMode = RecommendationBudgetMode.soft,
+    List<String> excludeBeverageIds = const <String>[],
+    List<String> excludeResultIds = const <String>[],
+    RecommendationDiversityMode diversityMode =
+        RecommendationDiversityMode.unspecified,
   });
 
   Future<VenueRecommendationPage> getVenueRecommendations({
@@ -82,12 +86,19 @@ class GrpcRecommendationRepository implements RecommendationRepository {
     String category = '',
     int limit = 10,
     RecommendationBudgetMode budgetMode = RecommendationBudgetMode.soft,
+    List<String> excludeBeverageIds = const <String>[],
+    List<String> excludeResultIds = const <String>[],
+    RecommendationDiversityMode diversityMode =
+        RecommendationDiversityMode.unspecified,
   }) async {
     final response = await _remote.getBeverageRecommendations(
       authToken: authToken,
       category: category,
       limit: limit,
       budgetMode: _budgetModeToProto(budgetMode),
+      excludeBeverageIds: excludeBeverageIds,
+      excludeResultIds: excludeResultIds,
+      diversityMode: _diversityModeToProto(diversityMode),
       screenContext: const <String, Object>{'surface': 'home_recommendations'},
       clientContext: const <String, Object>{'client_platform': 'flutter'},
     );
@@ -166,7 +177,6 @@ class GrpcRecommendationRepository implements RecommendationRepository {
       eventType: _eventTypeToProto(eventType),
       idempotencyKey: idempotencyKey,
       eventContext: eventContext,
-      clientContext: const <String, Object>{'client_platform': 'flutter'},
     );
   }
 
@@ -255,6 +265,21 @@ class GrpcRecommendationRepository implements RecommendationRepository {
     return switch (mode) {
       RecommendationBudgetMode.strict => pb.BudgetMode.BUDGET_MODE_STRICT,
       RecommendationBudgetMode.soft => pb.BudgetMode.BUDGET_MODE_SOFT,
+    };
+  }
+
+  static pb.BeverageDiversityMode _diversityModeToProto(
+    RecommendationDiversityMode mode,
+  ) {
+    return switch (mode) {
+      RecommendationDiversityMode.standard =>
+        pb.BeverageDiversityMode.BEVERAGE_DIVERSITY_MODE_STANDARD,
+      RecommendationDiversityMode.different =>
+        pb.BeverageDiversityMode.BEVERAGE_DIVERSITY_MODE_DIFFERENT,
+      RecommendationDiversityMode.adjacent =>
+        pb.BeverageDiversityMode.BEVERAGE_DIVERSITY_MODE_ADJACENT,
+      RecommendationDiversityMode.unspecified =>
+        pb.BeverageDiversityMode.BEVERAGE_DIVERSITY_MODE_UNSPECIFIED,
     };
   }
 

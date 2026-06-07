@@ -50,6 +50,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
       body: SafeArea(
         top: false,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _CollectionTabs(
               selectedTab: _selectedTab,
@@ -142,7 +143,7 @@ class _CollectionTabButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
-    final color = isSelected ? AppColors.primaryContainer : palette.secondary;
+    final color = isSelected ? palette.terracotta : palette.secondary;
 
     return Expanded(
       child: InkWell(
@@ -167,7 +168,7 @@ class _CollectionTabButton extends StatelessWidget {
                   DecoratedBox(
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primaryContainer
+                          ? palette.terracotta
                           : palette.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(999),
                     ),
@@ -189,14 +190,14 @@ class _CollectionTabButton extends StatelessWidget {
                 ],
               ),
               if (isSelected)
-                const Positioned(
+                Positioned(
                   bottom: 0,
                   child: SizedBox(
                     width: 64,
                     height: 3,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: AppColors.primaryContainer,
+                        color: palette.terracotta,
                         borderRadius: BorderRadius.vertical(
                           top: Radius.circular(999),
                         ),
@@ -312,107 +313,116 @@ class _WishlistItemCardState extends State<_WishlistItemCard> {
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: AppNetworkImage(url: item.imageUrl, width: 88, height: 88),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: AppNetworkImage(
+                    url: item.imageUrl,
+                    width: 88,
+                    height: 88,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          item.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: palette.onSurface,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            height: 1.2,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.name,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: palette.onSurface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                height: 1.2,
+                              ),
+                            ),
                           ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.favorite,
+                            color: palette.burgundy,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        item.shopName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: palette.secondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.favorite,
-                        color: AppColors.primaryContainer,
-                        size: 20,
+                      const SizedBox(height: 8),
+                      Text(
+                        item.note,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: palette.onSurfaceVariant,
+                          fontSize: 12,
+                          height: 1.35,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.priceLabel,
+                              style: TextStyle(
+                                color: palette.onSurface,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: _toggleOptions,
+                            key: ValueKey('toggle-${item.name}'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: palette.terracotta,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                            ),
+                            iconAlignment: IconAlignment.end,
+                            icon: Icon(
+                              _isExpanded
+                                  ? Icons.keyboard_arrow_up
+                                  : Icons.keyboard_arrow_down,
+                            ),
+                            label: Text(
+                              _isExpanded ? 'Hide options' : 'Show options',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 5),
-                  Text(
-                    item.shopName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: palette.secondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    item.note,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: palette.onSurfaceVariant,
-                      fontSize: 12,
-                      height: 1.35,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.priceLabel,
-                          style: TextStyle(
-                            color: palette.onSurface,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      TextButton.icon(
-                        onPressed: _toggleOptions,
-                        key: ValueKey('toggle-${item.name}'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primaryContainer,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                        iconAlignment: IconAlignment.end,
-                        icon: Icon(
-                          _isExpanded
-                              ? Icons.keyboard_arrow_up
-                              : Icons.keyboard_arrow_down,
-                        ),
-                        label: Text(
-                          _isExpanded ? 'Hide options' : 'Show options',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (_isExpanded)
-                    _RecommendationOptions(
-                      options: item.recommendedStoreOptions,
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
+            if (_isExpanded)
+              _RecommendationOptions(options: item.recommendedStoreOptions),
           ],
         ),
       ),
@@ -430,7 +440,7 @@ class _RecommendationOptions extends StatelessWidget {
     final palette = context.palette;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: 14),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: palette.surfaceContainerLow,

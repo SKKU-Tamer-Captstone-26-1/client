@@ -18,38 +18,43 @@ class AppBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: palette.surfaceContainerLowest,
-        border: Border(top: BorderSide(color: palette.outlineVariant)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(
-              alpha: Theme.of(context).brightness == Brightness.dark
-                  ? 0.22
-                  : 0.08,
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: palette.surfaceContainerLowest.withValues(
+              alpha: isDark ? 0.96 : 0.98,
             ),
-            blurRadius: 18,
-            offset: const Offset(0, -6),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 68,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              for (final item in AppBottomNavItem.values)
-                _BottomNavButton(
-                  item: item,
-                  isSelected: item == currentItem,
-                  badgeCount: badgeCounts[item] ?? 0,
-                  onPressed: () => onItemSelected?.call(item),
-                ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: palette.outlineVariant.withValues(alpha: isDark ? 0.7 : 1),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+                blurRadius: 22,
+                offset: const Offset(0, 8),
+              ),
             ],
+          ),
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                for (final item in AppBottomNavItem.values)
+                  _BottomNavButton(
+                    item: item,
+                    isSelected: item == currentItem,
+                    badgeCount: badgeCounts[item] ?? 0,
+                    onPressed: () => onItemSelected?.call(item),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -74,11 +79,14 @@ class _BottomNavButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final color = isSelected ? AppColors.primaryContainer : palette.secondary;
+    final selectedFill = AppColors.primaryContainer.withValues(
+      alpha: Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.12,
+    );
 
     return Expanded(
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -94,11 +102,7 @@ class _BottomNavButton extends StatelessWidget {
                     width: isSelected ? 42 : 0,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryContainer.withValues(
-                        alpha: Theme.of(context).brightness == Brightness.dark
-                            ? 0.18
-                            : 0.12,
-                      ),
+                      color: selectedFill,
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -119,7 +123,7 @@ class _BottomNavButton extends StatelessWidget {
               style: TextStyle(
                 color: color,
                 fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
                 height: 1.2,
               ),
             ),

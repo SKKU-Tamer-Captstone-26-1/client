@@ -17,35 +17,63 @@ class SurveyIntroScreen extends StatelessWidget {
     final palette = context.palette;
 
     return Scaffold(
-      backgroundColor: palette.surfaceContainerLowest,
+      backgroundColor: palette.surfaceContainerLow,
       body: SafeArea(
         child: Column(
           children: [
             const _IntroTopBar(),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(32, 36, 32, 32),
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
                 child: Column(
                   children: [
                     _SurveyIntroVisual(palette: palette),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 34),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryContainer.withValues(
+                          alpha: 0.12,
+                        ),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        child: Text(
+                          'TASTE PROFILE',
+                          style: TextStyle(
+                            color: AppColors.primaryContainer,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 340),
+                      constraints: const BoxConstraints(maxWidth: 360),
                       child: Text(
                         'Take a quick survey to get better liquor recommendations.',
                         textAlign: TextAlign.center,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.headlineMedium?.copyWith(height: 1.25),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              height: 1.18,
+                              fontWeight: FontWeight.w900,
+                            ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 340),
+                      constraints: const BoxConstraints(maxWidth: 370),
                       child: Text(
-                        'This is placeholder survey content and can be replaced later.',
+                        'Tell ONTHEBLOCK what you drink, how you shop, and where you want to discover bottles nearby.',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: palette.secondary,
+                        ),
                       ),
                     ),
                   ],
@@ -69,6 +97,7 @@ class SurveyIntroScreen extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
+                          elevation: 0,
                         ),
                         child: const Text(
                           'Start Survey',
@@ -132,32 +161,111 @@ class _SurveyIntroVisual extends StatelessWidget {
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 260,
-            height: 260,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 286),
+          child: DecoratedBox(
             decoration: BoxDecoration(
-              color: palette.surfaceContainerLow.withValues(alpha: 0.45),
-              shape: BoxShape.circle,
+              color: palette.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(36),
+              border: Border.all(
+                color: palette.outlineVariant.withValues(alpha: 0.62),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: SizedBox(
+                width: 246,
+                height: 246,
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: 124,
+                        height: 168,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryContainer.withValues(
+                            alpha: 0.12,
+                          ),
+                          borderRadius: BorderRadius.circular(42),
+                          border: Border.all(
+                            color: AppColors.primaryContainer.withValues(
+                              alpha: 0.28,
+                            ),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.liquor,
+                          size: 82,
+                          color: AppColors.primaryContainer,
+                        ),
+                      ),
+                    ),
+                    const Positioned(
+                      left: 0,
+                      top: 18,
+                      child: _TasteSignal(label: 'Smoky', icon: Icons.whatshot),
+                    ),
+                    const Positioned(
+                      right: 0,
+                      top: 74,
+                      child: _TasteSignal(
+                        label: 'Local',
+                        icon: Icons.location_on,
+                      ),
+                    ),
+                    const Positioned(
+                      left: 10,
+                      bottom: 18,
+                      child: _TasteSignal(label: 'Value', icon: Icons.savings),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-          Container(
-            width: 256,
-            height: 256,
-            decoration: BoxDecoration(
-              color: palette.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(48),
-              border: Border.all(color: palette.outlineVariant),
+        ),
+      ),
+    );
+  }
+}
+
+class _TasteSignal extends StatelessWidget {
+  const _TasteSignal({required this.label, required this.icon});
+
+  final String label;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: palette.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: palette.outlineVariant.withValues(alpha: 0.72),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: AppColors.primaryContainer),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: palette.onSurface,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-            child: Icon(
-              Icons.liquor,
-              size: 112,
-              color: palette.primaryContainer,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

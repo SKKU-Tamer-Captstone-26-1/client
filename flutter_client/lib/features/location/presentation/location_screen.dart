@@ -62,10 +62,20 @@ class _LocationScreenState extends State<LocationScreen> {
     });
 
     try {
-      final permission = await Geolocator.checkPermission();
-      final resolved = permission == LocationPermission.denied
-          ? await Geolocator.requestPermission()
-          : permission;
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        setState(() {
+          _error =
+              'Location services are disabled. Enable location in the emulator or search manually.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      var resolved = await Geolocator.checkPermission();
+      if (resolved == LocationPermission.denied) {
+        resolved = await Geolocator.requestPermission();
+      }
 
       if (resolved == LocationPermission.denied ||
           resolved == LocationPermission.deniedForever) {
@@ -76,11 +86,14 @@ class _LocationScreenState extends State<LocationScreen> {
         return;
       }
 
-      final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium,
-        ),
-      );
+      final pos =
+          await Geolocator.getLastKnownPosition() ??
+          await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium,
+              timeLimit: Duration(seconds: 15),
+            ),
+          );
 
       final result = await _reverseGeocode(pos.longitude, pos.latitude);
       setState(() {
@@ -89,8 +102,10 @@ class _LocationScreenState extends State<LocationScreen> {
         _isLoading = false;
       });
     } catch (e) {
+      debugPrint('[LocationScreen] GPS error: $e');
       setState(() {
-        _error = 'Could not get current location.';
+        _error =
+            'Could not get current location. On an emulator, set a mock location or search manually.';
         _isLoading = false;
       });
     }
