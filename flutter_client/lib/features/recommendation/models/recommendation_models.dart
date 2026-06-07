@@ -82,3 +82,51 @@ class BeverageRecommendationPage {
   final int profileRevision;
   final List<BeverageRecommendation> recommendations;
 }
+
+class VenueRecommendation {
+  const VenueRecommendation({
+    required this.rank,
+    required this.resultId,
+    required this.venueId,
+    required this.displayName,
+    required this.score,
+    required this.reason,
+    required this.tags,
+    this.lat,
+    this.lng,
+    this.address = '',
+    this.placeType = '',
+    this.distanceM,
+    this.priceKrw,
+  });
+
+  final int rank;
+  final String resultId;
+  final String venueId;
+  final String displayName;
+  final double score;
+  final String reason;
+  final List<String> tags;
+  final double? lat;
+  final double? lng;
+  final String address;
+  final String placeType;
+  final double? distanceM;
+  final int? priceKrw;
+}
+
+class VenueRecommendationPage {
+  const VenueRecommendationPage({
+    required this.requestId,
+    required this.profileStatus,
+    required this.profileRevision,
+    required this.recommendations,
+    required this.nextPageToken,
+  });
+
+  final String requestId;
+  final RecommendationProfileStatus profileStatus;
+  final int profileRevision;
+  final List<VenueRecommendation> recommendations;
+  final String nextPageToken;
+}

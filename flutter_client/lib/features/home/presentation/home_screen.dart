@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_icons.dart';
+import '../../../features/chatbot/data/chatbot_repository.dart';
+import '../../../features/chatbot/models/chatbot_models.dart';
 import '../../../features/chatbot/presentation/chatbot_modal.dart';
 import '../../../shared/widgets/app_bottom_nav_bar.dart';
 import '../../../shared/widgets/app_network_image.dart';
@@ -18,6 +20,8 @@ class HomeScreen extends StatelessWidget {
     this.onProfileSelected,
     this.recommendationRepository,
     this.recommendationAuthToken = '',
+    this.chatbotRepository,
+    this.chatbotAuthToken = '',
     this.hasCompletedSurvey = false,
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
@@ -26,6 +30,8 @@ class HomeScreen extends StatelessWidget {
   final VoidCallback? onProfileSelected;
   final RecommendationRepository? recommendationRepository;
   final String recommendationAuthToken;
+  final ChatbotRepository? chatbotRepository;
+  final String chatbotAuthToken;
   final bool hasCompletedSurvey;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
@@ -46,7 +52,12 @@ class HomeScreen extends StatelessWidget {
         badgeCounts: bottomNavBadgeCounts,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showChatbotModal(context),
+        onPressed: () => showChatbotModal(
+          context,
+          repository: chatbotRepository,
+          authToken: chatbotAuthToken,
+          screenContext: ChatbotScreenContext.home,
+        ),
         backgroundColor: AppColors.primaryContainer,
         foregroundColor: Colors.white,
         shape: const CircleBorder(),
