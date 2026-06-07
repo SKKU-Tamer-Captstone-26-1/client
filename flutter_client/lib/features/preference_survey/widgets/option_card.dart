@@ -20,81 +20,85 @@ class OptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final palette = context.palette;
     const selectedColor = AppColors.primaryContainer;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? selectedColor.withValues(alpha: 0.18)
-              : colorScheme.surface,
-          border: Border.all(
-            color: isSelected ? selectedColor : colorScheme.outlineVariant,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: selectedColor.withValues(alpha: 0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected
-                    ? selectedColor
-                    : colorScheme.surfaceContainerHigh,
-              ),
-              child: Icon(
-                _resolveIcon(iconName),
-                color: isSelected ? Colors.white : colorScheme.onSurfaceVariant,
-              ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? selectedColor.withValues(alpha: 0.14)
+                : palette.surfaceContainerLowest,
+            border: Border.all(
+              color: isSelected
+                  ? selectedColor
+                  : palette.outlineVariant.withValues(alpha: 0.72),
+              width: isSelected ? 1.5 : 1,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? selectedColor : colorScheme.onSurface,
-                    ),
-                  ),
-                  if (description.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? selectedColor
+                      : palette.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(17),
+                  border: isSelected
+                      ? null
+                      : Border.all(
+                          color: palette.outlineVariant.withValues(alpha: 0.55),
+                        ),
+                ),
+                child: Icon(
+                  _resolveIcon(iconName),
+                  color: isSelected ? Colors.white : palette.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
+                      label,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: isSelected ? selectedColor : palette.onSurface,
                       ),
                     ),
+                    if (description.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        description,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: palette.secondary,
+                          fontWeight: FontWeight.w600,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            AnimatedOpacity(
-              opacity: isSelected ? 1 : 0,
-              duration: const Duration(milliseconds: 180),
-              child: Icon(Icons.check_circle, color: selectedColor),
-            ),
-          ],
+              AnimatedOpacity(
+                opacity: isSelected ? 1 : 0,
+                duration: const Duration(milliseconds: 180),
+                child: const Icon(Icons.check_circle, color: selectedColor),
+              ),
+            ],
+          ),
         ),
       ),
     );

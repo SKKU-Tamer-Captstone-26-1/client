@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_cropper/image_cropper.dart';
@@ -28,6 +29,7 @@ class UserPageScreen extends ConsumerWidget {
     this.onThemeToggle,
     this.recommendationRepository,
     this.recommendationAuthToken = '',
+    this.currentBottomNavItem = AppBottomNavItem.home,
     this.bottomNavBadgeCounts = const <AppBottomNavItem, int>{},
   });
 
@@ -39,6 +41,7 @@ class UserPageScreen extends ConsumerWidget {
   final VoidCallback? onThemeToggle;
   final RecommendationRepository? recommendationRepository;
   final String recommendationAuthToken;
+  final AppBottomNavItem currentBottomNavItem;
   final Map<AppBottomNavItem, int> bottomNavBadgeCounts;
 
   @override
@@ -52,7 +55,11 @@ class UserPageScreen extends ConsumerWidget {
         backgroundColor: palette.surfaceContainerLowest,
         elevation: 0,
         scrolledUnderElevation: 0,
-        shape: Border(bottom: BorderSide(color: palette.outlineVariant)),
+        shape: Border(
+          bottom: BorderSide(
+            color: palette.outlineVariant.withValues(alpha: 0.72),
+          ),
+        ),
         leading: IconButton(
           onPressed: onBack,
           icon: Icon(Icons.arrow_back, color: palette.secondary),
@@ -68,12 +75,14 @@ class UserPageScreen extends ConsumerWidget {
         centerTitle: true,
       ),
       bottomNavigationBar: AppBottomNavBar(
+        currentItem: currentBottomNavItem,
         onItemSelected: onBottomNavSelected,
         badgeCounts: bottomNavBadgeCounts,
       ),
       body: SafeArea(
         top: false,
         child: ListView(
+          scrollCacheExtent: const ScrollCacheExtent.pixels(900),
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
           children: [
             _ProfileSection(user: user),
@@ -235,73 +244,161 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
     final profileImageUrl = widget.user?.profileImageUrl;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 24, bottom: 8),
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 56,
-                backgroundColor: palette.surfaceContainerLow,
-                backgroundImage:
-                    profileImageUrl != null && profileImageUrl.isNotEmpty
-                    ? NetworkImage(profileImageUrl)
-                    : null,
-                child: profileImageUrl == null || profileImageUrl.isEmpty
-                    ? Icon(Icons.person, size: 56, color: palette.secondary)
-                    : null,
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: _isUploading ? null : _pickAndUploadImage,
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryContainer,
+      padding: const EdgeInsets.only(top: 18, bottom: 4),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: palette.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: palette.outlineVariant.withValues(alpha: 0.62),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 460;
+              final avatarRadius = compact ? 56.0 : 44.0;
+              final avatar = Stack(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: _isUploading
-                        ? const Padding(
-                            padding: EdgeInsets.all(6),
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.photo_camera,
-                            size: 18,
-                            color: Colors.white,
-                          ),
+                    child: CircleAvatar(
+                      radius: avatarRadius,
+                      backgroundColor: palette.surfaceContainerLow,
+                      backgroundImage:
+                          profileImageUrl != null && profileImageUrl.isNotEmpty
+                          ? NetworkImage(profileImageUrl)
+                          : null,
+                      child: profileImageUrl == null || profileImageUrl.isEmpty
+                          ? Icon(
+                              Icons.person,
+                              size: compact ? 56 : 42,
+                              color: palette.secondary,
+                            )
+                          : null,
+                    ),
                   ),
-                ),
-              ),
-            ],
+                  Positioned(
+                    bottom: 2,
+                    right: 2,
+                    child: GestureDetector(
+                      onTap: _isUploading ? null : _pickAndUploadImage,
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryContainer,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: palette.surfaceContainerLowest,
+                            width: 3,
+                          ),
+                        ),
+                        child: _isUploading
+                            ? const Padding(
+                                padding: EdgeInsets.all(7),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.photo_camera,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+              final info = Column(
+                crossAxisAlignment: compact
+                    ? CrossAxisAlignment.center
+                    : CrossAxisAlignment.start,
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 5,
+                      ),
+                      child: Text(
+                        'LOCAL MEMBER',
+                        style: TextStyle(
+                          color: AppColors.primaryContainer,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,
+                    mainAxisAlignment: compact
+                        ? MainAxisAlignment.center
+                        : MainAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          nickname,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: palette.onSurface,
+                                fontWeight: FontWeight.w900,
+                              ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () => _showEditNicknameDialog(context),
+                        child: Icon(
+                          Icons.edit,
+                          size: 20,
+                          color: palette.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    email,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 14, color: palette.secondary),
+                  ),
+                ],
+              );
+
+              if (compact) {
+                return Column(
+                  children: [avatar, const SizedBox(height: 16), info],
+                );
+              }
+
+              return Row(
+                children: [
+                  avatar,
+                  const SizedBox(width: 18),
+                  Expanded(child: info),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                nickname,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: palette.onSurface,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () => _showEditNicknameDialog(context),
-                child: Icon(Icons.edit, size: 20, color: palette.secondary),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(email, style: TextStyle(fontSize: 14, color: palette.secondary)),
-        ],
+        ),
       ),
     );
   }
@@ -332,17 +429,32 @@ class _AlcoholScoreCard extends StatelessWidget {
 
   final int alcoholScore;
 
+  static String _titleForScore(int score) {
+    if (score >= 96) return 'Spirytus';
+    if (score >= 75) return 'Overproof';
+    if (score >= 60) return 'Absinthe';
+    if (score >= 40) return 'Whiskey';
+    if (score >= 25) return 'Liqueur';
+    if (score >= 18) return 'Port';
+    if (score >= 12) return 'Wine';
+    if (score >= 5) return 'Beer';
+    return 'Mocktail';
+  }
+
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
     final progress = (alcoholScore / 100.0).clamp(0.0, 1.0);
+    final title = _titleForScore(alcoholScore);
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: palette.outlineVariant),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: palette.outlineVariant.withValues(alpha: 0.62),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,15 +473,15 @@ class _AlcoholScoreCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFDDB9),
+                  color: palette.primaryContainer.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Text(
-                  'Beer',
+                child: Text(
+                  title,
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF663E00),
+                    fontWeight: FontWeight.w800,
+                    color: palette.primaryContainer,
                   ),
                 ),
               ),
@@ -446,8 +558,10 @@ class _PointsCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: palette.outlineVariant),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: palette.outlineVariant.withValues(alpha: 0.62),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,14 +588,14 @@ class _PointsCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 2),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(bottom: 2),
                 child: Text(
                   'P',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primaryContainer,
+                    color: palette.primaryContainer,
                   ),
                 ),
               ),
@@ -556,14 +670,33 @@ class _MySettingsSection extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 12),
-          child: Text(
-            'My Settings',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: context.palette.onSurface,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Personal Info',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: context.palette.onSurface,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Profile, neighborhood, and app appearance',
+                style: TextStyle(
+                  color: palette.secondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
+        _ThemeSettingsCard(
+          isDarkMode: isDarkMode,
+          onThemeToggle: onThemeToggle,
+        ),
+        const SizedBox(height: 12),
         _SettingsCard(
           icon: Icons.location_on,
           iconColor: AppColors.primaryContainer,
@@ -574,18 +707,23 @@ class _MySettingsSection extends ConsumerWidget {
           onTap: () => _openLocationUpdate(context, ref),
         ),
         const SizedBox(height: 12),
-        _ThemeSettingsCard(
-          isDarkMode: isDarkMode,
-          onThemeToggle: onThemeToggle,
-        ),
-        const SizedBox(height: 12),
         _TasteProfileSettingsCard(
           repository: recommendationRepository,
           authToken: recommendationAuthToken,
           hasCompletedSurvey: hasCompletedSurvey,
           onTap: onRetakeSurvey,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 24),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text(
+            'Account',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: palette.onSurface,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
         _SettingsCard(
           icon: Icons.help_outline,
           iconColor: palette.secondary,
@@ -604,6 +742,10 @@ class _MySettingsSection extends ConsumerWidget {
             );
             if (await canLaunchUrl(uri)) {
               await launchUrl(uri);
+            } else if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Unable to open your email app.')),
+              );
             }
           },
         ),
@@ -792,14 +934,14 @@ class _SettingsCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: palette.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: palette.outlineVariant.withValues(alpha: 0.5),
+              color: palette.outlineVariant.withValues(alpha: 0.62),
             ),
           ),
           child: Row(
@@ -809,7 +951,7 @@ class _SettingsCard extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: iconBgColor,
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(15),
                 ),
                 child: Icon(icon, color: iconColor, size: 22),
               ),
@@ -822,7 +964,7 @@ class _SettingsCard extends StatelessWidget {
                       title,
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w800,
                         color: palette.onSurface,
                       ),
                     ),
@@ -830,6 +972,8 @@ class _SettingsCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitle!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 13,
                           color: palette.secondary,

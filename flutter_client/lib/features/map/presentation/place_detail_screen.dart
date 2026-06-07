@@ -14,20 +14,20 @@ import '../models/map_review.dart';
 const _heroHeight = 280.0;
 
 Color _categoryColor(String code) => switch (code) {
-      'bar' => const Color(0xFFFF7E36),
-      'pub' => const Color(0xFFC4963A),
-      'liquor_shop' => const Color(0xFF4F7ED4),
-      'outdoor_spot' => const Color(0xFF5CA874),
-      _ => const Color(0xFF6B6B8A),
-    };
+  'bar' => AppColors.primaryContainer,
+  'pub' => const Color(0xFFC4963A),
+  'liquor_shop' => const Color(0xFF4F7ED4),
+  'outdoor_spot' => const Color(0xFF5CA874),
+  _ => const Color(0xFF6B6B8A),
+};
 
 String _categoryLabel(String code) => switch (code) {
-      'bar' => 'Bar',
-      'pub' => 'Pub',
-      'liquor_shop' => 'Liquor Shop',
-      'outdoor_spot' => 'Outdoor',
-      _ => code,
-    };
+  'bar' => 'Bar',
+  'pub' => 'Pub',
+  'liquor_shop' => 'Liquor Shop',
+  'outdoor_spot' => 'Outdoor',
+  _ => code,
+};
 
 class PlaceDetailScreen extends StatefulWidget {
   const PlaceDetailScreen({super.key, required this.place});
@@ -98,7 +98,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                 ],
               ),
             ),
-            leadingWidth: 64,
+            leadingWidth: 76,
             actions: [
               IconButton(
                 icon: Icon(Icons.share_outlined, color: iconColor, size: 22),
@@ -110,7 +110,11 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               ),
               if (place.layerCode == 'liquor_shop')
                 IconButton(
-                  icon: Icon(Icons.shopping_cart_outlined, color: iconColor, size: 22),
+                  icon: Icon(
+                    Icons.shopping_cart_outlined,
+                    color: iconColor,
+                    size: 22,
+                  ),
                   onPressed: () {},
                 ),
             ],
@@ -123,7 +127,11 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _CoreInfoCard(place: place, catColor: catColor, palette: palette),
+                _CoreInfoCard(
+                  place: place,
+                  catColor: catColor,
+                  palette: palette,
+                ),
                 _buildTypeSection(palette),
                 SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
               ],
@@ -136,16 +144,18 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
   Widget _buildTypeSection(AppPalette palette) {
     return switch (widget.place.layerCode) {
-      'bar' || 'pub' => Column(children: [
+      'bar' || 'pub' => Column(
+        children: [
           _MenuSection(place: widget.place, palette: palette),
           const SizedBox(height: 8),
           _ReviewsSection(place: widget.place, palette: palette),
-        ]),
+        ],
+      ),
       'liquor_shop' => _LiquorsSection(
-          place: widget.place,
-          palette: palette,
-          collection: _collection,
-        ),
+        place: widget.place,
+        palette: palette,
+        collection: _collection,
+      ),
       'outdoor_spot' => _LocationSection(palette: palette),
       _ => _ReviewsSection(place: widget.place, palette: palette),
     };
@@ -281,7 +291,11 @@ class _CoreInfoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: palette.outlineVariant),
         boxShadow: const [
-          BoxShadow(color: Color(0x1A000000), blurRadius: 12, offset: Offset(0, 4)),
+          BoxShadow(
+            color: Color(0x1A000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: Padding(
@@ -297,7 +311,10 @@ class _CoreInfoCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: catColor,
                           borderRadius: BorderRadius.circular(999),
@@ -329,7 +346,10 @@ class _CoreInfoCard extends StatelessWidget {
                 if (hasRating) ...[
                   const SizedBox(width: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 7,
+                    ),
                     decoration: BoxDecoration(
                       color: palette.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(10),
@@ -337,7 +357,11 @@ class _CoreInfoCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.star_rounded, color: AppColors.primaryContainer, size: 16),
+                        const Icon(
+                          Icons.star_rounded,
+                          color: AppColors.primaryContainer,
+                          size: 16,
+                        ),
                         const SizedBox(width: 3),
                         Text(
                           place.rating,
@@ -351,7 +375,10 @@ class _CoreInfoCard extends StatelessWidget {
                           const SizedBox(width: 3),
                           Text(
                             '(${place.reviewCount})',
-                            style: TextStyle(color: palette.secondary, fontSize: 11),
+                            style: TextStyle(
+                              color: palette.secondary,
+                              fontSize: 11,
+                            ),
                           ),
                         ],
                       ],
@@ -400,7 +427,11 @@ class _CoreInfoCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.location_on_outlined, color: palette.secondary, size: 16),
+                  Icon(
+                    Icons.location_on_outlined,
+                    color: palette.secondary,
+                    size: 16,
+                  ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -424,7 +455,11 @@ class _CoreInfoCard extends StatelessWidget {
 // ─── Section Shell ───────────────────────────────────────────────────────────
 
 class _SectionShell extends StatelessWidget {
-  const _SectionShell({required this.title, required this.child, this.trailing});
+  const _SectionShell({
+    required this.title,
+    required this.child,
+    this.trailing,
+  });
   final String title;
   final Widget child;
   final Widget? trailing;
@@ -448,10 +483,7 @@ class _SectionShell extends StatelessWidget {
                   letterSpacing: -0.3,
                 ),
               ),
-              if (trailing != null) ...[
-                const Spacer(),
-                trailing!,
-              ],
+              if (trailing != null) ...[const Spacer(), trailing!],
             ],
           ),
           const SizedBox(height: 14),
@@ -489,7 +521,11 @@ class _FullScreenImageViewer extends StatelessWidget {
               child: Image.network(
                 imageUrl,
                 fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const Icon(Icons.broken_image, color: Colors.white54, size: 64),
+                errorBuilder: (_, _, _) => const Icon(
+                  Icons.broken_image,
+                  color: Colors.white54,
+                  size: 64,
+                ),
               ),
             ),
           ),
@@ -560,14 +596,24 @@ class _MenuSection extends StatelessWidget {
               children: [
                 for (var i = 0; i < displayItems.length; i++) ...[
                   if (i > 0)
-                    Divider(height: 1, thickness: 1, color: palette.outlineVariant),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: palette.outlineVariant,
+                    ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     child: Row(
                       children: [
                         if (displayItems[i].imageUrl.isNotEmpty) ...[
                           GestureDetector(
-                            onTap: () => _showFullScreenImage(context, displayItems[i].imageUrl),
+                            onTap: () => _showFullScreenImage(
+                              context,
+                              displayItems[i].imageUrl,
+                            ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(10),
                               child: Image.network(
@@ -582,8 +628,11 @@ class _MenuSection extends StatelessWidget {
                                     color: palette.surfaceContainerLow,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: Icon(Icons.restaurant_menu,
-                                      color: palette.secondary, size: 24),
+                                  child: Icon(
+                                    Icons.restaurant_menu,
+                                    color: palette.secondary,
+                                    size: 24,
+                                  ),
                                 ),
                               ),
                             ),
@@ -606,7 +655,10 @@ class _MenuSection extends StatelessWidget {
                                 const SizedBox(height: 2),
                                 Text(
                                   displayItems[i].desc,
-                                  style: TextStyle(color: palette.secondary, fontSize: 12),
+                                  style: TextStyle(
+                                    color: palette.secondary,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ],
@@ -642,10 +694,15 @@ class _MenuSection extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.primaryContainer,
                 side: BorderSide(color: palette.outlineVariant),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: const Text('View All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+              child: const Text(
+                'View All',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
             ),
           ],
         ],
@@ -682,7 +739,10 @@ class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
   Future<void> _onReviewDeleted(MapReview review) async {
     if (review.reviewId.isEmpty) return;
     try {
-      await _api.deleteReview(markerId: widget.place.id, reviewId: review.reviewId);
+      await _api.deleteReview(
+        markerId: widget.place.id,
+        reviewId: review.reviewId,
+      );
       if (mounted) setState(() => _reviews.remove(review));
     } catch (_) {
       if (mounted) {
@@ -748,7 +808,8 @@ class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
                     review: r,
                     palette: palette,
                     currentUserId: currentUserId,
-                    onDeletePressed: currentUserId.isNotEmpty && r.authorId == currentUserId
+                    onDeletePressed:
+                        currentUserId.isNotEmpty && r.authorId == currentUserId
                         ? () => _onReviewDeleted(r)
                         : null,
                   ),
@@ -770,10 +831,18 @@ class _ReviewsSectionState extends ConsumerState<_ReviewsSection> {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.primaryContainer,
                       side: BorderSide(color: palette.outlineVariant),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text('View All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                    child: const Text(
+                      'View All',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -813,9 +882,15 @@ class _ReviewCard extends StatelessWidget {
                 CircleAvatar(
                   radius: 18,
                   backgroundColor: palette.surfaceContainerLow,
-                  backgroundImage: profileUrl != null ? NetworkImage(profileUrl) : null,
+                  backgroundImage: profileUrl != null
+                      ? NetworkImage(profileUrl)
+                      : null,
                   child: profileUrl == null
-                      ? Icon(Icons.person_outline, color: palette.secondary, size: 18)
+                      ? Icon(
+                          Icons.person_outline,
+                          color: palette.secondary,
+                          size: 18,
+                        )
                       : null,
                 ),
                 const SizedBox(width: 8),
@@ -849,7 +924,9 @@ class _ReviewCard extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.delete_outline_rounded,
-                    color: isOwnReview ? palette.secondary : palette.outlineVariant,
+                    color: isOwnReview
+                        ? palette.secondary
+                        : palette.outlineVariant,
                     size: 18,
                   ),
                   onPressed: isOwnReview
@@ -858,7 +935,9 @@ class _ReviewCard extends StatelessWidget {
                             context: context,
                             builder: (ctx) => AlertDialog(
                               title: const Text('Delete Review'),
-                              content: const Text('Are you sure you want to delete this review?'),
+                              content: const Text(
+                                'Are you sure you want to delete this review?',
+                              ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx, false),
@@ -879,12 +958,19 @@ class _ReviewCard extends StatelessWidget {
                       : () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('You can only delete your own reviews.'),
+                              content: Text(
+                                'You can only delete your own reviews.',
+                              ),
                             ),
                           );
                         },
-                  tooltip: isOwnReview ? 'Delete review' : 'Can only delete your own reviews',
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  tooltip: isOwnReview
+                      ? 'Delete review'
+                      : 'Can only delete your own reviews',
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                   padding: EdgeInsets.zero,
                   splashRadius: 16,
                 ),
@@ -957,7 +1043,10 @@ class _AllReviewsSheet extends StatelessWidget {
                 IconButton(
                   onPressed: () => Navigator.pop(context),
                   icon: Icon(Icons.close, color: palette.secondary, size: 20),
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                   padding: EdgeInsets.zero,
                 ),
               ],
@@ -973,7 +1062,9 @@ class _AllReviewsSheet extends StatelessWidget {
                 review: reviews[i],
                 palette: palette,
                 currentUserId: currentUserId,
-                onDeletePressed: currentUserId.isNotEmpty && reviews[i].authorId == currentUserId
+                onDeletePressed:
+                    currentUserId.isNotEmpty &&
+                        reviews[i].authorId == currentUserId
                     ? () {
                         onDeletePressed(reviews[i]);
                         Navigator.pop(context);
@@ -1016,10 +1107,15 @@ class _AddReviewSheetState extends ConsumerState<_AddReviewSheet> {
   Future<void> _submit() async {
     if (_rating == 0 || _submitting) return;
     if (_bodyCtrl.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'Please write your review before submitting.');
+      setState(
+        () => _errorMessage = 'Please write your review before submitting.',
+      );
       return;
     }
-    setState(() { _submitting = true; _errorMessage = null; });
+    setState(() {
+      _submitting = true;
+      _errorMessage = null;
+    });
     final authUser = ref.read(authProvider).user;
     final authorId = ref.read(authProvider).userId ?? '';
     final authorName = _isAnonymous
@@ -1098,7 +1194,9 @@ class _AddReviewSheetState extends ConsumerState<_AddReviewSheet> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: Icon(
-                    i < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                    i < _rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
                     color: AppColors.primaryContainer,
                     size: 44,
                   ),
@@ -1171,7 +1269,10 @@ class _AddReviewSheetState extends ConsumerState<_AddReviewSheet> {
                     )
                   : const Text(
                       'Submit Review',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
             ),
           ),
@@ -1207,8 +1308,7 @@ class _AuthorPreviewRow extends ConsumerWidget {
         CircleAvatar(
           radius: 20,
           backgroundColor: palette.surfaceContainerLow,
-          backgroundImage:
-              profileUrl != null ? NetworkImage(profileUrl) : null,
+          backgroundImage: profileUrl != null ? NetworkImage(profileUrl) : null,
           child: profileUrl == null
               ? Icon(
                   isAnonymous ? Icons.person_outline : Icons.person,
@@ -1383,7 +1483,9 @@ class _LiquorRow extends StatelessWidget {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${item.displayName} added to your collection.'),
+                    content: Text(
+                      '${item.displayName} added to your collection.',
+                    ),
                     duration: const Duration(seconds: 2),
                   ),
                 );
@@ -1399,8 +1501,10 @@ class _LiquorRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('담기 +',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+            child: const Text(
+              '담기 +',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
@@ -1437,7 +1541,11 @@ class _LocationSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Center(
-                  child: Icon(Icons.map_outlined, size: 48, color: Color(0xFF5CA874)),
+                  child: Icon(
+                    Icons.map_outlined,
+                    size: 48,
+                    color: Color(0xFF5CA874),
+                  ),
                 ),
               ),
               const SizedBox(height: 14),
@@ -1488,7 +1596,11 @@ class MenuListScreen extends StatelessWidget {
       ),
       body: ListView.separated(
         padding: EdgeInsets.fromLTRB(
-            16, 16, 16, MediaQuery.of(context).padding.bottom + 24),
+          16,
+          16,
+          16,
+          MediaQuery.of(context).padding.bottom + 24,
+        ),
         itemCount: items.length,
         separatorBuilder: (_, _) => const SizedBox(height: 1),
         itemBuilder: (context, i) {
@@ -1510,8 +1622,11 @@ class MenuListScreen extends StatelessWidget {
                         width: 64,
                         height: 64,
                         color: palette.surfaceContainerLow,
-                        child: Icon(Icons.restaurant_menu,
-                            color: palette.secondary, size: 24),
+                        child: Icon(
+                          Icons.restaurant_menu,
+                          color: palette.secondary,
+                          size: 24,
+                        ),
                       ),
                     ),
                   ),
@@ -1533,7 +1648,10 @@ class MenuListScreen extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           item.desc,
-                          style: TextStyle(color: palette.secondary, fontSize: 12),
+                          style: TextStyle(
+                            color: palette.secondary,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ],

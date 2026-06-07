@@ -13,6 +13,10 @@ Future<void> showChatbotModal(
   ChatbotRepository? repository,
   String authToken = '',
   ChatbotScreenContext screenContext = ChatbotScreenContext.home,
+  double? lat,
+  double? lng,
+  int? radiusM,
+  String selectedBeverageId = '',
 }) {
   return showGeneralDialog<void>(
     context: context,
@@ -25,6 +29,10 @@ Future<void> showChatbotModal(
         repository: repository ?? const UnavailableChatbotRepository(),
         authToken: authToken,
         screenContext: screenContext,
+        lat: lat,
+        lng: lng,
+        radiusM: radiusM,
+        selectedBeverageId: selectedBeverageId,
       );
     },
     transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -45,11 +53,19 @@ class _ChatbotDialog extends StatefulWidget {
     required this.repository,
     required this.authToken,
     required this.screenContext,
+    this.lat,
+    this.lng,
+    this.radiusM,
+    this.selectedBeverageId = '',
   });
 
   final ChatbotRepository repository;
   final String authToken;
   final ChatbotScreenContext screenContext;
+  final double? lat;
+  final double? lng;
+  final int? radiusM;
+  final String selectedBeverageId;
 
   @override
   State<_ChatbotDialog> createState() => _ChatbotDialogState();
@@ -96,7 +112,10 @@ class _ChatbotDialogState extends State<_ChatbotDialog> {
     super.dispose();
   }
 
-  Future<void> _sendMessage({String? retryText}) async {
+  Future<void> _sendMessage({
+    String? retryText,
+    String selectedBeverageIdOverride = '',
+  }) async {
     final text = (retryText ?? _controller.text).trim();
     if (text.isEmpty || _isSending) {
       return;
@@ -127,6 +146,12 @@ class _ChatbotDialogState extends State<_ChatbotDialog> {
           conversationId: _conversationId,
           message: text,
           screenContext: widget.screenContext,
+          lat: widget.lat,
+          lng: widget.lng,
+          radiusM: widget.radiusM,
+          selectedBeverageId: _selectedBeverageIdForRequest(
+            selectedBeverageIdOverride,
+          ),
           beverageLimit: 3,
           venueLimit: 3,
           clientContext: <String, Object>{
@@ -278,6 +303,14 @@ class _ChatbotDialogState extends State<_ChatbotDialog> {
     return 'flutter:$_sessionIdHash:${DateTime.now().microsecondsSinceEpoch}';
   }
 
+  String _selectedBeverageIdForRequest(String override) {
+    final selected = override.trim();
+    if (selected.isNotEmpty) {
+      return selected;
+    }
+    return widget.selectedBeverageId.trim();
+  }
+
   String get _surfaceName {
     return switch (widget.screenContext) {
       ChatbotScreenContext.home => 'home',
@@ -296,12 +329,104 @@ class _ChatbotDialogState extends State<_ChatbotDialog> {
       final reason = answer.refusalReason.trim();
       return reason.isEmpty ? '이 요청에는 답변할 수 없습니다.' : reason;
     }
+    if (_isRecommendationServiceUnavailable(answer)) {
+      return '추천 데이터를 일시적으로 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+    }
+    if (_isRecommendationCandidatesExhausted(answer)) {
+      return '요청하신 조건에서 다른 추천 후보를 더 찾지 못했어요. 조건을 조금 바꿔 다시 물어봐 주세요.';
+    }
+    if (_hasMissingFact(answer, 'detailed_location')) {
+      return '장소 추천을 하려면 현재 위치 정보가 필요해요. 위치 권한을 확인한 뒤 다시 시도해 주세요.';
+    }
+    if (_hasMissingFact(answer, 'selected_beverage_id')) {
+      return '장소를 찾으려면 기준이 될 술을 먼저 선택하거나 이름을 알려주세요.';
+    }
     if (answer.status == ChatbotResponseStatus.insufficientData ||
         answer.profileStatus == ChatbotProfileStatus.missing ||
         answer.profileStatus == ChatbotProfileStatus.pendingGeneration) {
       return '추천 프로필이 아직 준비되지 않았습니다. 설문 저장 또는 프로필 생성을 확인해 주세요.';
     }
     return '답변을 받았지만 표시할 문장이 비어 있습니다.';
+  }
+
+  bool _isRecommendationServiceUnavailable(ChatbotAnswer answer) {
+    final reason = answer.refusalReason.trim().toLowerCase();
+    return reason == 'recommendation_service_unavailable' ||
+        _hasMissingFact(answer, 'recommendation_service_unavailable');
+  }
+
+  bool _isRecommendationCandidatesExhausted(ChatbotAnswer answer) {
+    return _hasMissingFact(
+          answer,
+          'beverage_recommendation_candidates_exhausted',
+        ) ||
+        _hasMissingFact(answer, 'venue_recommendation_candidates_exhausted');
+  }
+
+  bool _hasMissingFact(ChatbotAnswer answer, String fact) {
+    final normalized = fact.toLowerCase();
+    return answer.missingFacts.any(
+      (item) => item.trim().toLowerCase() == normalized,
+    );
+  }
+
+  String _stateLabelForMessage(_ChatMessage message) {
+    if (message.refused || message.status == ChatbotResponseStatus.refused) {
+      return '요청 거절';
+    }
+    if (_isRecommendationServiceUnavailableMessage(message)) {
+      return '추천 데이터 일시 오류';
+    }
+    if (_isRecommendationCandidatesExhaustedMessage(message)) {
+      return '추천 후보 부족';
+    }
+    if (message.status != ChatbotResponseStatus.insufficientData &&
+        message.profileStatus != ChatbotProfileStatus.missing &&
+        message.profileStatus != ChatbotProfileStatus.pendingGeneration) {
+      return '';
+    }
+    if (message.profileStatus == ChatbotProfileStatus.missing ||
+        message.profileStatus == ChatbotProfileStatus.pendingGeneration ||
+        _messageHasMissingFact(message, 'active_recommendation_profile') ||
+        _messageHasMissingFact(message, 'survey_response')) {
+      return '프로필 준비 필요';
+    }
+    return '부족한 정보';
+  }
+
+  bool _isRecommendationServiceUnavailableMessage(_ChatMessage message) {
+    return _messageHasMissingFact(
+      message,
+      'recommendation_service_unavailable',
+    );
+  }
+
+  bool _isRecommendationCandidatesExhaustedMessage(_ChatMessage message) {
+    return _messageHasMissingFact(
+          message,
+          'beverage_recommendation_candidates_exhausted',
+        ) ||
+        _messageHasMissingFact(
+          message,
+          'venue_recommendation_candidates_exhausted',
+        );
+  }
+
+  bool _messageHasMissingFact(_ChatMessage message, String fact) {
+    final normalized = fact.toLowerCase();
+    return message.missingFacts.any(
+      (item) => item.trim().toLowerCase() == normalized,
+    );
+  }
+
+  Future<void> _requestVenueForBeverage(
+    ChatbotBeverageCard beverage,
+    String message,
+  ) {
+    return _sendMessage(
+      retryText: message,
+      selectedBeverageIdOverride: beverage.beverageId,
+    );
   }
 
   void _scrollToBottomSoon() {
@@ -327,9 +452,9 @@ class _ChatbotDialogState extends State<_ChatbotDialog> {
         child: Center(
           child: Material(
             color: palette.surfaceContainerLowest,
-            elevation: 24,
-            shadowColor: Colors.black.withValues(alpha: 0.28),
-            borderRadius: BorderRadius.circular(16),
+            elevation: 18,
+            shadowColor: Colors.black.withValues(alpha: 0.24),
+            borderRadius: BorderRadius.circular(24),
             clipBehavior: Clip.antiAlias,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 448, maxHeight: 640),
@@ -349,6 +474,8 @@ class _ChatbotDialogState extends State<_ChatbotDialog> {
                       feedbackSubmitted: _feedbackSubmitted,
                       onRetry: () => _sendMessage(retryText: _lastUserMessage),
                       onFeedback: _recordFeedback,
+                      stateLabelForMessage: _stateLabelForMessage,
+                      onFindVenueForBeverage: _requestVenueForBeverage,
                       scrollController: _scrollController,
                     ),
                   ),
@@ -394,11 +521,11 @@ class _ChatbotHeader extends StatelessWidget {
             Container(
               width: 40,
               height: 40,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.primaryContainer,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(15),
               ),
-              child: const Icon(Icons.smart_toy, color: Colors.white),
+              child: const Icon(Icons.auto_awesome, color: Colors.white),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -460,6 +587,8 @@ class _ChatHistory extends StatelessWidget {
     required this.feedbackSubmitted,
     required this.onRetry,
     required this.onFeedback,
+    required this.stateLabelForMessage,
+    required this.onFindVenueForBeverage,
     required this.scrollController,
   });
 
@@ -470,6 +599,9 @@ class _ChatHistory extends StatelessWidget {
   final Map<String, ChatbotFeedbackType> feedbackSubmitted;
   final VoidCallback onRetry;
   final Future<void> Function(_ChatMessage, ChatbotFeedbackType) onFeedback;
+  final String Function(_ChatMessage) stateLabelForMessage;
+  final Future<void> Function(ChatbotBeverageCard, String)
+  onFindVenueForBeverage;
   final ScrollController scrollController;
 
   @override
@@ -480,12 +612,12 @@ class _ChatHistory extends StatelessWidget {
       color: palette.surfaceContainerLow.withValues(alpha: 0.35),
       child: ListView.separated(
         controller: scrollController,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         itemCount:
             messages.length +
             (isSending ? 1 : 0) +
             (errorMessage != null ? 1 : 0),
-        separatorBuilder: (_, _) => const SizedBox(height: 16),
+        separatorBuilder: (_, _) => const SizedBox(height: 18),
         itemBuilder: (context, index) {
           if (index < messages.length) {
             final message = messages[index];
@@ -495,6 +627,8 @@ class _ChatHistory extends StatelessWidget {
                     message: message,
                     submittedFeedback: feedbackSubmitted[message.messageId],
                     onFeedback: onFeedback,
+                    stateLabel: stateLabelForMessage(message),
+                    onFindVenueForBeverage: onFindVenueForBeverage,
                   );
           }
           final loadingIndex = messages.length;
@@ -517,11 +651,16 @@ class _AssistantMessage extends StatelessWidget {
     required this.message,
     required this.submittedFeedback,
     required this.onFeedback,
+    required this.stateLabel,
+    required this.onFindVenueForBeverage,
   });
 
   final _ChatMessage message;
   final ChatbotFeedbackType? submittedFeedback;
   final Future<void> Function(_ChatMessage, ChatbotFeedbackType) onFeedback;
+  final String stateLabel;
+  final Future<void> Function(ChatbotBeverageCard, String)
+  onFindVenueForBeverage;
 
   @override
   Widget build(BuildContext context) {
@@ -534,10 +673,14 @@ class _AssistantMessage extends StatelessWidget {
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: palette.surfaceContainerLow,
-            shape: BoxShape.circle,
+            color: AppColors.primaryContainer.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(13),
           ),
-          child: Icon(Icons.liquor, size: 18, color: palette.secondary),
+          child: const Icon(
+            Icons.liquor,
+            size: 18,
+            color: AppColors.primaryContainer,
+          ),
         ),
         const SizedBox(width: 10),
         Flexible(
@@ -563,15 +706,7 @@ class _AssistantMessage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (message.refused ||
-                      message.status == ChatbotResponseStatus.refused)
-                    const _StateLabel(text: '요청 거절')
-                  else if (message.status ==
-                          ChatbotResponseStatus.insufficientData ||
-                      message.profileStatus == ChatbotProfileStatus.missing ||
-                      message.profileStatus ==
-                          ChatbotProfileStatus.pendingGeneration)
-                    const _StateLabel(text: '프로필 준비 필요'),
+                  if (stateLabel.isNotEmpty) _StateLabel(text: stateLabel),
                   Text(
                     message.text,
                     style: TextStyle(
@@ -593,7 +728,10 @@ class _AssistantMessage extends StatelessWidget {
                   ],
                   if (message.cards.isNotEmpty) ...[
                     const SizedBox(height: 12),
-                    _ChatbotCardList(cards: message.cards),
+                    _ChatbotCardList(
+                      cards: message.cards,
+                      onFindVenueForBeverage: onFindVenueForBeverage,
+                    ),
                   ],
                   if (message.messageId.trim().isNotEmpty) ...[
                     const SizedBox(height: 10),
@@ -713,9 +851,9 @@ class _ErrorMessage extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF4EE),
+        color: const Color(0xFFFFF6F2),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFFCCB6)),
+        border: Border.all(color: const Color(0xFFF1C7B5)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -753,9 +891,14 @@ class _ErrorMessage extends StatelessWidget {
 }
 
 class _ChatbotCardList extends StatelessWidget {
-  const _ChatbotCardList({required this.cards});
+  const _ChatbotCardList({
+    required this.cards,
+    required this.onFindVenueForBeverage,
+  });
 
   final List<ChatbotCardModel> cards;
+  final Future<void> Function(ChatbotBeverageCard, String)
+  onFindVenueForBeverage;
 
   @override
   Widget build(BuildContext context) {
@@ -764,7 +907,10 @@ class _ChatbotCardList extends StatelessWidget {
       children: [
         for (var index = 0; index < cards.length; index++) ...[
           if (index > 0) const SizedBox(height: 10),
-          _ChatbotCardTile(card: cards[index]),
+          _ChatbotCardTile(
+            card: cards[index],
+            onFindVenueForBeverage: onFindVenueForBeverage,
+          ),
         ],
       ],
     );
@@ -772,9 +918,14 @@ class _ChatbotCardList extends StatelessWidget {
 }
 
 class _ChatbotCardTile extends StatelessWidget {
-  const _ChatbotCardTile({required this.card});
+  const _ChatbotCardTile({
+    required this.card,
+    required this.onFindVenueForBeverage,
+  });
 
   final ChatbotCardModel card;
+  final Future<void> Function(ChatbotBeverageCard, String)
+  onFindVenueForBeverage;
 
   @override
   Widget build(BuildContext context) {
@@ -846,6 +997,13 @@ class _ChatbotCardTile extends StatelessWidget {
                 spacing: 6,
                 runSpacing: 6,
                 children: chips.take(4).map(_ReasonChip.new).toList(),
+              ),
+            ],
+            if (_canRequestVenue) ...[
+              const SizedBox(height: 10),
+              _BeverageVenueActions(
+                beverage: card.beverage!,
+                onFindVenueForBeverage: onFindVenueForBeverage,
               ),
             ],
           ],
@@ -930,6 +1088,11 @@ class _ChatbotCardTile extends StatelessWidget {
       return venueRank;
     }
     return null;
+  }
+
+  bool get _canRequestVenue {
+    final beverage = card.beverage;
+    return beverage != null && beverage.beverageId.trim().isNotEmpty;
   }
 
   List<Widget> _detailRows() {
@@ -1028,6 +1191,65 @@ class _CardKindPill extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _BeverageVenueActions extends StatelessWidget {
+  const _BeverageVenueActions({
+    required this.beverage,
+    required this.onFindVenueForBeverage,
+  });
+
+  final ChatbotBeverageCard beverage;
+  final Future<void> Function(ChatbotBeverageCard, String)
+  onFindVenueForBeverage;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        OutlinedButton.icon(
+          onPressed: () => onFindVenueForBeverage(
+            beverage,
+            '${beverage.displayName} 근처에서 마실 곳 알려줘',
+          ),
+          icon: const Icon(Icons.local_bar, size: 16),
+          label: const Text('마실 곳'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: palette.onSurface,
+            side: BorderSide(color: palette.outlineVariant),
+            textStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+            minimumSize: const Size(0, 34),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+          ),
+        ),
+        OutlinedButton.icon(
+          onPressed: () => onFindVenueForBeverage(
+            beverage,
+            '${beverage.displayName} 살 수 있는 곳 알려줘',
+          ),
+          icon: const Icon(Icons.storefront, size: 16),
+          label: const Text('살 곳'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: palette.onSurface,
+            side: BorderSide(color: palette.outlineVariant),
+            textStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+            minimumSize: const Size(0, 34),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1211,7 +1433,7 @@ class _StateLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF4EE),
+          color: const Color(0xFFFFF6F2),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Padding(

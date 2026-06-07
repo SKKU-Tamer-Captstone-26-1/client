@@ -523,30 +523,9 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
   Future<void> _showAttachmentOptions() async {
     final option = await showModalBottomSheet<String>(
       context: context,
+      useSafeArea: true,
       builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ListTile(
-                    leading: const Icon(Icons.photo_library_outlined),
-                    title: const Text('Image'),
-                    onTap: () => Navigator.of(context).pop('image'),
-                  ),
-                ),
-                Expanded(
-                  child: ListTile(
-                    leading: const Icon(Icons.insert_drive_file_outlined),
-                    title: const Text('File'),
-                    onTap: () => Navigator.of(context).pop('file'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        return const _AttachmentOptionsSheet();
       },
     );
 
@@ -865,6 +844,146 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
   }
 }
 
+class _AttachmentOptionsSheet extends StatelessWidget {
+  const _AttachmentOptionsSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 38,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: palette.outlineVariant,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              'Add to chat',
+              style: TextStyle(
+                color: palette.onSurface,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Share a tasting photo or a PDF with this room.',
+              style: TextStyle(
+                color: palette.secondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _AttachmentOptionCard(
+                    icon: Icons.photo_library_outlined,
+                    title: 'Image',
+                    subtitle: 'Bottle, shelf, menu',
+                    onTap: () => Navigator.of(context).pop('image'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _AttachmentOptionCard(
+                    icon: Icons.picture_as_pdf_outlined,
+                    title: 'File',
+                    subtitle: 'PDF attachment',
+                    onTap: () => Navigator.of(context).pop('file'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AttachmentOptionCard extends StatelessWidget {
+  const _AttachmentOptionCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: palette.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: palette.outlineVariant.withValues(alpha: 0.62),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryContainer.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(icon, color: AppColors.primaryContainer, size: 22),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                title,
+                style: TextStyle(
+                  color: palette.onSurface,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: palette.secondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 List<GroupchatMessage> _normalizeMessages(List<GroupchatMessage> messages) {
   final cloned = [...messages];
   cloned.sort((a, b) => a.sequenceNo.compareTo(b.sequenceNo));
@@ -928,7 +1047,7 @@ class _GroupchatRoomAppBar extends StatelessWidget
   final VoidCallback? onRoomOptionsPressed;
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => const Size.fromHeight(68);
 
   @override
   Widget build(BuildContext context) {
@@ -940,17 +1059,26 @@ class _GroupchatRoomAppBar extends StatelessWidget
       scrolledUnderElevation: 0,
       backgroundColor: palette.surfaceContainerLowest,
       foregroundColor: palette.onSurface,
-      shape: Border(bottom: BorderSide(color: palette.outlineVariant)),
+      toolbarHeight: 68,
+      shape: Border(
+        bottom: BorderSide(
+          color: palette.outlineVariant.withValues(alpha: 0.72),
+        ),
+      ),
       titleSpacing: 8,
       title: Row(
         children: [
           IconButton(
             onPressed: onBack,
             tooltip: 'Back to messages',
-            icon: const Icon(
-              Icons.arrow_back,
-              color: AppColors.primaryContainer,
+            style: IconButton.styleFrom(
+              backgroundColor: palette.surfaceContainerLow,
+              foregroundColor: AppColors.primaryContainer,
+              fixedSize: const Size.square(40),
+              minimumSize: const Size.square(40),
+              padding: EdgeInsets.zero,
             ),
+            icon: const Icon(Icons.arrow_back),
           ),
           Expanded(
             child: Column(
@@ -986,7 +1114,14 @@ class _GroupchatRoomAppBar extends StatelessWidget
         IconButton(
           onPressed: onRoomOptionsPressed,
           tooltip: 'Room options',
-          icon: const Icon(Icons.more_vert, color: AppColors.primaryContainer),
+          style: IconButton.styleFrom(
+            backgroundColor: palette.surfaceContainerLow,
+            foregroundColor: AppColors.primaryContainer,
+            fixedSize: const Size.square(40),
+            minimumSize: const Size.square(40),
+            padding: EdgeInsets.zero,
+          ),
+          icon: const Icon(Icons.more_vert),
         ),
         const SizedBox(width: 6),
       ],
@@ -1167,13 +1302,9 @@ class _IncomingMessage extends StatelessWidget {
                         bottomRight: Radius.circular(18),
                         bottomLeft: Radius.circular(2),
                       ),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x0F000000),
-                          blurRadius: 8,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
+                      border: Border.all(
+                        color: palette.outlineVariant.withValues(alpha: 0.52),
+                      ),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
@@ -1224,21 +1355,15 @@ class _OutgoingMessage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             DecoratedBox(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.primaryContainer,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(18),
                   topRight: Radius.circular(18),
                   bottomLeft: Radius.circular(18),
                   bottomRight: Radius.circular(2),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x1A000000),
-                    blurRadius: 10,
-                    offset: Offset(0, 3),
-                  ),
-                ],
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -1605,12 +1730,12 @@ class _ChatProfileBottomSheetState
     final name = _profile?.nickname?.trim().isNotEmpty == true
         ? _profile!.nickname!
         : (widget.senderName?.trim().isNotEmpty == true
-            ? widget.senderName!
-            : 'Member');
-    final url =
-        (_profile?.profileImageUrl ?? widget.avatarUrl)?.trim() ?? '';
-    final score =
-        _profile != null ? _profile!.alcoholScore : _mockAlcoholScore(widget.senderName);
+              ? widget.senderName!
+              : 'Member');
+    final url = (_profile?.profileImageUrl ?? widget.avatarUrl)?.trim() ?? '';
+    final score = _profile != null
+        ? _profile!.alcoholScore
+        : _mockAlcoholScore(widget.senderName);
     final tierLabel = _alcoholTierLabel(score);
 
     return DecoratedBox(
@@ -1661,20 +1786,20 @@ class _ChatProfileBottomSheetState
                               child: const SizedBox.expand(),
                             )
                           : url.isNotEmpty
-                              ? AppNetworkImage(url: url, width: 120, height: 120)
-                              : ColoredBox(
-                                  color: palette.surfaceContainerLow,
-                                  child: Center(
-                                    child: Text(
-                                      _avatarInitial(widget.senderName),
-                                      style: TextStyle(
-                                        color: palette.onSurfaceVariant,
-                                        fontSize: 40,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
+                          ? AppNetworkImage(url: url, width: 120, height: 120)
+                          : ColoredBox(
+                              color: palette.surfaceContainerLow,
+                              child: Center(
+                                child: Text(
+                                  _avatarInitial(widget.senderName),
+                                  style: TextStyle(
+                                    color: palette.onSurfaceVariant,
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -1715,7 +1840,7 @@ class _ChatProfileBottomSheetState
                     Text(
                       '$score%',
                       style: const TextStyle(
-                        color: Color(0xFFA04100),
+                        color: Color(0xFF973A18),
                         fontSize: 30,
                         fontWeight: FontWeight.w900,
                       ),
@@ -1739,7 +1864,10 @@ class _ChatProfileBottomSheetState
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [Color(0xFFA04100), Color(0xFFFF7E36)],
+                                colors: [
+                                  Color(0xFF973A18),
+                                  AppColors.primaryContainer,
+                                ],
                               ),
                               borderRadius: BorderRadius.circular(999),
                               boxShadow: const [

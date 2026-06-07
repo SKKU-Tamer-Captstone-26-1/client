@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  static const lightSurfaceContainerLow = Color(0xFFF6F1EA);
-  static const lightSurfaceContainerLowest = Color(0xFFFFFCF8);
+  static const lightSurfaceContainerLow = Color(0xFFF3EFE8);
+  static const lightSurfaceContainerLowest = Color(0xFFFFFFFF);
   static const lightOnSurface = Color(0xFF241A14);
-  static const lightOnSurfaceVariant = Color(0xFF6F6258);
-  static const lightSecondary = Color(0xFF756A61);
-  static const lightOutlineVariant = Color(0xFFE4D5C8);
+  static const lightOnSurfaceVariant = Color(0xFF675E56);
+  static const lightSecondary = Color(0xFF70665E);
+  static const lightOutlineVariant = Color(0xFFDED3C7);
   static const lightFooterText = Color(0xFFA1978F);
-  static const lightDecorativeTertiary = Color(0xFFB8844F);
+  static const lightDecorativeTertiary = Color(0xFFC87934);
+  static const lightTerracotta = Color(0xFFC96A3A);
+  static const lightBurgundy = Color(0xFF8E3F2C);
+  static const lightPremiumGold = Color(0xFFC87934);
 
   static const darkSurfaceContainerLow = Color(0xFF241F1B);
   static const darkSurfaceContainerLowest = Color(0xFF17120F);
@@ -17,10 +20,19 @@ abstract final class AppColors {
   static const darkSecondary = Color(0xFFBDB0A5);
   static const darkOutlineVariant = Color(0xFF493C34);
   static const darkFooterText = Color(0xFF95877C);
-  static const darkDecorativeTertiary = Color(0xFFD5A15F);
+  static const darkDecorativeTertiary = Color(0xFFE4A067);
+  static const darkTerracotta = Color(0xFFEFA77D);
+  static const darkBurgundy = Color(0xFFE69A82);
+  static const darkPremiumGold = Color(0xFFE4A067);
 
-  static const primaryContainer = Color(0xFFFF7E36);
-  static const darkPrimaryContainer = Color(0xFFFFB693);
+  static const primaryContainer = Color(0xFFE85D2A);
+  static const darkPrimaryContainer = Color(0xFFF3A16F);
+  static const ratingGold = Color(0xFFC87934);
+  static const terracotta = Color(0xFFC96A3A);
+  static const burgundy = Color(0xFF8E3F2C);
+  static const premiumGold = Color(0xFFC87934);
+  static const success = Color(0xFF247A45);
+  static const darkSuccess = Color(0xFF75D28E);
   static const error = Color(0xFFBA1A1A);
 }
 
@@ -36,6 +48,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.outlineVariant,
     required this.footerText,
     required this.decorativeTertiary,
+    required this.terracotta,
+    required this.burgundy,
+    required this.premiumGold,
   });
 
   final Color surfaceContainerLow;
@@ -47,6 +62,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
   final Color outlineVariant;
   final Color footerText;
   final Color decorativeTertiary;
+  final Color terracotta;
+  final Color burgundy;
+  final Color premiumGold;
 
   static const light = AppPalette(
     surfaceContainerLow: AppColors.lightSurfaceContainerLow,
@@ -58,6 +76,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
     outlineVariant: AppColors.lightOutlineVariant,
     footerText: AppColors.lightFooterText,
     decorativeTertiary: AppColors.lightDecorativeTertiary,
+    terracotta: AppColors.lightTerracotta,
+    burgundy: AppColors.lightBurgundy,
+    premiumGold: AppColors.lightPremiumGold,
   );
 
   static const dark = AppPalette(
@@ -70,6 +91,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
     outlineVariant: AppColors.darkOutlineVariant,
     footerText: AppColors.darkFooterText,
     decorativeTertiary: AppColors.darkDecorativeTertiary,
+    terracotta: AppColors.darkTerracotta,
+    burgundy: AppColors.darkBurgundy,
+    premiumGold: AppColors.darkPremiumGold,
   );
 
   @override
@@ -83,6 +107,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? outlineVariant,
     Color? footerText,
     Color? decorativeTertiary,
+    Color? terracotta,
+    Color? burgundy,
+    Color? premiumGold,
   }) {
     return AppPalette(
       surfaceContainerLow: surfaceContainerLow ?? this.surfaceContainerLow,
@@ -95,6 +122,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
       outlineVariant: outlineVariant ?? this.outlineVariant,
       footerText: footerText ?? this.footerText,
       decorativeTertiary: decorativeTertiary ?? this.decorativeTertiary,
+      terracotta: terracotta ?? this.terracotta,
+      burgundy: burgundy ?? this.burgundy,
+      premiumGold: premiumGold ?? this.premiumGold,
     );
   }
 
@@ -134,6 +164,9 @@ class AppPalette extends ThemeExtension<AppPalette> {
         other.decorativeTertiary,
         t,
       )!,
+      terracotta: Color.lerp(terracotta, other.terracotta, t)!,
+      burgundy: Color.lerp(burgundy, other.burgundy, t)!,
+      premiumGold: Color.lerp(premiumGold, other.premiumGold, t)!,
     );
   }
 }

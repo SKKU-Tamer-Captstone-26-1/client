@@ -66,7 +66,7 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 108),
           children: [
             if (recommendationRepository != null &&
                 recommendationAuthToken.trim().isNotEmpty)
@@ -76,14 +76,15 @@ class HomeScreen extends StatelessWidget {
                 hasCompletedSurvey: hasCompletedSurvey,
               )
             else
-              const _HeroCard(
+              _HeroCard(
                 badge: 'Taste profile',
                 title: 'Personalized picks start with your survey',
                 body:
                     'Complete onboarding to unlock your recommendation engine.',
                 icon: Icons.auto_awesome,
+                imageUrl: mockHomeHero.imageUrl,
               ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
             const _CategoryChips(categories: mockHomeCategories),
             const SizedBox(height: 28),
             const _LocalEstablishmentsSection(items: mockLocalEstablishments),
@@ -104,20 +105,22 @@ class _HeroCard extends StatelessWidget {
     required this.title,
     required this.body,
     required this.icon,
+    this.imageUrl,
   });
 
   final String badge;
   final String title;
   final String body;
   final IconData icon;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.palette;
 
     return Container(
-      constraints: const BoxConstraints(minHeight: 184),
-      padding: const EdgeInsets.all(22),
+      constraints: const BoxConstraints(minHeight: 204),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(24),
@@ -132,65 +135,96 @@ class _HeroCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppColors.primaryContainer,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: palette.terracotta,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          child: Text(
+                            badge.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: palette.surfaceContainerLow,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(icon, color: palette.secondary, size: 22),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    badge.toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
+                  const SizedBox(height: 18),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: palette.onSurface,
+                      fontSize: 25,
+                      fontWeight: FontWeight.w900,
+                      height: 1.08,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  Text(
+                    body,
+                    style: TextStyle(
+                      color: palette.secondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
               ),
-              const Spacer(),
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: palette.surfaceContainerLow,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: palette.secondary, size: 22),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Text(
-            title,
-            style: TextStyle(
-              color: palette.onSurface,
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-              height: 1.08,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            body,
-            style: TextStyle(
-              color: palette.secondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              height: 1.35,
+          if (imageUrl != null && imageUrl!.trim().isNotEmpty) ...[
+            const SizedBox(width: 14),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: SizedBox(
+                width: 96,
+                height: 168,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    AppNetworkImage(url: imageUrl!),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.08),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -218,9 +252,14 @@ class _CategoryChips extends StatelessWidget {
           return DecoratedBox(
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primaryContainer
+                  ? palette.terracotta
                   : palette.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: isSelected
+                    ? palette.terracotta
+                    : palette.outlineVariant.withValues(alpha: 0.72),
+              ),
               boxShadow: isSelected
                   ? const [
                       BoxShadow(
@@ -394,13 +433,13 @@ class _LocalEstablishmentCard extends StatelessWidget {
                             const Icon(
                               Icons.star,
                               size: 16,
-                              color: AppColors.primaryContainer,
+                              color: AppColors.ratingGold,
                             ),
                             const SizedBox(width: 3),
                             Text(
                               item.rating,
                               style: const TextStyle(
-                                color: AppColors.primaryContainer,
+                                color: AppColors.ratingGold,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
                               ),

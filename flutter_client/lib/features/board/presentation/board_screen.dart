@@ -47,6 +47,10 @@ class BoardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final postsAsync = ref.watch(boardPostsProvider);
     final palette = context.palette;
+    final postCount = postsAsync.maybeWhen(
+      data: (posts) => posts.length,
+      orElse: () => 0,
+    );
 
     return Scaffold(
       backgroundColor: palette.surfaceContainerLow,
@@ -94,9 +98,15 @@ class BoardScreen extends ConsumerWidget {
         top: false,
         child: CustomScrollView(
           slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+                child: _BoardFeedHeader(postCount: postCount),
+              ),
+            ),
             const SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 20, 16, 18),
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 18),
                 child: _BoardCategoryChips(categories: _kBoardCategories),
               ),
             ),
@@ -164,6 +174,72 @@ class BoardScreen extends ConsumerWidget {
 
 // TODO(chat): when Board detail is added, put the Chat action there and route it
 // through ChatRepository.getOrCreateBoardChatRoom with board_id plus auth metadata.
+class _BoardFeedHeader extends StatelessWidget {
+  const _BoardFeedHeader({required this.postCount});
+
+  final int postCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Neighborhood Board',
+          style: TextStyle(
+            color: palette.onSurface,
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+            height: 1.05,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Bottle drops, tasting notes, and local questions around your block.',
+                style: TextStyle(
+                  color: palette.secondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  height: 1.35,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: palette.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: palette.outlineVariant.withValues(alpha: 0.62),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
+                child: Text(
+                  '$postCount live',
+                  style: TextStyle(
+                    color: palette.onSurface,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 class _BoardCategoryChips extends StatelessWidget {
   const _BoardCategoryChips({required this.categories});
 
@@ -189,16 +265,9 @@ class _BoardCategoryChips extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
               border: isSelected
                   ? null
-                  : Border.all(color: palette.outlineVariant),
-              boxShadow: isSelected
-                  ? const [
-                      BoxShadow(
-                        color: Color(0x14000000),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ]
-                  : null,
+                  : Border.all(
+                      color: palette.outlineVariant.withValues(alpha: 0.72),
+                    ),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -241,18 +310,13 @@ class _BoardPostCard extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: palette.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE9ECEF)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x08000000),
-              blurRadius: 10,
-              offset: Offset(0, 2),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: palette.outlineVariant.withValues(alpha: 0.52),
+          ),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(22),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
@@ -264,11 +328,31 @@ class _BoardPostCard extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       AppNetworkImage(url: post.imageUrl!),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.02),
+                              Colors.black.withValues(alpha: 0.18),
+                            ],
+                          ),
+                        ),
+                      ),
                       Positioned(
                         top: 16,
                         left: 16,
                         child: _CategoryBadge(label: post.category),
                       ),
+                      if (onChatRequested != null)
+                        Positioned(
+                          top: 14,
+                          right: 14,
+                          child: _BoardChatButton(
+                            onPressed: () => onChatRequested!(post),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -332,7 +416,11 @@ class _BoardPostCard extends StatelessWidget {
                       color: palette.outlineVariant.withValues(alpha: 0.48),
                     ),
                     const SizedBox(height: 14),
-                    _PostMetaRow(post: post, onChatRequested: onChatRequested),
+                    _PostMetaRow(
+                      post: post,
+                      onChatRequested: onChatRequested,
+                      showChatButton: !hasImage,
+                    ),
                   ],
                 ),
               ),
@@ -373,10 +461,15 @@ class _CategoryBadge extends StatelessWidget {
 }
 
 class _PostMetaRow extends StatelessWidget {
-  const _PostMetaRow({required this.post, this.onChatRequested});
+  const _PostMetaRow({
+    required this.post,
+    this.onChatRequested,
+    this.showChatButton = true,
+  });
 
   final BoardPost post;
   final ValueChanged<BoardPost>? onChatRequested;
+  final bool showChatButton;
 
   @override
   Widget build(BuildContext context) {
@@ -407,12 +500,14 @@ class _PostMetaRow extends StatelessWidget {
         _PostMetric(icon: Icons.forum, value: post.commentCount),
         const SizedBox(width: 10),
         _PostMetric(icon: Icons.favorite, value: post.favoriteCount),
-        const SizedBox(width: 8),
-        _BoardChatButton(
-          onPressed: onChatRequested == null
-              ? null
-              : () => onChatRequested!(post),
-        ),
+        if (showChatButton) ...[
+          const SizedBox(width: 8),
+          _BoardChatButton(
+            onPressed: onChatRequested == null
+                ? null
+                : () => onChatRequested!(post),
+          ),
+        ],
       ],
     );
   }
@@ -439,6 +534,9 @@ class _BoardChatButton extends StatelessWidget {
           fixedSize: const Size.square(32),
           padding: EdgeInsets.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );

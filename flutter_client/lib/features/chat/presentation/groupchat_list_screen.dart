@@ -311,10 +311,11 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 672),
             child: RefreshIndicator(
+              color: AppColors.primaryContainer,
               onRefresh: _loadRooms,
               child: ListView(
                 controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 96),
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 96),
                 children: [
                   _MessagesHeader(
                     unreadCount: _unreadCount,
@@ -330,9 +331,15 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
                   ),
                   const SizedBox(height: 24),
                   if (_loading)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 16),
-                      child: LinearProgressIndicator(minHeight: 2),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: palette.surfaceContainerLowest,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: const LinearProgressIndicator(minHeight: 3),
+                      ),
                     ),
                   _ChatRoomList(
                     rooms: _rooms
@@ -346,7 +353,13 @@ class _GroupchatListScreenState extends State<GroupchatListScreen> {
                   if (_loadingMore)
                     const Padding(
                       padding: EdgeInsets.only(top: 12),
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Center(
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -504,69 +517,111 @@ class _MessagesHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Messages',
-                style: TextStyle(
-                  color: palette.onSurface,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  height: 1.1,
-                ),
-              ),
-            ),
-            Tooltip(
-              message: 'New Chat',
-              child: FilledButton.icon(
-                onPressed: isCreatingRoom ? null : onNewChatPressed,
-                icon: isCreatingRoom
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.add, size: 18),
-                label: Text(isCreatingRoom ? 'Creating' : 'New Chat'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primaryContainer,
-                  disabledBackgroundColor: AppColors.primaryContainer
-                      .withValues(alpha: 0.45),
-                  foregroundColor: Colors.white,
-                  disabledForegroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  minimumSize: const Size(0, 38),
-                  textStyle: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
         DecoratedBox(
           decoration: BoxDecoration(
-            color: AppColors.primaryContainer.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(999),
+            color: palette.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: palette.outlineVariant.withValues(alpha: 0.62),
+            ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Text(
-              '$unreadCount Unread',
-              style: const TextStyle(
-                color: AppColors.primaryContainer,
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-              ),
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: palette.terracotta.withValues(alpha: 0.13),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Icon(
+                    Icons.chat_bubble,
+                    color: palette.terracotta,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Messages',
+                        style: TextStyle(
+                          color: palette.onSurface,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          height: 1.06,
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: palette.terracotta.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          child: Text(
+                            '$unreadCount Unread',
+                            style: TextStyle(
+                              color: palette.terracotta,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Tooltip(
+                  message: 'New Chat',
+                  child: FilledButton(
+                    onPressed: isCreatingRoom ? null : onNewChatPressed,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primaryContainer,
+                      disabledBackgroundColor: AppColors.primaryContainer
+                          .withValues(alpha: 0.45),
+                      foregroundColor: Colors.white,
+                      disabledForegroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      minimumSize: const Size(0, 38),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isCreatingRoom)
+                          const SizedBox(
+                            width: 15,
+                            height: 15,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        else
+                          const Icon(Icons.add, size: 17),
+                        const SizedBox(width: 6),
+                        Text(isCreatingRoom ? 'Creating' : 'New Chat'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -619,7 +674,7 @@ class _NewChatDialogState extends State<_NewChatDialog> {
 
     return AlertDialog(
       backgroundColor: palette.surfaceContainerLowest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       title: Text(
         'New Chat',
         style: TextStyle(
@@ -642,15 +697,15 @@ class _NewChatDialogState extends State<_NewChatDialog> {
           filled: true,
           fillColor: palette.surfaceContainerLow,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide(color: palette.outlineVariant),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide(color: palette.outlineVariant),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(color: AppColors.primaryContainer),
           ),
         ),
@@ -670,7 +725,7 @@ class _NewChatDialogState extends State<_NewChatDialog> {
             foregroundColor: Colors.white,
             disabledForegroundColor: Colors.white,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(14),
             ),
           ),
           child: const Text('Create'),
@@ -694,17 +749,28 @@ class _ChatRoomList extends StatelessWidget {
       return DecoratedBox(
         decoration: BoxDecoration(
           color: palette.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: palette.outlineVariant.withValues(alpha: 0.5),
+            color: palette.outlineVariant.withValues(alpha: 0.62),
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 26),
           child: Row(
             children: [
-              Icon(Icons.chat_bubble_outline, color: palette.secondary),
-              const SizedBox(width: 10),
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: palette.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  Icons.chat_bubble_outline,
+                  color: palette.secondary,
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   'No chat rooms yet. Start a New Chat or join from a Board post.',
@@ -724,13 +790,13 @@ class _ChatRoomList extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: palette.outlineVariant.withValues(alpha: 0.5),
+          color: palette.outlineVariant.withValues(alpha: 0.62),
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(22),
         child: Column(
           children: [
             for (final (index, room) in rooms.indexed) ...[
@@ -766,7 +832,7 @@ class _ChatRoomTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
         child: Row(
           children: [
             _RoomAvatar(room: room),
@@ -846,12 +912,24 @@ class _ChatRoomTile extends StatelessWidget {
                     runSpacing: 4,
                     children: [
                       for (final tag in room.tags)
-                        Text(
-                          tag,
-                          style: TextStyle(
-                            color: palette.secondary,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w500,
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: palette.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
+                            child: Text(
+                              tag,
+                              style: TextStyle(
+                                color: palette.secondary,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                         ),
                     ],
@@ -883,7 +961,7 @@ class _RoomAvatar extends StatelessWidget {
         height: 56,
         decoration: BoxDecoration(
           color: palette.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Icon(
           room.trailingIcon ?? Icons.groups,
@@ -900,7 +978,7 @@ class _RoomAvatar extends StatelessWidget {
       height: 56,
       decoration: BoxDecoration(
         color: palette.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(18),
       ),
       clipBehavior: Clip.antiAlias,
       child: GridView.count(
@@ -947,7 +1025,7 @@ class _MemberPill extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: palette.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

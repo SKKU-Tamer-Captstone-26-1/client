@@ -22,6 +22,7 @@ import 'package:flutter_client/features/chat/presentation/widgets/chat_input_bar
 import 'package:flutter_client/features/chat/presentation/widgets/typing_indicator.dart';
 import 'package:flutter_client/features/chatbot/data/chatbot_repository.dart';
 import 'package:flutter_client/features/chatbot/models/chatbot_models.dart';
+import 'package:flutter_client/features/chatbot/presentation/chatbot_modal.dart';
 import 'package:flutter_client/features/map/data/map_api_data_source.dart';
 import 'package:flutter_client/features/map/models/map_place.dart';
 import 'package:flutter_client/features/preference_survey/data/survey_grpc_client.dart';
@@ -127,10 +128,22 @@ void main() {
     await tester.pump();
 
     expect(find.text('TOP MATCH'), findsOneWidget);
-    expect(find.text('Recommended for you'), findsOneWidget);
+    expect(find.text('Recommended for you'), findsNothing);
+    expect(
+      find.text('Compact picks matched from your taste profile'),
+      findsNothing,
+    );
     expect(find.text('예시 버번'), findsWidgets);
     expect(find.text('Example Bourbon'), findsWidgets);
-    expect(find.text('Matches your vanilla/caramel preference.'), findsWidgets);
+    expect(find.text('Matches your vanilla/caramel preference.'), findsNothing);
+    await tester.tap(find.byTooltip('Why recommended').first);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Matches your vanilla/caramel preference.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
     expect(find.textContaining('%'), findsNothing);
     expect(repository.profileStatusCalls, 1);
     expect(repository.beverageRecommendationCalls, 1);
@@ -138,34 +151,7 @@ void main() {
     expect(repository.lastCategory, '');
     expect(repository.lastLimit, 10);
     expect(repository.lastBudgetMode, RecommendationBudgetMode.soft);
-    expect(
-      repository.events.single.eventType,
-      RecommendationEventKind.impression,
-    );
-    expect(
-      repository.events.single.metadata.keys,
-      unorderedEquals([
-        'client_platform',
-        'app_version',
-        'surface',
-        'session_id_hash',
-        'list_position',
-        'visible_ms',
-        'source',
-      ]),
-    );
-    expect(
-      repository.events.single.metadata['surface'],
-      'home_recommendations',
-    );
-    expect(
-      repository.events.single.metadata['source'],
-      'recommendation_service',
-    );
-    expect(
-      repository.events.single.idempotencyKey,
-      contains(':rec-result-1:impression'),
-    );
+    expect(repository.events, isEmpty);
   });
 
   testWidgets('renders long recommendation metadata without card overflow', (
@@ -211,13 +197,16 @@ void main() {
     await tester.pump();
 
     expect(find.text('라프로익 10년'), findsWidgets);
-    expect(find.text('Laphroaig 10 Year Old'), findsOneWidget);
-    expect(find.text('single malt scotch whisky'), findsOneWidget);
+    expect(find.text('Laphroaig 10 Year Old'), findsWidgets);
+    expect(find.textContaining('Single Malt Scotch Whisky'), findsOneWidget);
     expect(find.text('Category Match'), findsWidgets);
-    expect(find.textContaining('recommended because'), findsWidgets);
+    expect(find.textContaining('recommended because'), findsNothing);
+    await tester.tap(find.byTooltip('Why recommended').first);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('recommended because'), findsOneWidget);
   });
 
-  testWidgets('records recommendation save and dismiss events from cards', (
+  testWidgets('removes compact recommendation card actions from home', (
     WidgetTester tester,
   ) async {
     final repository = _FakeRecommendationRepository();
@@ -226,44 +215,9 @@ void main() {
     await _signInAndSkipOnboarding(tester);
     await tester.pump();
 
-    await tester.tap(find.byTooltip('Save recommendation').first);
-    await tester.pump();
-    await tester.tap(find.byTooltip('Dismiss recommendation').first);
-    await tester.pump();
-
-    expect(
-      repository.events.map((event) => event.eventType),
-      containsAllInOrder([
-        RecommendationEventKind.impression,
-        RecommendationEventKind.save,
-        RecommendationEventKind.dismiss,
-      ]),
-    );
-  });
-
-  testWidgets('records recommendation click events from cards', (
-    WidgetTester tester,
-  ) async {
-    final repository = _FakeRecommendationRepository();
-
-    await _pumpApp(tester, recommendationRepository: repository);
-    await _signInAndSkipOnboarding(tester);
-    await tester.pump();
-
-    await tester.tap(find.text('예시 버번').last);
-    await tester.pump();
-
-    expect(
-      repository.events.map((event) => event.eventType),
-      containsAllInOrder([
-        RecommendationEventKind.impression,
-        RecommendationEventKind.click,
-      ]),
-    );
-    expect(
-      repository.events.last.idempotencyKey,
-      contains(':rec-result-1:click'),
-    );
+    expect(find.byTooltip('Save recommendation'), findsNothing);
+    expect(find.byTooltip('Dismiss recommendation'), findsNothing);
+    expect(repository.events, isEmpty);
   });
 
   testWidgets('shows saved-survey missing profile without requesting beverages', (
@@ -409,6 +363,31 @@ void main() {
     expect(find.byIcon(Icons.chat), findsNothing);
   });
 
+  testWidgets('opens map place detail screen', (WidgetTester tester) async {
+    await _pumpApp(
+      tester,
+      mapDataSource: _FakeMapApiDataSource(markers: const [_testMapPlace]),
+    );
+
+    await _signInAndSkipOnboarding(tester);
+
+    await tester.tap(find.text('Map'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Downtown Plaza').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Downtown Plaza'), findsWidgets);
+    expect(find.text('123 Downtown Plaza'), findsOneWidget);
+
+    await tester.tap(find.text('Downtown Plaza').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Map'), findsOneWidget);
+    expect(find.text('Menu'), findsOneWidget);
+    expect(find.text('Reviews'), findsOneWidget);
+  });
+
   testWidgets('shows chat bottom nav unread count bubble', (
     WidgetTester tester,
   ) async {
@@ -513,6 +492,35 @@ void main() {
 
     expect(find.text('Messages'), findsOneWidget);
     expect(find.text('1 Unread'), findsOneWidget);
+  });
+
+  testWidgets('opens polished chat attachment options', (
+    WidgetTester tester,
+  ) async {
+    await _pumpApp(tester);
+
+    await _signInAndSkipOnboarding(tester);
+
+    await tester.tap(find.text('Chat'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Westside Bourbon Enthusiasts'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Add attachment'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add to chat'), findsOneWidget);
+    expect(
+      find.text('Share a tasting photo or a PDF with this room.'),
+      findsOneWidget,
+    );
+    expect(find.text('Image'), findsOneWidget);
+    expect(find.text('File'), findsOneWidget);
+
+    Navigator.of(tester.element(find.text('Add to chat'))).pop();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Add to chat'), findsNothing);
   });
 
   testWidgets('opens chat room from chat push after survey gate', (
@@ -740,6 +748,119 @@ void main() {
     expect(find.text('부족한 정보'), findsOneWidget);
     expect(find.text('- survey_response'), findsOneWidget);
     expect(find.text('- 설문을 먼저 완료해 주세요.'), findsOneWidget);
+  });
+
+  testWidgets(
+    'chatbot does not show recommendation outage as profile missing',
+    (WidgetTester tester) async {
+      await _pumpApp(
+        tester,
+        chatbotRepository: _FakeChatbotRepository(
+          answer: const ChatbotAnswer(
+            conversationId: 'conv-1',
+            messageId: 'msg-outage',
+            answer: '',
+            status: ChatbotResponseStatus.insufficientData,
+            refused: false,
+            refusalReason: 'RECOMMENDATION_SERVICE_UNAVAILABLE',
+            profileStatus: ChatbotProfileStatus.active,
+            missingFacts: <String>['recommendation_service_unavailable'],
+            followUpQuestions: <String>[],
+            cards: <ChatbotCardModel>[],
+          ),
+        ),
+      );
+
+      await _signInAndSkipOnboarding(tester);
+      await tester.tap(find.byIcon(Icons.chat));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, '추천해줘');
+      await tester.pump();
+      await tester.tap(find.byTooltip('Send chatbot message'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('추천 데이터 일시 오류'), findsOneWidget);
+      expect(find.text('프로필 준비 필요'), findsNothing);
+      expect(find.textContaining('추천 데이터를 일시적으로 불러오지 못했어요'), findsOneWidget);
+      expect(find.text('- recommendation_service_unavailable'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'chatbot beverage card action sends selected beverage follow-up',
+    (WidgetTester tester) async {
+      final chatbotRepository = _FakeChatbotRepository(
+        answer: _chatbotAnswerWithCards(),
+      );
+
+      await _pumpApp(tester, chatbotRepository: chatbotRepository);
+      await _signInAndSkipOnboarding(tester);
+      await tester.tap(find.byIcon(Icons.chat));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, '위스키 추천해줘');
+      await tester.pump();
+      await tester.tap(find.byTooltip('Send chatbot message'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('마실 곳').first);
+      await tester.pumpAndSettle();
+
+      expect(chatbotRepository.sendCalls, 2);
+      expect(chatbotRepository.lastRequest?.conversationId, 'conv-1');
+      expect(chatbotRepository.lastRequest?.selectedBeverageId, 'bev-1');
+      expect(chatbotRepository.lastRequest?.message, contains('근처에서 마실 곳'));
+      expect(
+        chatbotRepository.lastRequest?.clientContext.containsKey('user_id'),
+        isFalse,
+      );
+    },
+  );
+
+  testWidgets('chatbot modal launch context forwards location fields', (
+    WidgetTester tester,
+  ) async {
+    final chatbotRepository = _FakeChatbotRepository();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) {
+              return TextButton(
+                onPressed: () => showChatbotModal(
+                  context,
+                  repository: chatbotRepository,
+                  authToken: 'access-token',
+                  screenContext: ChatbotScreenContext.map,
+                  lat: 37.2951,
+                  lng: 126.9774,
+                  radiusM: 1500,
+                  selectedBeverageId: 'bev-launch',
+                ),
+                child: const Text('Open chatbot'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open chatbot'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '근처 바 추천해줘');
+    await tester.pump();
+    await tester.tap(find.byTooltip('Send chatbot message'));
+    await tester.pumpAndSettle();
+
+    expect(
+      chatbotRepository.lastRequest?.screenContext,
+      ChatbotScreenContext.map,
+    );
+    expect(chatbotRepository.lastRequest?.lat, 37.2951);
+    expect(chatbotRepository.lastRequest?.lng, 126.9774);
+    expect(chatbotRepository.lastRequest?.radiusM, 1500);
+    expect(chatbotRepository.lastRequest?.selectedBeverageId, 'bev-launch');
   });
 
   testWidgets('chatbot backend unavailable state can retry', (
@@ -1005,6 +1126,7 @@ Future<void> _pumpApp(
   ChatPushService? chatPushService,
   ChatbotRepository? chatbotRepository,
   RecommendationRepository? recommendationRepository,
+  MapApiDataSource? mapDataSource,
   Map<String, Object> initialPreferences = const {},
 }) {
   SharedPreferences.setMockInitialValues(initialPreferences);
@@ -1020,7 +1142,7 @@ Future<void> _pumpApp(
       child: OnTheBlockApp(
         chatRepository: _FakeChatRepository(),
         chatPushService: chatPushService ?? _FakeChatPushService(),
-        mapDataSource: _FakeMapApiDataSource(),
+        mapDataSource: mapDataSource ?? _FakeMapApiDataSource(),
         mapPositionResolver: () async => null,
         chatbotRepository: chatbotRepository ?? _FakeChatbotRepository(),
         enableDefaultChatbotRepository: false,
@@ -1191,8 +1313,29 @@ class _RecordedChatbotFeedback {
   final Map<String, Object> metadata;
 }
 
+const _testMapPlace = MapPlace(
+  id: 'map-place-1',
+  name: 'Downtown Plaza',
+  category: 'Bar',
+  layerCode: 'bar',
+  address: '123 Downtown Plaza',
+  distanceLabel: '0.6 mi',
+  rating: '4.8',
+  status: 'Open Now',
+  latitude: 37.2951,
+  longitude: 126.9774,
+  imageUrls: <String>[],
+  tags: <String>['Whisky', 'Cocktails'],
+  isOpenNow: true,
+  openHours: '19:00 - 02:00',
+  reviewCount: 12,
+);
+
 class _FakeMapApiDataSource extends MapApiDataSource {
-  _FakeMapApiDataSource() : super(baseUrl: 'http://map.test');
+  _FakeMapApiDataSource({this.markers = const []})
+    : super(baseUrl: 'http://map.test');
+
+  final List<MapPlace> markers;
 
   @override
   Future<List<MapPlace>> fetchMarkers({
@@ -1204,7 +1347,7 @@ class _FakeMapApiDataSource extends MapApiDataSource {
     int limit = 500,
     int offset = 0,
   }) async {
-    return const [];
+    return markers;
   }
 
   @override
@@ -1264,6 +1407,10 @@ class _FakeRecommendationRepository implements RecommendationRepository {
     String category = '',
     int limit = 10,
     RecommendationBudgetMode budgetMode = RecommendationBudgetMode.soft,
+    List<String> excludeBeverageIds = const <String>[],
+    List<String> excludeResultIds = const <String>[],
+    RecommendationDiversityMode diversityMode =
+        RecommendationDiversityMode.unspecified,
   }) async {
     beverageRecommendationCalls += 1;
     lastAuthToken = authToken;
