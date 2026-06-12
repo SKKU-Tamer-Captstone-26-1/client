@@ -26,13 +26,10 @@ jobs:
         run: |
           KAKAO_MAP_API_KEY="$(gcloud secrets versions access latest --secret=KAKAO_MAP_API_KEY --project=${{ secrets.GCP_PROJECT_ID }})"
           KAKAO_REST_API_KEY="$(gcloud secrets versions access latest --secret=KAKAO_REST_API_KEY --project=${{ secrets.GCP_PROJECT_ID }})"
-          GOOGLE_CLIENT_ID="$(gcloud secrets versions access latest --secret=GOOGLE_CLIENT_ID --project=${{ secrets.GCP_PROJECT_ID }})"
           echo "::add-mask::$KAKAO_MAP_API_KEY"
           echo "::add-mask::$KAKAO_REST_API_KEY"
-          echo "::add-mask::$GOOGLE_CLIENT_ID"
           echo "KAKAO_MAP_API_KEY=$KAKAO_MAP_API_KEY" >> "$GITHUB_ENV"
           echo "KAKAO_REST_API_KEY=$KAKAO_REST_API_KEY" >> "$GITHUB_ENV"
-          echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> "$GITHUB_ENV"
 
       - uses: subosito/flutter-action@v2
         with:
@@ -40,28 +37,9 @@ jobs:
 
       - run: flutter pub get
 
-      # Points at deployed staging backends so testers don't need to run any
-      # service locally. Mirrors run-client-deployed.ps1.
       - name: Build debug APK
         run: |
           flutter build apk --debug \
-            --dart-define=GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID \
-            --dart-define=AUTH_GRPC_HOST=authorization-service-vcuepibcwq-du.a.run.app \
-            --dart-define=AUTH_GRPC_PORT=443 \
-            --dart-define=AUTH_GRPC_TLS=true \
-            --dart-define=BOARD_GRPC_HOST=gateway-service-vcuepibcwq-du.a.run.app \
-            --dart-define=BOARD_GRPC_PORT=443 \
-            --dart-define=BOARD_GRPC_TLS=true \
-            --dart-define=CHAT_GRPC_HOST=chat-service-staging-44649239380.asia-northeast3.run.app \
-            --dart-define=CHAT_GRPC_PORT=443 \
-            --dart-define=CHAT_GRPC_TLS=true \
-            --dart-define=SURVEY_GRPC_HOST=survey-service-44649239380.asia-northeast3.run.app \
-            --dart-define=SURVEY_GRPC_PORT=443 \
-            --dart-define=SURVEY_GRPC_TLS=true \
-            --dart-define=APP_GATEWAY_GRPC_HOST=gateway-service-44649239380.asia-northeast3.run.app \
-            --dart-define=APP_GATEWAY_GRPC_PORT=443 \
-            --dart-define=APP_GATEWAY_GRPC_TLS=true \
-            --dart-define=MAP_API_BASE_URL=https://map-service-44649239380.asia-northeast3.run.app \
             --dart-define=KAKAO_MAP_API_KEY=$KAKAO_MAP_API_KEY \
             --dart-define=KAKAO_REST_API_KEY=$KAKAO_REST_API_KEY
 
