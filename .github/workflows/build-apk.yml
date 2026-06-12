@@ -1,0 +1,50 @@
+name: Build Debug APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: flutter_client
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Fetch secrets from Secret Manager
+        run: |
+          KAKAO_MAP_API_KEY="$(gcloud secrets versions access latest --secret=KAKAO_MAP_API_KEY --project=${{ secrets.GCP_PROJECT_ID }})"
+          KAKAO_REST_API_KEY="$(gcloud secrets versions access latest --secret=KAKAO_REST_API_KEY --project=${{ secrets.GCP_PROJECT_ID }})"
+          echo "::add-mask::$KAKAO_MAP_API_KEY"
+          echo "::add-mask::$KAKAO_REST_API_KEY"
+          echo "KAKAO_MAP_API_KEY=$KAKAO_MAP_API_KEY" >> "$GITHUB_ENV"
+          echo "KAKAO_REST_API_KEY=$KAKAO_REST_API_KEY" >> "$GITHUB_ENV"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - run: flutter pub get
+
+      - name: Build debug APK
+        run: |
+          flutter build apk --debug \
+            --dart-define=KAKAO_MAP_API_KEY=$KAKAO_MAP_API_KEY \
+            --dart-define=KAKAO_REST_API_KEY=$KAKAO_REST_API_KEY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: flutter_client/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14
