@@ -1332,15 +1332,38 @@ class _LiquorRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: palette.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(10),
+          if (item.imageUrl.isNotEmpty)
+            GestureDetector(
+              onTap: () => _showFullScreenImage(context, item.imageUrl),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  item.imageUrl,
+                  width: 56,
+                  height: 56,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: palette.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.liquor, color: palette.secondary, size: 28),
+                  ),
+                ),
+              ),
+            )
+          else
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: palette.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.liquor, color: palette.secondary, size: 28),
             ),
-            child: Icon(Icons.liquor, color: palette.secondary, size: 28),
-          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
