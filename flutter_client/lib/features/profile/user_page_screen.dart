@@ -82,7 +82,7 @@ class UserPageScreen extends ConsumerWidget {
       body: SafeArea(
         top: false,
         child: ListView(
-          scrollCacheExtent: const ScrollCacheExtent.pixels(900),
+          cacheExtent: 900,
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
           children: [
             _ProfileSection(user: user),
