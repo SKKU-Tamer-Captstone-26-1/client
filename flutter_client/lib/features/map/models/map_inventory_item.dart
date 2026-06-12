@@ -7,6 +7,7 @@ class MapInventoryItem {
     required this.nameKo,
     required this.nameEn,
     required this.priceKrw,
+    this.imageUrl = '',
   });
 
   factory MapInventoryItem.fromJson(Map<String, dynamic> json) {
@@ -15,6 +16,7 @@ class MapInventoryItem {
       nameKo: json['name_ko'] as String? ?? '',
       nameEn: json['name_en'] as String? ?? '',
       priceKrw: (json['price_krw'] as num?)?.toInt() ?? 0,
+      imageUrl: json['image_url'] as String? ?? '',
     );
   }
 
@@ -22,6 +24,7 @@ class MapInventoryItem {
   final String nameKo;
   final String nameEn;
   final int priceKrw;
+  final String imageUrl;
 
   String get displayName => nameKo.isNotEmpty ? nameKo : nameEn;
 
