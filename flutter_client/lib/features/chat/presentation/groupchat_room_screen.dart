@@ -59,6 +59,8 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
   bool _loading = false;
   StreamSubscription<GroupchatMessage>? _streamSub;
   int _latestSequenceNo = 0;
+  final Map<String, PublicUserProfile?> _senderProfiles = {};
+  final Set<String> _senderProfileRequests = {};
 
   List<String?> get _typingNicknames => const <String?>[];
 
@@ -133,6 +135,7 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
         final fetchedLatest = _messages.isEmpty ? 0 : _messages.last.sequenceNo;
         _latestSequenceNo = _maxSequenceNo(_latestSequenceNo, fetchedLatest);
       });
+      _prefetchSenderProfiles(_messages);
       loadedMessages = true;
       unawaited(_persistLatestSequenceNo());
       unawaited(_markRoomRead());
@@ -268,10 +271,96 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
       _messages = _normalizeMessages([...deduped, message]);
       _latestSequenceNo = _maxSequenceNo(_latestSequenceNo, message.sequenceNo);
     });
+    _prefetchSenderProfiles([message]);
     unawaited(_persistLatestSequenceNo());
     if (scrollToBottom) {
       _scrollMessagesToBottom();
     }
+  }
+
+  void _prefetchSenderProfiles(Iterable<GroupchatMessage> messages) {
+    final repo = widget.chatRepository;
+    if (repo == null) {
+      return;
+    }
+
+    final senderIds = messages
+        .where((message) => !message.isOutgoing)
+        .map((message) => message.senderId?.trim() ?? '')
+        .where((senderId) => senderId.isNotEmpty)
+        .toSet();
+
+    for (final senderId in senderIds) {
+      if (_senderProfiles.containsKey(senderId) ||
+          _senderProfileRequests.contains(senderId)) {
+        continue;
+      }
+      _senderProfileRequests.add(senderId);
+      unawaited(_loadSenderProfile(senderId));
+    }
+  }
+
+  Future<void> _loadSenderProfile(String senderId) async {
+    try {
+      final repo = ProviderScope.containerOf(
+        context,
+        listen: false,
+      ).read(authRepositoryProvider);
+      final profile = await repo.getUser(senderId);
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _senderProfiles[senderId] = profile;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _senderProfiles[senderId] = null;
+      });
+    } finally {
+      _senderProfileRequests.remove(senderId);
+    }
+  }
+
+  GroupchatMessage _messageWithSenderProfile(GroupchatMessage message) {
+    if (message.isOutgoing) {
+      return message;
+    }
+    final senderId = message.senderId?.trim();
+    if (senderId == null || senderId.isEmpty) {
+      return message;
+    }
+    final profile = _senderProfiles[senderId];
+    final nickname = profile?.nickname?.trim();
+    final avatarUrl = profile?.profileImageUrl?.trim();
+    if ((nickname == null || nickname.isEmpty) &&
+        (avatarUrl == null || avatarUrl.isEmpty)) {
+      return message;
+    }
+
+    return GroupchatMessage(
+      messageId: message.messageId,
+      roomId: message.roomId,
+      sequenceNo: message.sequenceNo,
+      kind: message.kind,
+      text: message.text,
+      timeLabel: message.timeLabel,
+      sentAt: message.sentAt,
+      contentType: message.contentType,
+      imageUrl: message.imageUrl,
+      fileUrl: message.fileUrl,
+      fileName: message.fileName,
+      fileContentType: message.fileContentType,
+      senderName: nickname?.isNotEmpty == true ? nickname : message.senderName,
+      senderAvatarUrl: avatarUrl?.isNotEmpty == true
+          ? avatarUrl
+          : message.senderAvatarUrl,
+      senderId: message.senderId,
+      deliveryLabel: message.deliveryLabel,
+    );
   }
 
   Future<void> _onMessageLongPress(GroupchatMessage message) async {
@@ -445,7 +534,9 @@ class _GroupchatRoomScreenState extends State<GroupchatRoomScreen>
                           child: LinearProgressIndicator(minHeight: 2),
                         ),
                       _MessageList(
-                        messages: _messages,
+                        messages: _messages
+                            .map(_messageWithSenderProfile)
+                            .toList(growable: false),
                         onMessageLongPress: _onMessageLongPress,
                       ),
                       const SizedBox(height: 22),

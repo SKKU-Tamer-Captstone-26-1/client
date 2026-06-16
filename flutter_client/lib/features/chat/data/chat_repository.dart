@@ -464,7 +464,7 @@ extension _ChatMessageMapper on ChatMessage {
       text: _toPreviewText(),
       timeLabel: _formatTimestamp(hasSentAt() ? sentAt : null),
       sentAt: sentAtDateTime,
-      senderName: isOutgoing ? null : _shortUserLabel(senderUserId),
+      senderName: null,
       senderAvatarUrl: null,
       senderId: isOutgoing ? null : senderUserId,
       deliveryLabel: isOutgoing ? 'Sent' : null,
@@ -542,14 +542,4 @@ String _formatTimestamp(Timestamp? timestamp) {
   } catch (_) {
     return '';
   }
-}
-
-String _shortUserLabel(String userId) {
-  if (userId.isEmpty) {
-    return 'Member';
-  }
-  if (userId.length <= 8) {
-    return userId;
-  }
-  return '${userId.substring(0, 8)}...';
 }
