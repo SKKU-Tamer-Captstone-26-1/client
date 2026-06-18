@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "44649239380-e08vigdh9hig86v6bk4iip1lijtej6re.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ontheblockand.app",
+            "certificate_hash": "a4ac9f60f4c47ccf13b79c6191fdb2b2bec472ec"
+          }
+        },
+        {
           "client_id": "44649239380-2pqbv44f0hb68vu90t7f7bl2vqltl5pq.apps.googleusercontent.com",
           "client_type": 3
         }
